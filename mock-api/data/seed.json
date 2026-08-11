@@ -135,6 +135,7 @@
   ],
   "contentToc": {
     "content-001": [
+      { "title": "参考資料（外部リンク）", "page": 1, "level": 1, "url": "https://example.com/math-reference" },
       { "title": "第1章 数と式", "page": 1, "level": 1 },
       { "title": "1.1 実数", "page": 2, "level": 2 },
       { "title": "1.2 平方根", "page": 8, "level": 2 },

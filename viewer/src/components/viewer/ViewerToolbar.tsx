@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { ThemeToggle } from '../ui/ThemeToggle'
+import { SearchBar } from './SearchBar'
 import type { ViewMode } from './PdfViewer'
 
 interface ViewerToolbarProps {
@@ -21,6 +22,15 @@ interface ViewerToolbarProps {
   zoom: number
   viewMode: ViewMode
   saving?: boolean
+  searchOpen: boolean
+  searchQuery: string
+  searchMatchCount: number
+  activeSearchIndex: number
+  searchSearching?: boolean
+  onSearchOpenChange: (open: boolean) => void
+  onSearchQueryChange: (query: string) => void
+  onSearchPrev: () => void
+  onSearchNext: () => void
   onPageChange: (page: number) => void
   onZoomChange: (zoom: number) => void
   onViewModeChange: (mode: ViewMode) => void
@@ -39,6 +49,15 @@ export function ViewerToolbar({
   zoom,
   viewMode,
   saving,
+  searchOpen,
+  searchQuery,
+  searchMatchCount,
+  activeSearchIndex,
+  searchSearching,
+  onSearchOpenChange,
+  onSearchQueryChange,
+  onSearchPrev,
+  onSearchNext,
   onPageChange,
   onZoomChange,
   onViewModeChange,
@@ -69,10 +88,26 @@ export function ViewerToolbar({
         </Button>
 
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100 sm:text-base">{title}</h1>
-          {saving && <p className="text-xs text-slate-400">保存中...</p>}
+          {!searchOpen && (
+            <h1 className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100 sm:text-base">{title}</h1>
+          )}
+          {saving && !searchOpen && <p className="text-xs text-slate-400">保存中...</p>}
         </div>
 
+        <SearchBar
+          open={searchOpen}
+          query={searchQuery}
+          matchCount={searchMatchCount}
+          activeMatchIndex={activeSearchIndex}
+          searching={searchSearching}
+          onOpenChange={onSearchOpenChange}
+          onQueryChange={onSearchQueryChange}
+          onPrev={onSearchPrev}
+          onNext={onSearchNext}
+        />
+
+        {!searchOpen && (
+          <>
         {/* View mode toggle */}
         <div className="hidden items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-600 dark:bg-slate-800 sm:flex">
           <Button
@@ -151,6 +186,8 @@ export function ViewerToolbar({
             <Bookmark className="h-4 w-4" />
           </Button>
         </div>
+          </>
+        )}
       </div>
     </header>
   )

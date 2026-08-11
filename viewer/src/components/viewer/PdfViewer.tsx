@@ -3,7 +3,8 @@ import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { Loader2 } from 'lucide-react'
 import type { Annotation, ContentPolicyResponse } from '../../types'
 import { Skeleton } from '../ui/Skeleton'
-import { PdfPage } from './PdfPage'
+import { PdfPage, type SearchHighlight } from './PdfPage'
+import type { PdfSearchMatch } from '../../hooks/usePdfTextSearch'
 import { usePdfDocument } from '../../hooks/usePdfDocument'
 
 export type ViewMode = 'single' | 'spread'
@@ -24,9 +25,12 @@ interface PdfViewerProps {
   zoom: number
   viewMode: ViewMode
   annotations: Annotation[]
+  searchMatches?: PdfSearchMatch[]
+  activeSearchIndex?: number
   watermark?: string | null
   policy?: ContentPolicyResponse | null
   onPageCount: (count: number) => void
+  onPageJump?: (page: number) => void
   onSelection?: (selection: TextSelection) => void
   onClearSelection?: () => void
 }
@@ -40,9 +44,12 @@ export function PdfViewer({
   zoom,
   viewMode,
   annotations,
+  searchMatches = [],
+  activeSearchIndex = -1,
   watermark,
   policy,
   onPageCount,
+  onPageJump,
   onSelection,
   onClearSelection,
 }: PdfViewerProps) {
@@ -70,6 +77,19 @@ export function PdfViewer({
       onSelection?.(selection)
     },
     [onSelection]
+  )
+
+  const highlightsForPage = useCallback(
+    (pageNumber: number): SearchHighlight[] =>
+      searchMatches
+        .filter((match) => match.page === pageNumber)
+        .flatMap((match) =>
+          match.rects.map((rect) => ({
+            rect,
+            active: match.matchIndex === activeSearchIndex,
+          }))
+        ),
+    [searchMatches, activeSearchIndex]
   )
 
   if (loading) {
@@ -106,8 +126,10 @@ export function PdfViewer({
             pageNumber={page}
             zoom={zoom}
             annotations={annotations}
+            searchHighlights={highlightsForPage(page)}
             watermark={watermark}
             onSelection={handleSelection}
+            onInternalLink={onPageJump}
             className="rounded-l-2xl"
           />
           {rightPage && (
@@ -116,8 +138,10 @@ export function PdfViewer({
               pageNumber={rightPage}
               zoom={zoom}
               annotations={annotations}
+              searchHighlights={highlightsForPage(rightPage)}
               watermark={watermark}
               onSelection={handleSelection}
+              onInternalLink={onPageJump}
               className="rounded-r-2xl"
             />
           )}
@@ -139,8 +163,10 @@ export function PdfViewer({
           pageNumber={page}
           zoom={zoom}
           annotations={annotations}
+          searchHighlights={highlightsForPage(page)}
           watermark={watermark}
           onSelection={handleSelection}
+          onInternalLink={onPageJump}
         />
       </div>
     </div>

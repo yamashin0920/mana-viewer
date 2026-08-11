@@ -67,11 +67,42 @@ test.describe('PDF ビューア', () => {
     await waitForPdfRender(page)
   })
 
+  test('PDF内テキスト検索ができる', async ({ page }) => {
+    await page.getByTestId('search-toggle').click()
+    await expect(page.getByTestId('search-bar')).toBeVisible()
+
+    await page.getByTestId('search-input').fill('Trace')
+    await expect(page.getByTestId('search-status')).toContainText(/\d+ \/ \d+/, { timeout: 15_000 })
+    await expect(page.getByTestId('search-highlight-active').first()).toBeVisible()
+
+    await page.getByTestId('search-next').click()
+    await expect(page.getByTestId('search-status')).toContainText(/2 \/ \d+/)
+  })
+
+  test('目次の外部リンクが表示される', async ({ page, context }) => {
+    await expect(page.getByTestId('desktop-sidebar')).toBeVisible()
+    await page.getByTestId('sidebar-tab-toc').click()
+
+    const externalLink = page.getByTestId('toc-external-link')
+    await expect(externalLink).toBeVisible()
+    await expect(externalLink).toHaveAttribute('href', 'https://example.com/math-reference')
+
+    const popupPromise = context.waitForEvent('page')
+    await externalLink.click()
+    const popup = await popupPromise
+    await expect(popup).toHaveURL('https://example.com/math-reference')
+    await popup.close()
+  })
+
+  test('PDF内リンクレイヤーが表示される', async ({ page }) => {
+    await expect(page.getByTestId('pdf-link-layer')).toBeVisible()
+  })
+
   test('目次からページジャンプできる', async ({ page }) => {
     await expect(page.getByTestId('desktop-sidebar')).toBeVisible()
     await page.getByTestId('sidebar-tab-toc').click()
 
-    const tocItem = page.getByRole('button', { name: /第1章 数と式/ })
+    const tocItem = page.getByTestId('toc-page-link').filter({ hasText: '第1章 数と式' })
     if (await tocItem.isVisible()) {
       await tocItem.click()
       await waitForPdfRender(page)

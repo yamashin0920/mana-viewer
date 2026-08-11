@@ -1,16 +1,24 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { TextLayer } from 'pdfjs-dist'
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist'
-import type { Annotation } from '../../types'
+import type { Annotation, AnnotationRect } from '../../types'
 import type { TextSelection } from './PdfViewer'
+import { PdfLinkLayer } from './PdfLinkLayer'
+
+export interface SearchHighlight {
+  rect: AnnotationRect
+  active: boolean
+}
 
 interface PdfPageProps {
   pdfDoc: PDFDocumentProxy
   pageNumber: number
   zoom: number
   annotations: Annotation[]
+  searchHighlights?: SearchHighlight[]
   watermark?: string | null
   onSelection?: (selection: TextSelection) => void
+  onInternalLink?: (page: number) => void
   onRender?: (width: number, height: number) => void
   className?: string
 }
@@ -20,8 +28,10 @@ export function PdfPage({
   pageNumber,
   zoom,
   annotations,
+  searchHighlights = [],
   watermark,
   onSelection,
+  onInternalLink,
   onRender,
   className = '',
 }: PdfPageProps) {
@@ -108,7 +118,30 @@ export function PdfPage({
     >
       <canvas ref={canvasRef} className="block bg-white dark:bg-slate-900" data-testid="pdf-canvas" />
       <div ref={textLayerRef} className="pdf-text-layer absolute inset-0 select-text" />
+      {onInternalLink && (
+        <PdfLinkLayer
+          pdfDoc={pdfDoc}
+          pageNumber={pageNumber}
+          zoom={zoom}
+          onInternalLink={onInternalLink}
+        />
+      )}
       <div className="pointer-events-none absolute inset-0">
+        {searchHighlights.map((highlight, idx) => (
+          <div
+            key={`search-${idx}`}
+            data-testid={highlight.active ? 'search-highlight-active' : 'search-highlight'}
+            className={`absolute rounded-sm ${
+              highlight.active ? 'bg-amber-400/70 ring-1 ring-amber-500' : 'bg-amber-300/45'
+            }`}
+            style={{
+              left: highlight.rect.x,
+              top: highlight.rect.y,
+              width: highlight.rect.width,
+              height: highlight.rect.height,
+            }}
+          />
+        ))}
         {pageAnnotations.map((ann) =>
           ann.rects?.map((rect, idx) => (
             <div

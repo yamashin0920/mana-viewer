@@ -69,6 +69,9 @@ B2B 向け PDF 学習プラットフォーム **manabu-kun** の要件と、現�
 | ページ番号直接入力 | ✅ | ツールバー | `viewer.spec.ts` |
 | ズーム | ✅ | +/- ボタン | `viewer.spec.ts` |
 | 見開き（2 ページ）表示 | ✅ | single / spread 切替 | `viewer.spec.ts` |
+| サムネイル一覧 | ✅ | サイドバー 2 列グリッド、クリックでジャンプ | `viewer.spec.ts` |
+| PDF 内テキスト検索 | ✅ | ツールバー検索、ハイライト、前後ナビ | `viewer.spec.ts` |
+| リンク（目次内・PDF内） | ✅ | 目次の外部 URL / ページジャンプ、PDF Link アノテーション | `viewer.spec.ts` |
 | 閲覧セッション | ✅ | `createViewSession`、sessionToken 保持 | `mock-api.spec.ts` |
 | 暗号化チャンク取得・復号 | 🔶 | Mock API エンドポイントあり。ビューアはデモ PDF 固定 | — |
 | 読書進捗の自動保存 | ✅ | ページ・ズーム・表示モードを API 保存 | `mock-api.spec.ts` |
