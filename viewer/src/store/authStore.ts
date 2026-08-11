@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { setAccessToken } from '../api/client'
-import { fetchMe, login } from '../api/auth'
+import { fetchMe, loginWithCredentials } from '../api/auth'
 import type { User } from '../types'
 
 interface AuthState {
@@ -10,11 +10,9 @@ interface AuthState {
   error: string | null
   init: () => Promise<void>
   signInWithToken: (token: string) => Promise<void>
-  signInWithEmail: (email: string) => Promise<void>
+  signInWithCredentials: (userId: string, password: string) => Promise<void>
   signOut: () => void
 }
-
-const DEFAULT_TOKEN = 'mock-token-learner'
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
@@ -23,25 +21,19 @@ export const useAuthStore = create<AuthState>((set) => ({
   error: null,
 
   init: async () => {
-    let token = localStorage.getItem('accessToken')
+    const token = localStorage.getItem('accessToken')
     if (!token) {
-      token = DEFAULT_TOKEN
-      setAccessToken(token)
+      set({ user: null, token: null, loading: false, error: null })
+      return
     }
+
+    setAccessToken(token)
     try {
       const user = await fetchMe()
       set({ user, token, loading: false, error: null })
     } catch {
-      setAccessToken(DEFAULT_TOKEN)
-      try {
-        const user = await fetchMe()
-        set({ user, token: DEFAULT_TOKEN, loading: false, error: null })
-      } catch (err) {
-        set({
-          loading: false,
-          error: err instanceof Error ? err.message : '認証に失敗しました',
-        })
-      }
+      localStorage.removeItem('accessToken')
+      set({ user: null, token: null, loading: false, error: null })
     }
   },
 
@@ -50,9 +42,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ loading: true, error: null })
     try {
       const user = await fetchMe()
-      set({ user, token, loading: false })
+      set({ user, token, loading: false, error: null })
     } catch (err) {
+      localStorage.removeItem('accessToken')
       set({
+        user: null,
+        token: null,
         loading: false,
         error: err instanceof Error ? err.message : '認証に失敗しました',
       })
@@ -60,23 +55,27 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  signInWithEmail: async (email: string) => {
-    set({ loading: true, error: null })
+  signInWithCredentials: async (userId: string, password: string) => {
+    if (!userId.trim() || !password.trim()) {
+      const message = 'ID とパスワードを入力してください'
+      set({ error: message })
+      throw new Error(message)
+    }
+
+    set({ error: null })
     try {
-      const res = await login(email)
+      const res = await loginWithCredentials(userId.trim(), password)
       setAccessToken(res.accessToken)
-      set({ user: res.user, token: res.accessToken, loading: false })
+      set({ user: res.user, token: res.accessToken, error: null })
     } catch (err) {
-      set({
-        loading: false,
-        error: err instanceof Error ? err.message : 'ログインに失敗しました',
-      })
-      throw err
+      const message = err instanceof Error ? err.message : 'ログインに失敗しました'
+      set({ error: message })
+      throw new Error(message)
     }
   },
 
   signOut: () => {
     localStorage.removeItem('accessToken')
-    set({ user: null, token: null })
+    set({ user: null, token: null, error: null })
   },
 }))

@@ -31,7 +31,9 @@ B2B 向け PDF 学習プラットフォーム **manabu-kun** の要件と、現�
 |------|------|----------|--------|
 | Bearer トークン認証 | ✅ | `Authorization` ヘッダー、Zustand + localStorage | `mock-api.spec.ts` |
 | プロフィール取得 (`/users/me`) | ✅ | ヘッダーにユーザー名・ロール表示 | `bookshelf.spec.ts` |
-| メールログイン (`/auth/login`) | 🔶 | API のみ。UI ログイン画面なし（開発用トークン切替） | — |
+| ログイン画面（ID / PW） | ✅ | 任意の非空 ID・PW で本棚へ | `login.spec.ts` |
+| ルート保護 | ✅ | 未ログイン時 `/login` へリダイレクト | `login.spec.ts` |
+| ログアウト | ✅ | ヘッダーからログイン画面へ | `login.spec.ts` |
 | LTI 起動 (`/auth/lti/launch`) | 🔶 | Mock API のみ。ビューア側未対応 | — |
 
 ---
@@ -153,7 +155,7 @@ B2B 向け PDF 学習プラットフォーム **manabu-kun** の要件と、現�
 | 要件 | 状態 | 実装内容 |
 |------|------|----------|
 | Mock API | ✅ | Express、seed データ、全主要エンドポイント |
-| Playwright E2E | ✅ | 50 テスト（chromium + mobile-chrome） |
+| Playwright E2E | ✅ | 54 テスト（chromium + mobile-chrome） |
 | 機能追加時のテスト必須 | ✅ | `.cursor/rules/playwright-tests.mdc` |
 
 ---
