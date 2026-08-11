@@ -1,0 +1,32 @@
+services:
+  mock-api:
+    build:
+      context: ./mock-api
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: "3001"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  viewer:
+    build:
+      context: ./viewer
+      args:
+        VITE_API_BASE_URL: /api
+        VITE_USE_DEMO_PDF: "true"
+    ports:
+      - "8080:80"
+    depends_on:
+      mock-api:
+        condition: service_healthy

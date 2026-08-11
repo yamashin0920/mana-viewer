@@ -92,8 +92,8 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'not_found', message: 'エンドポイントが見つかりません' });
 });
 
-app.listen(PORT, () => {
-  console.log(`manabu-kun Mock API running at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`manabu-kun Mock API running at http://0.0.0.0:${PORT}`);
   console.log('開発用トークン: mock-token-learner | mock-token-instructor | mock-token-admin');
 });
 

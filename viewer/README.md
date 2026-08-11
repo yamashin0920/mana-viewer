@@ -13,6 +13,15 @@ manabu-kun PDF ビューア（React + Vite + TypeScript + PDF.js）
 
 ## 起動
 
+### Docker（推奨: ルートから一括起動）
+
+```bash
+docker compose up --build
+# → http://localhost:8080 （nginx 経由で /api を mock-api にプロキシ）
+```
+
+### ローカル開発
+
 **1. Mock API（別ターミナル）**
 
 ```bash

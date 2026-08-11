@@ -4,6 +4,16 @@ PDF ビューア開発用のモック API サーバーです。B2B・オフラ�
 
 ## 起動
 
+### Docker（推奨: ルートから一括起動）
+
+```bash
+docker compose up --build
+# Viewer → http://localhost:8080
+# Mock API → http://localhost:3001
+```
+
+### ローカル
+
 ```bash
 cd mock-api
 npm install

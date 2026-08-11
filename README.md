@@ -2,6 +2,25 @@
 
 B2B 向け PDF 学習プラットフォーム。
 
+## Docker で起動
+
+mock-api と viewer をコンテナでまとめて起動できます。
+
+```bash
+docker compose up --build
+```
+
+| サービス | URL |
+|----------|-----|
+| Viewer | http://localhost:8080 |
+| Mock API | http://localhost:3001 |
+
+停止:
+
+```bash
+docker compose down
+```
+
 ## 要件と実装状況
 
 [docs/requirements.md](docs/requirements.md) — 学習用ビューアの要件一覧と現状の実装マトリクス
@@ -10,7 +29,9 @@ B2B 向け PDF 学習プラットフォーム。
 
 - **機能を実装したら Playwright テストを追加する** — [.cursor/rules/playwright-tests.mdc](.cursor/rules/playwright-tests.mdc)
 
-## Mock API
+## ローカル開発
+
+### Mock API
 
 ビューア開発用のモック API は [`mock-api/`](mock-api/README.md) にあります。
 
@@ -19,7 +40,7 @@ cd mock-api && npm install && npm start
 # → http://localhost:3001
 ```
 
-## Viewer（React + PDF.js）
+### Viewer（React + PDF.js）
 
 PDF ビューアアプリは [`viewer/`](viewer/README.md) にあります。
 
