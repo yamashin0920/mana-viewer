@@ -161,7 +161,7 @@
       "seatCount": 200,
       "assignedUserIds": ["user-001", "user-002"],
       "startsAt": "2025-04-01T00:00:00Z",
-      "expiresAt": "2026-03-31T23:59:59Z",
+      "expiresAt": "2027-03-31T23:59:59Z",
       "allowOffline": true,
       "status": "active"
     },
@@ -172,7 +172,7 @@
       "seatCount": 200,
       "assignedUserIds": ["user-001"],
       "startsAt": "2025-04-01T00:00:00Z",
-      "expiresAt": "2026-03-31T23:59:59Z",
+      "expiresAt": "2027-03-31T23:59:59Z",
       "allowOffline": true,
       "status": "active"
     },
@@ -183,7 +183,7 @@
       "seatCount": 50,
       "assignedUserIds": ["user-001"],
       "startsAt": "2025-04-01T00:00:00Z",
-      "expiresAt": "2026-03-31T23:59:59Z",
+      "expiresAt": "2027-03-31T23:59:59Z",
       "allowOffline": true,
       "status": "active"
     }

@@ -10,3 +10,16 @@ B2B 向け PDF 学習プラットフォーム。
 cd mock-api && npm install && npm start
 # → http://localhost:3001
 ```
+
+## Viewer（React + PDF.js）
+
+PDF ビューアアプリは [`viewer/`](viewer/README.md) にあります。
+
+```bash
+# 1. mock-api を起動
+cd mock-api && npm start
+
+# 2. 別ターミナルで viewer を起動
+cd viewer && npm install && npm run dev
+# → http://localhost:5173
+```
