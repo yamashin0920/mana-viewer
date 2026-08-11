@@ -1,11 +1,17 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
+import { redirectToLogin } from '../../utils/authRedirect'
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+export function AuthGuard({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user)
   const loading = useAuthStore((s) => s.loading)
-  const location = useLocation()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      redirectToLogin()
+    }
+  }, [loading, user])
 
   if (loading) {
     return (
@@ -16,7 +22,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+        認証サービスへ移動中...
+      </div>
+    )
   }
 
   return children

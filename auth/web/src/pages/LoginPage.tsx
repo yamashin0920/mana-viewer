@@ -1,26 +1,18 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { BookOpen, Loader2 } from 'lucide-react'
-import { useAuthStore } from '../store/authStore'
-import { Button } from '../components/ui/Button'
-import { ThemeToggle } from '../components/ui/ThemeToggle'
+import { buildViewerRedirectUrl, loginWithCredentials, VIEWER_URL } from '../api/client'
+import { Button } from '../components/Button'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 export function LoginPage() {
-  const navigate = useNavigate()
-  const user = useAuthStore((s) => s.user)
-  const loading = useAuthStore((s) => s.loading)
-  const signInWithCredentials = useAuthStore((s) => s.signInWithCredentials)
+  const [searchParams] = useSearchParams()
+  const redirect = searchParams.get('redirect')
 
   const [userId, setUserId] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (user && !loading) {
-      navigate('/', { replace: true })
-    }
-  }, [user, loading, navigate])
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -33,28 +25,16 @@ export function LoginPage() {
 
     setSubmitting(true)
     try {
-      await signInWithCredentials(userId, password)
-      navigate('/', { replace: true })
+      const res = await loginWithCredentials(userId, password)
+      window.location.href = buildViewerRedirectUrl(VIEWER_URL, res.accessToken, redirect)
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'ログインに失敗しました')
-    } finally {
       setSubmitting(false)
     }
   }
 
-  if (loading && !user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 text-slate-500 dark:bg-slate-950 dark:text-slate-400">
-        <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
-      </div>
-    )
-  }
-
   return (
-    <div
-      className="flex min-h-screen flex-col bg-slate-100 dark:bg-slate-950"
-      data-testid="login-page"
-    >
+    <div className="flex min-h-screen flex-col bg-slate-100 dark:bg-slate-950" data-testid="login-page">
       <div className="flex justify-end p-4">
         <ThemeToggle />
       </div>
@@ -66,12 +46,13 @@ export function LoginPage() {
               <BookOpen className="h-7 w-7" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">manabu-kun</h1>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">教材ビューアにログイン</p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">認証サービス — ログイン</p>
           </div>
 
           <form
             onSubmit={handleSubmit}
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[var(--shadow-card)] dark:border-slate-700 dark:bg-slate-900"
+            className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900"
+            style={{ boxShadow: 'var(--shadow-card)' }}
           >
             <div className="space-y-4">
               <div>
@@ -86,7 +67,7 @@ export function LoginPage() {
                   onChange={(e) => setUserId(e.target.value)}
                   autoComplete="username"
                   placeholder="任意の ID"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-900"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                 />
               </div>
 
@@ -102,7 +83,7 @@ export function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
                   placeholder="任意のパスワード"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-900"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                 />
               </div>
 
@@ -125,7 +106,7 @@ export function LoginPage() {
                     ログイン中...
                   </>
                 ) : (
-                  'ログイン'
+                  'ログインしてビューアへ'
                 )}
               </Button>
             </div>
