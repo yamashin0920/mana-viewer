@@ -2,6 +2,8 @@ import { useEffect, useCallback } from 'react'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { Loader2 } from 'lucide-react'
 import type { Annotation, ContentPolicyResponse } from '../../types'
+import type { AnnotationTool } from '../../types/annotationTools'
+import type { DrawingPoint } from '../../utils/drawingPath'
 import { Skeleton } from '../ui/Skeleton'
 import { PdfPage, type SearchHighlight } from './PdfPage'
 import type { PdfSearchMatch } from '../../hooks/usePdfTextSearch'
@@ -27,10 +29,14 @@ interface PdfViewerProps {
   annotations: Annotation[]
   searchMatches?: PdfSearchMatch[]
   activeSearchIndex?: number
+  annotationTool?: AnnotationTool
+  penColor?: string
   watermark?: string | null
   policy?: ContentPolicyResponse | null
   onPageCount: (count: number) => void
   onPageJump?: (page: number) => void
+  onDrawingComplete?: (points: DrawingPoint[]) => void
+  onStickyPlace?: (position: { x: number; y: number }) => void
   onSelection?: (selection: TextSelection) => void
   onClearSelection?: () => void
 }
@@ -46,10 +52,14 @@ export function PdfViewer({
   annotations,
   searchMatches = [],
   activeSearchIndex = -1,
+  annotationTool = 'select',
+  penColor = '#E53935',
   watermark,
   policy,
   onPageCount,
   onPageJump,
+  onDrawingComplete,
+  onStickyPlace,
   onSelection,
   onClearSelection,
 }: PdfViewerProps) {
@@ -127,9 +137,13 @@ export function PdfViewer({
             zoom={zoom}
             annotations={annotations}
             searchHighlights={highlightsForPage(page)}
+            annotationTool={annotationTool}
+            penColor={penColor}
             watermark={watermark}
             onSelection={handleSelection}
             onInternalLink={onPageJump}
+            onDrawingComplete={onDrawingComplete}
+            onStickyPlace={onStickyPlace}
             className="rounded-l-2xl"
           />
           {rightPage && (
@@ -139,9 +153,13 @@ export function PdfViewer({
               zoom={zoom}
               annotations={annotations}
               searchHighlights={highlightsForPage(rightPage)}
+              annotationTool={annotationTool}
+              penColor={penColor}
               watermark={watermark}
               onSelection={handleSelection}
               onInternalLink={onPageJump}
+              onDrawingComplete={onDrawingComplete}
+              onStickyPlace={onStickyPlace}
               className="rounded-r-2xl"
             />
           )}
@@ -164,9 +182,13 @@ export function PdfViewer({
           zoom={zoom}
           annotations={annotations}
           searchHighlights={highlightsForPage(page)}
+          annotationTool={annotationTool}
+          penColor={penColor}
           watermark={watermark}
           onSelection={handleSelection}
           onInternalLink={onPageJump}
+          onDrawingComplete={onDrawingComplete}
+          onStickyPlace={onStickyPlace}
         />
       </div>
     </div>

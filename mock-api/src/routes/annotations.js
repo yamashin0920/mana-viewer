@@ -21,7 +21,7 @@ router.post('/:contentId/annotations', authMiddleware, (req, res) => {
   }
 
   const { type, page, color, rects, selectedText, note } = req.body || {};
-  const validTypes = ['highlight', 'bookmark', 'note', 'underline'];
+  const validTypes = ['highlight', 'bookmark', 'note', 'underline', 'drawing', 'sticky'];
   if (!validTypes.includes(type)) {
     return res.status(400).json({ error: 'invalid_type', message: `type は ${validTypes.join(', ')} のいずれか` });
   }

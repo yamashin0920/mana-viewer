@@ -42,6 +42,48 @@ test.describe('注釈機能', () => {
     await expect(page.getByTestId('desktop-sidebar').getByText('Playwright テストメモ')).toBeVisible()
   })
 
+  test('ペン描画を追加できる', async ({ page }) => {
+    await page.getByTestId('annotation-tool-pen').click()
+    await expect(page.getByTestId('drawing-layer')).toBeVisible()
+
+    const canvas = page.locator('[data-testid="pdf-canvas"]').first()
+    const box = await canvas.boundingBox()
+    if (!box) {
+      test.skip(true, 'PDF canvas not rendered')
+      return
+    }
+
+    await page.mouse.move(box.x + 80, box.y + 80)
+    await page.mouse.down()
+    await page.mouse.move(box.x + 180, box.y + 120)
+    await page.mouse.move(box.x + 240, box.y + 100)
+    await page.mouse.up()
+
+    await expect(page.getByText('描画を追加しました')).toBeVisible()
+    await page.getByTestId('desktop-sidebar').getByTestId('sidebar-tab-annotations').click()
+    await expect(page.getByTestId('desktop-sidebar').getByText(/p\.\d+ · 描画/)).toBeVisible()
+  })
+
+  test('付箋を追加できる', async ({ page }) => {
+    await page.getByTestId('annotation-tool-sticky').click()
+
+    const canvas = page.locator('[data-testid="pdf-canvas"]').first()
+    const box = await canvas.boundingBox()
+    if (!box) {
+      test.skip(true, 'PDF canvas not rendered')
+      return
+    }
+
+    await page.mouse.click(box.x + 120, box.y + 120)
+    await expect(page.getByTestId('sticky-note-input')).toBeVisible()
+    await page.getByTestId('sticky-note-input').fill('Playwright 付箋テスト')
+    await page.getByRole('button', { name: '保存', exact: true }).click()
+
+    await expect(page.getByText('付箋を追加しました')).toBeVisible()
+    await expect(page.getByTestId('sticky-note').first()).toBeVisible()
+    await expect(page.getByTestId('sticky-note').first()).toContainText('Playwright 付箋テスト')
+  })
+
   test('注釈を削除できる', async ({ page }) => {
     await page.getByRole('banner').getByRole('button', { name: 'ブックマーク' }).click()
     await expect(page.getByText('ブックマークを追加しました')).toBeVisible()

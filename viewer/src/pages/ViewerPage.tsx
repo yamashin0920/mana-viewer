@@ -22,6 +22,7 @@ import { ViewerSidebar, MobileSidebarDrawer } from '../components/viewer/ViewerS
 import { SelectionToolbar } from '../components/viewer/SelectionToolbar'
 import { NoteDialog } from '../components/viewer/NoteDialog'
 import { EditAnnotationDialog } from '../components/viewer/EditAnnotationDialog'
+import { StickyNoteDialog } from '../components/viewer/StickyNoteDialog'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
 import { toast } from '../components/ui/Toast'
@@ -34,7 +35,10 @@ import {
 import { usePdfDocument } from '../hooks/usePdfDocument'
 import { usePdfTextSearch } from '../hooks/usePdfTextSearch'
 import { usePdfOutline } from '../hooks/usePdfOutline'
+import { DEFAULT_PEN_COLOR } from '../constants/penColors'
 import type { Annotation } from '../types'
+import type { AnnotationTool } from '../types/annotationTools'
+import { getDrawingBoundingBox, serializeDrawingPath, type DrawingPoint } from '../utils/drawingPath'
 
 const USE_DEMO_PDF = import.meta.env.VITE_USE_DEMO_PDF !== 'false'
 
@@ -61,6 +65,13 @@ export function ViewerPage() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeSearchIndex, setActiveSearchIndex] = useState(-1)
+  const [annotationTool, setAnnotationTool] = useState<AnnotationTool>('select')
+  const [penColor, setPenColor] = useState<string>(DEFAULT_PEN_COLOR)
+  const [stickyDialogOpen, setStickyDialogOpen] = useState(false)
+  const [stickyText, setStickyText] = useState('')
+  const [stickyPosition, setStickyPosition] = useState<{ page: number; x: number; y: number } | null>(
+    null
+  )
 
   const totalPages = pageCount
 
@@ -162,7 +173,14 @@ export function ViewerPage() {
       setPendingSelection(null)
       setNoteDialogOpen(false)
       setNoteText('')
-      const labels = { highlight: 'ハイライト', bookmark: 'ブックマーク', note: 'メモ', underline: '下線' }
+      const labels = {
+        highlight: 'ハイライト',
+        bookmark: 'ブックマーク',
+        note: 'メモ',
+        underline: '下線',
+        drawing: '描画',
+        sticky: '付箋',
+      }
       toast(`${labels[variables.type]}を追加しました`)
     },
     onError: () => toast('注釈の保存に失敗しました', 'error'),
@@ -285,10 +303,51 @@ export function ViewerPage() {
       id: editingAnnotation.id,
       payload: {
         note: editNote.trim() || null,
-        color: editingAnnotation.type === 'highlight' ? editColor : editingAnnotation.color,
+        color:
+          editingAnnotation.type === 'highlight' || editingAnnotation.type === 'drawing'
+            ? editColor
+            : editingAnnotation.color,
       },
     })
   }, [updateAnnotationMutation, editingAnnotation, editNote, editColor])
+
+  const handleDrawingComplete = useCallback(
+    (points: DrawingPoint[]) => {
+      if (points.length < 2) return
+      addAnnotationMutation.mutate({
+        type: 'drawing',
+        page,
+        color: penColor,
+        rects: [getDrawingBoundingBox(points)],
+        note: serializeDrawingPath(points),
+      })
+    },
+    [addAnnotationMutation, page, penColor]
+  )
+
+  const handleStickyPlace = useCallback(
+    (position: { x: number; y: number }) => {
+      setStickyPosition({ page, ...position })
+      setStickyText('')
+      setStickyDialogOpen(true)
+    },
+    [page]
+  )
+
+  const handleSaveSticky = useCallback(() => {
+    if (!stickyPosition || !stickyText.trim()) return
+    addAnnotationMutation.mutate({
+      type: 'sticky',
+      page: stickyPosition.page,
+      color: '#FFEB3B',
+      rects: [{ x: stickyPosition.x, y: stickyPosition.y, width: 112, height: 96 }],
+      note: stickyText.trim(),
+    })
+    setStickyDialogOpen(false)
+    setStickyPosition(null)
+    setStickyText('')
+    setAnnotationTool('select')
+  }, [addAnnotationMutation, stickyPosition, stickyText])
 
   const pdfUrl = useMemo(() => {
     if (USE_DEMO_PDF) return getDemoPdfUrl(contentId)
@@ -425,6 +484,10 @@ export function ViewerPage() {
         onSearchQueryChange={setSearchQuery}
         onSearchPrev={handleSearchPrev}
         onSearchNext={handleSearchNext}
+        annotationTool={annotationTool}
+        penColor={penColor}
+        onAnnotationToolChange={setAnnotationTool}
+        onPenColorChange={setPenColor}
         onPageChange={setPage}
         onZoomChange={setZoom}
         onViewModeChange={handleViewModeChange}
@@ -467,10 +530,14 @@ export function ViewerPage() {
                 annotations={annotations}
                 searchMatches={searchMatches}
                 activeSearchIndex={activeSearchIndex}
+                annotationTool={annotationTool}
+                penColor={penColor}
                 watermark={policy?.watermark}
                 policy={policy ?? null}
                 onPageCount={handlePageCount}
                 onPageJump={setPage}
+                onDrawingComplete={handleDrawingComplete}
+                onStickyPlace={handleStickyPlace}
                 onSelection={handleSelection}
                 onClearSelection={handleClearSelection}
               />
@@ -545,6 +612,19 @@ export function ViewerPage() {
         onClose={() => setEditingAnnotation(null)}
         onSave={handleSaveEdit}
         saving={updateAnnotationMutation.isPending}
+      />
+
+      <StickyNoteDialog
+        open={stickyDialogOpen}
+        note={stickyText}
+        onNoteChange={setStickyText}
+        onClose={() => {
+          setStickyDialogOpen(false)
+          setStickyPosition(null)
+          setStickyText('')
+        }}
+        onSave={handleSaveSticky}
+        saving={addAnnotationMutation.isPending}
       />
     </div>
   )
