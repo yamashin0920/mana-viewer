@@ -27,8 +27,8 @@ export function TocSidebar({ toc, currentPage, onJump }: TocSidebarProps) {
               onClick={() => onJump(entry.page)}
               className={`group flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition ${
                 isActive
-                  ? 'bg-brand-50 font-medium text-brand-700'
-                  : 'text-slate-700 hover:bg-slate-50'
+                  ? 'bg-brand-50 font-medium text-brand-700 dark:bg-brand-950/40 dark:text-brand-300'
+                  : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800'
               }`}
               style={{ paddingLeft: `${(entry.level - 1) * 14 + 12}px` }}
             >

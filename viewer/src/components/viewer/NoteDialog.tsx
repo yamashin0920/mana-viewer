@@ -37,7 +37,7 @@ export function NoteDialog({
       }
     >
       {selectedText && (
-        <blockquote className="mb-4 rounded-xl border-l-4 border-brand-400 bg-brand-50 px-4 py-3 text-sm text-slate-700">
+        <blockquote className="mb-4 rounded-xl border-l-4 border-brand-400 bg-brand-50 px-4 py-3 text-sm text-slate-700 dark:bg-brand-950/30 dark:text-slate-300">
           {selectedText}
         </blockquote>
       )}
@@ -46,7 +46,7 @@ export function NoteDialog({
         onChange={(e) => onNoteChange(e.target.value)}
         placeholder="メモを入力..."
         rows={4}
-        className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+        className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-900"
         autoFocus
       />
     </Modal>

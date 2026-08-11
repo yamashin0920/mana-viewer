@@ -26,7 +26,7 @@ export function SelectionToolbar({
       className="animate-fade-in fixed z-50 -translate-x-1/2 -translate-y-full"
       style={{ left: position.x, top: position.y - 8 }}
     >
-      <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-[var(--shadow-float)]">
+      <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-[var(--shadow-float)] dark:border-slate-600 dark:bg-slate-800">
         <div className="flex items-center gap-1">
           {HIGHLIGHT_COLORS.map((c) => (
             <button

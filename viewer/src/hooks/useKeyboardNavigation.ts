@@ -29,3 +29,18 @@ export function useKeyboardNavigation(options: {
     return () => window.removeEventListener('keydown', handler)
   }, [enabled, onPrev, onNext])
 }
+
+export function spreadPageStep(page: number, direction: 'prev' | 'next', pageCount: number): number {
+  if (direction === 'prev') {
+    if (page <= 1) return 1
+    return Math.max(1, page - 2)
+  }
+  if (page + 2 <= pageCount) return page + 2
+  if (page + 1 <= pageCount) return page + 1
+  return page
+}
+
+export function singlePageStep(page: number, direction: 'prev' | 'next', pageCount: number): number {
+  if (direction === 'prev') return Math.max(1, page - 1)
+  return Math.min(pageCount, page + 1)
+}

@@ -13,6 +13,7 @@ interface ViewerSidebarProps {
   annotations: Annotation[]
   currentPage: number
   onJump: (page: number) => void
+  onEditAnnotation: (annotation: Annotation) => void
   onDeleteAnnotation: (id: string) => void
   onClose?: () => void
   isMobile?: boolean
@@ -25,6 +26,7 @@ export function ViewerSidebar({
   annotations,
   currentPage,
   onJump,
+  onEditAnnotation,
   onDeleteAnnotation,
   onClose,
   isMobile,
@@ -35,22 +37,26 @@ export function ViewerSidebar({
   ]
 
   return (
-    <div className={`flex h-full flex-col bg-white ${isMobile ? '' : 'border-r border-slate-200'}`}>
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-        <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
+    <div className={`flex h-full flex-col bg-white dark:bg-slate-900 ${isMobile ? '' : 'border-r border-slate-200 dark:border-slate-700'}`}>
+      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-700">
+        <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
           {tabs.map((t) => (
             <button
               key={t.id}
               type="button"
               onClick={() => onTabChange(t.id)}
               className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-                tab === t.id ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                tab === t.id
+                  ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-300'
+                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >
               {t.icon}
               {t.label}
               {t.count !== undefined && t.count > 0 && (
-                <span className="rounded-full bg-brand-100 px-1.5 text-xs text-brand-700">{t.count}</span>
+                <span className="rounded-full bg-brand-100 px-1.5 text-xs text-brand-700 dark:bg-brand-900 dark:text-brand-300">
+                  {t.count}
+                </span>
               )}
             </button>
           ))}
@@ -69,12 +75,13 @@ export function ViewerSidebar({
           <AnnotationSidebar
             annotations={annotations}
             onJump={onJump}
+            onEdit={onEditAnnotation}
             onDelete={onDeleteAnnotation}
           />
         )}
       </div>
 
-      <div className="border-t border-slate-100 px-4 py-3">
+      <div className="border-t border-slate-100 px-4 py-3 dark:border-slate-700">
         <p className="flex items-center gap-1.5 text-xs text-slate-400">
           <Bookmark className="h-3 w-3" />
           テキストを選択してハイライト · ← → でページ移動
@@ -103,7 +110,7 @@ export function MobileSidebarDrawer({
         onClick={onClose}
         aria-label="閉じる"
       />
-      <div className="animate-slide-up absolute bottom-0 left-0 right-0 top-16 rounded-t-2xl bg-white shadow-[var(--shadow-float)]">
+      <div className="animate-slide-up absolute bottom-0 left-0 right-0 top-16 rounded-t-2xl bg-white shadow-[var(--shadow-float)] dark:bg-slate-900">
         {children}
       </div>
     </div>

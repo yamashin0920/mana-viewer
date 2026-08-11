@@ -5,8 +5,10 @@ import { fetchBookshelves } from '../api/bookshelves'
 import { fetchContents } from '../api/contents'
 import { AppHeader } from '../components/layout/AppHeader'
 import { ContentCard } from '../components/bookshelf/ContentCard'
+import { RecentlyReadSection } from '../components/bookshelf/RecentlyReadSection'
 import { ContentCardSkeleton } from '../components/ui/Skeleton'
 import { EmptyState } from '../components/ui/EmptyState'
+import type { Content } from '../types'
 
 export function BookshelfPage() {
   const [query, setQuery] = useState('')
@@ -44,13 +46,24 @@ export function BookshelfPage() {
     })
   }, [contents, query, category])
 
+  const recentlyRead = useMemo(() => {
+    if (!contents?.data) return [] as Content[]
+    return [...contents.data]
+      .filter((c) => c.progress?.lastReadAt)
+      .sort((a, b) => {
+        const aTime = a.progress?.lastReadAt ?? ''
+        const bTime = b.progress?.lastReadAt ?? ''
+        return bTime.localeCompare(aTime)
+      })
+      .slice(0, 6)
+  }, [contents])
+
   const inProgress = filtered.filter((c) => (c.progress?.currentPage ?? 0) > 1)
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950">
       <AppHeader />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        {/* Hero */}
         <div className="mb-8 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 p-6 text-white shadow-lg sm:p-8">
           <p className="text-sm font-medium text-indigo-200">{distributed?.name ?? '配布教材'}</p>
           <h2 className="mt-1 text-2xl font-bold sm:text-3xl">本棚</h2>
@@ -71,7 +84,8 @@ export function BookshelfPage() {
           )}
         </div>
 
-        {/* Search & Filter */}
+        {!isLoading && recentlyRead.length > 0 && <RecentlyReadSection items={recentlyRead} />}
+
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -80,7 +94,7 @@ export function BookshelfPage() {
               placeholder="教材名・著者・タグで検索..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-900"
             />
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1">
@@ -92,7 +106,7 @@ export function BookshelfPage() {
                 className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
                   category === cat
                     ? 'bg-brand-600 text-white shadow-sm'
-                    : 'bg-white text-slate-600 hover:bg-slate-50'
+                    : 'bg-white text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
                 }`}
               >
                 {cat === 'all' ? 'すべて' : cat}
@@ -101,7 +115,8 @@ export function BookshelfPage() {
           </div>
         </div>
 
-        {/* Content grid */}
+        <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-slate-100">すべての教材</h3>
+
         {isLoading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (

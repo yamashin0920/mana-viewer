@@ -69,6 +69,21 @@ export async function deleteAnnotation(annotationId: string) {
   return apiFetch<void>(`/annotations/${annotationId}`, { method: 'DELETE' })
 }
 
+export async function updateAnnotation(
+  annotationId: string,
+  payload: {
+    color?: string | null
+    note?: string | null
+    selectedText?: string | null
+    page?: number
+  }
+) {
+  return apiFetch<Annotation>(`/annotations/${annotationId}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  })
+}
+
 export async function syncAnnotations(
   contentId: string,
   payload: {

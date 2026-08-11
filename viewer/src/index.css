@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-brand-50: #eef2ff;
   --color-brand-100: #e0e7ff;
@@ -15,11 +17,21 @@
   --shadow-float: 0 8px 30px rgb(15 23 42 / 0.12);
 }
 
+.dark {
+  color-scheme: dark;
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.2), 0 4px 12px rgb(0 0 0 / 0.15);
+  --shadow-float: 0 8px 30px rgb(0 0 0 / 0.35);
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   background: #f1f5f9;
   -webkit-font-smoothing: antialiased;
+}
+
+.dark body {
+  background: #0f172a;
 }
 
 #root {
@@ -35,6 +47,11 @@ body {
   background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+.dark .skeleton {
+  background: linear-gradient(90deg, #334155 25%, #1e293b 50%, #334155 75%);
+  background-size: 200% 100%;
 }
 
 @keyframes fade-in {
@@ -55,9 +72,9 @@ body {
   animation: slide-up 0.25s ease-out;
 }
 
-/* scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #cbd5e1;
@@ -65,4 +82,10 @@ body {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
