@@ -1,36 +1,72 @@
+import { BookOpen, GraduationCap } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
+import { Badge } from '../ui/Badge'
 
 const DEV_TOKENS = [
-  { token: 'mock-token-learner', label: '学習者' },
-  { token: 'mock-token-instructor', label: '教員' },
-  { token: 'mock-token-admin', label: '管理者' },
+  { token: 'mock-token-learner', label: '学習者', role: 'learner' as const },
+  { token: 'mock-token-instructor', label: '教員', role: 'instructor' as const },
+  { token: 'mock-token-admin', label: '管理者', role: 'org_admin' as const },
 ]
+
+const roleBadge: Record<string, 'indigo' | 'green' | 'amber'> = {
+  learner: 'indigo',
+  instructor: 'green',
+  org_admin: 'amber',
+}
+
+const roleLabel: Record<string, string> = {
+  learner: '学習者',
+  instructor: '教員',
+  org_admin: '管理者',
+}
 
 export function AppHeader() {
   const { user, signInWithToken } = useAuthStore()
+  const currentToken = localStorage.getItem('accessToken') ?? 'mock-token-learner'
 
   return (
-    <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-        <div>
-          <p className="text-lg font-bold text-slate-900">manabu-kun</p>
-          <p className="text-xs text-slate-500">
-            {user?.organization?.name ?? '東京学習高等学校'}
-          </p>
-        </div>
+    <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3">
-          <span className="hidden text-sm text-slate-600 sm:inline">{user?.name}</span>
-          <select
-            className="rounded-lg border border-slate-200 px-2 py-1 text-sm"
-            value={localStorage.getItem('accessToken') ?? 'mock-token-learner'}
-            onChange={(e) => signInWithToken(e.target.value)}
-          >
-            {DEV_TOKENS.map((t) => (
-              <option key={t.token} value={t.token}>
-                {t.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm">
+            <BookOpen className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-base font-bold tracking-tight text-slate-900">manabu-kun</p>
+            <p className="text-xs text-slate-500">
+              {user?.organization?.name ?? '東京学習高等学校'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="hidden items-center gap-2 sm:flex">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">
+              {user?.name?.charAt(0) ?? '?'}
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-medium text-slate-800">{user?.name}</p>
+              {user?.role && (
+                <Badge color={roleBadge[user.role] ?? 'slate'}>{roleLabel[user.role] ?? user.role}</Badge>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-2 py-1">
+            <GraduationCap className="hidden h-4 w-4 text-slate-400 sm:block" />
+            <select
+              className="bg-transparent text-sm text-slate-700 outline-none"
+              value={currentToken}
+              onChange={(e) => signInWithToken(e.target.value)}
+              aria-label="開発用ユーザー切替"
+            >
+              {DEV_TOKENS.map((t) => (
+                <option key={t.token} value={t.token}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
     </header>

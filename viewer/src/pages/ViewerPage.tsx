@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { BookX, Loader2 } from 'lucide-react'
 import {
   createAnnotation,
   createViewSession,
@@ -14,11 +15,16 @@ import {
 } from '../api/contents'
 import { verifyLicense } from '../api/licenses'
 import { cacheContent, queueProgress } from '../db/offline'
-import { PdfViewer } from '../components/viewer/PdfViewer'
-import { ViewerToolbar } from '../components/viewer/ViewerToolbar'
-import { TocSidebar } from '../components/viewer/TocSidebar'
-import { AnnotationSidebar } from '../components/viewer/AnnotationSidebar'
-import type { Annotation } from '../types'
+import { PdfViewer, type TextSelection } from '../components/viewer/PdfViewer'
+import { ViewerToolbar, ViewerSidebarToggle } from '../components/viewer/ViewerToolbar'
+import { ViewerSidebar, MobileSidebarDrawer } from '../components/viewer/ViewerSidebar'
+import { SelectionToolbar } from '../components/viewer/SelectionToolbar'
+import { NoteDialog } from '../components/viewer/NoteDialog'
+import { Button } from '../components/ui/Button'
+import { EmptyState } from '../components/ui/EmptyState'
+import { toast } from '../components/ui/Toast'
+import { DEFAULT_HIGHLIGHT_COLOR } from '../constants/highlightColors'
+import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation'
 
 const USE_DEMO_PDF = import.meta.env.VITE_USE_DEMO_PDF !== 'false'
 
@@ -31,7 +37,13 @@ export function ViewerPage() {
   const [zoom, setZoom] = useState(1.2)
   const [pageCount, setPageCount] = useState(1)
   const [sidebarTab, setSidebarTab] = useState<'toc' | 'annotations'>('toc')
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [sessionToken, setSessionToken] = useState<string | null>(null)
+  const [pendingSelection, setPendingSelection] = useState<TextSelection | null>(null)
+  const [highlightColor, setHighlightColor] = useState<string>(DEFAULT_HIGHLIGHT_COLOR)
+  const [noteDialogOpen, setNoteDialogOpen] = useState(false)
+  const [noteText, setNoteText] = useState('')
+  const [noteMode, setNoteMode] = useState<'page' | 'selection'>('page')
 
   const { data: content, isLoading: contentLoading } = useQuery({
     queryKey: ['content', contentId],
@@ -101,9 +113,10 @@ export function ViewerPage() {
   useEffect(() => {
     if (!contentId || !content) return
     const timer = setTimeout(() => {
+      const totalPages = content.pageCount || pageCount
       progressMutation.mutate({
         currentPage: page,
-        progressPercent: Math.round((page / pageCount) * 1000) / 10,
+        progressPercent: Math.min(100, Math.round((page / totalPages) * 1000) / 10),
         zoom,
       })
     }, 800)
@@ -113,41 +126,96 @@ export function ViewerPage() {
   const addAnnotationMutation = useMutation({
     mutationFn: (payload: Parameters<typeof createAnnotation>[1]) =>
       createAnnotation(contentId, payload),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['annotations', contentId] })
       setSidebarTab('annotations')
+      setPendingSelection(null)
+      setNoteDialogOpen(false)
+      setNoteText('')
+      const labels = { highlight: 'ハイライト', bookmark: 'ブックマーク', note: 'メモ', underline: '下線' }
+      toast(`${labels[variables.type]}を追加しました`)
     },
+    onError: () => toast('注釈の保存に失敗しました', 'error'),
   })
 
   const deleteAnnotationMutation = useMutation({
     mutationFn: deleteAnnotation,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['annotations', contentId] })
+      toast('注釈を削除しました')
     },
+    onError: () => toast('削除に失敗しました', 'error'),
   })
 
   const handlePageCount = useCallback((count: number) => {
     setPageCount(count)
   }, [])
 
-  const handleTextSelected = useCallback(
-    (selection: { text: string; rects: Annotation['rects'] }) => {
-      addAnnotationMutation.mutate({
-        type: 'highlight',
-        page,
-        color: '#FFEB3B',
-        selectedText: selection.text,
-        rects: selection.rects,
-      })
-    },
-    [addAnnotationMutation, page]
+  const handlePrev = useCallback(() => setPage((p) => Math.max(1, p - 1)), [])
+  const handleNext = useCallback(
+    () => setPage((p) => Math.min(pageCount, p + 1)),
+    [pageCount]
   )
+
+  useKeyboardNavigation({ onPrev: handlePrev, onNext: handleNext })
+
+  const handleSelection = useCallback((selection: TextSelection) => {
+    setPendingSelection(selection)
+  }, [])
+
+  const handleClearSelection = useCallback(() => {
+    setPendingSelection(null)
+  }, [])
+
+  const handleHighlight = useCallback(() => {
+    if (!pendingSelection) return
+    addAnnotationMutation.mutate({
+      type: 'highlight',
+      page,
+      color: highlightColor,
+      selectedText: pendingSelection.text,
+      rects: pendingSelection.rects,
+    })
+  }, [addAnnotationMutation, pendingSelection, page, highlightColor])
+
+  const handleOpenNoteFromSelection = useCallback(() => {
+    setNoteMode('selection')
+    setNoteDialogOpen(true)
+  }, [])
+
+  const handleOpenPageNote = useCallback(() => {
+    setNoteMode('page')
+    setNoteText('')
+    setNoteDialogOpen(true)
+  }, [])
+
+  const handleSaveNote = useCallback(() => {
+    if (!noteText.trim()) return
+    if (noteMode === 'selection' && pendingSelection) {
+      addAnnotationMutation.mutate({
+        type: 'note',
+        page,
+        color: '#FF9800',
+        selectedText: pendingSelection.text,
+        rects: pendingSelection.rects,
+        note: noteText.trim(),
+      })
+    } else {
+      addAnnotationMutation.mutate({
+        type: 'note',
+        page,
+        color: '#FF9800',
+        rects: [{ x: 20, y: 20, width: 24, height: 24 }],
+        note: noteText.trim(),
+      })
+    }
+  }, [addAnnotationMutation, noteMode, pendingSelection, page, noteText])
 
   const handleAddBookmark = useCallback(() => {
     addAnnotationMutation.mutate({
       type: 'bookmark',
       page,
-      note: `ブックマーク p.${page}`,
+      note: `p.${page} ブックマーク`,
     })
   }, [addAnnotationMutation, page])
 
@@ -161,68 +229,80 @@ export function ViewerPage() {
   const toc = content?.toc ?? []
 
   if (contentLoading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-500">読み込み中...</div>
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-100 text-slate-500">
+        <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
+        教材を読み込み中...
+      </div>
+    )
   }
 
   if (!content) {
-    return <div className="flex min-h-screen items-center justify-center text-red-600">教材が見つかりません</div>
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4">
+        <EmptyState
+          icon={<BookX className="h-12 w-12" />}
+          title="教材が見つかりません"
+          action={
+            <Button variant="primary" onClick={() => navigate('/')}>
+              本棚に戻る
+            </Button>
+          }
+        />
+      </div>
+    )
   }
 
   if (license && !license.canView) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-2 text-slate-600">
-        <p>この教材を閲覧するライセンスがありません</p>
-        <button type="button" className="text-blue-600 underline" onClick={() => navigate('/')}>
-          本棚に戻る
-        </button>
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4">
+        <EmptyState
+          icon={<BookX className="h-12 w-12" />}
+          title="ライセンスがありません"
+          description="この教材を閲覧する権限がありません。管理者にお問い合わせください。"
+          action={
+            <Button variant="primary" onClick={() => navigate('/')}>
+              本棚に戻る
+            </Button>
+          }
+        />
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-100">
+    <div className="flex h-screen flex-col overflow-hidden bg-slate-200/70">
       <ViewerToolbar
         title={content.title}
         page={page}
-        pageCount={pageCount}
+        pageCount={content.pageCount || pageCount}
         zoom={zoom}
+        saving={progressMutation.isPending}
         onPageChange={setPage}
         onZoomChange={setZoom}
         onAddBookmark={handleAddBookmark}
+        onAddNote={handleOpenPageNote}
+        onToggleSidebar={() => setMobileSidebarOpen(true)}
         onBack={() => navigate('/')}
       />
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="hidden w-72 shrink-0 overflow-y-auto border-r border-slate-200 bg-white p-4 lg:block">
-          <div className="mb-4 flex gap-2">
-            <button
-              type="button"
-              className={`rounded-lg px-3 py-1.5 text-sm ${sidebarTab === 'toc' ? 'bg-blue-600 text-white' : 'bg-slate-100'}`}
-              onClick={() => setSidebarTab('toc')}
-            >
-              目次
-            </button>
-            <button
-              type="button"
-              className={`rounded-lg px-3 py-1.5 text-sm ${sidebarTab === 'annotations' ? 'bg-blue-600 text-white' : 'bg-slate-100'}`}
-              onClick={() => setSidebarTab('annotations')}
-            >
-              注釈 ({annotations.length})
-            </button>
-          </div>
-          {sidebarTab === 'toc' ? (
-            <TocSidebar toc={toc} currentPage={page} onJump={setPage} />
-          ) : (
-            <AnnotationSidebar
-              annotations={annotations}
-              onJump={setPage}
-              onDelete={(id) => deleteAnnotationMutation.mutate(id)}
-            />
-          )}
+        {/* Desktop sidebar */}
+        <aside className="hidden w-80 shrink-0 lg:block">
+          <ViewerSidebar
+            tab={sidebarTab}
+            onTabChange={setSidebarTab}
+            toc={toc}
+            annotations={annotations}
+            currentPage={page}
+            onJump={setPage}
+            onDeleteAnnotation={(id) => deleteAnnotationMutation.mutate(id)}
+          />
         </aside>
 
-        <div className="flex-1 overflow-auto p-4">
-          <div className="mx-auto flex min-h-full max-w-5xl justify-center">
+        {/* PDF area */}
+        <div className="custom-scrollbar flex-1 overflow-auto p-4 sm:p-6">
+          <div className="mx-auto flex min-h-full max-w-4xl justify-center">
             {pdfUrl ? (
               <PdfViewer
                 pdfUrl={pdfUrl}
@@ -232,14 +312,66 @@ export function ViewerPage() {
                 watermark={policy?.watermark}
                 policy={policy ?? null}
                 onPageCount={handlePageCount}
-                onTextSelected={handleTextSelected}
+                onSelection={handleSelection}
+                onClearSelection={handleClearSelection}
               />
             ) : (
-              <p className="text-slate-500">閲覧セッションを準備中...</p>
+              <div className="flex items-center gap-2 text-slate-500">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                閲覧セッションを準備中...
+              </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Mobile sidebar drawer */}
+      <MobileSidebarDrawer open={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)}>
+        <ViewerSidebar
+          tab={sidebarTab}
+          onTabChange={setSidebarTab}
+          toc={toc}
+          annotations={annotations}
+          currentPage={page}
+          onJump={(p) => {
+            setPage(p)
+            setMobileSidebarOpen(false)
+          }}
+          onDeleteAnnotation={(id) => deleteAnnotationMutation.mutate(id)}
+          onClose={() => setMobileSidebarOpen(false)}
+          isMobile
+        />
+      </MobileSidebarDrawer>
+
+      <ViewerSidebarToggle
+        onClick={() => setMobileSidebarOpen(true)}
+        annotationCount={annotations.length}
+      />
+
+      {pendingSelection && (
+        <SelectionToolbar
+          position={pendingSelection.position}
+          selectedText={pendingSelection.text}
+          activeColor={highlightColor}
+          onColorChange={setHighlightColor}
+          onHighlight={handleHighlight}
+          onAddNote={handleOpenNoteFromSelection}
+          onDismiss={() => setPendingSelection(null)}
+        />
+      )}
+
+      <NoteDialog
+        open={noteDialogOpen}
+        selectedText={noteMode === 'selection' ? pendingSelection?.text : undefined}
+        note={noteText}
+        onNoteChange={setNoteText}
+        onClose={() => {
+          setNoteDialogOpen(false)
+          setNoteText('')
+        }}
+        onSave={handleSaveNote}
+        saving={addAnnotationMutation.isPending}
+      />
     </div>
   )
 }
