@@ -117,4 +117,39 @@ test.describe('Mock API', () => {
     const body = await res.json()
     expect(body.currentPage).toBe(5)
   })
+
+  test('POST /contents/:id/annotations/share creates share link', async ({ request }) => {
+    const res = await request.post(`${API_BASE}/contents/content-001/annotations/share`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: { expiresInDays: 7 },
+    })
+    expect(res.status()).toBe(201)
+    const body = await res.json()
+    expect(body.shareId).toBeTruthy()
+    expect(body.shareUrl).toContain('?share=')
+    expect(body.annotationCount).toBeGreaterThan(0)
+    expect(body.expiresAt).toBeTruthy()
+  })
+
+  test('GET /annotations/shared/:shareId returns shared bundle', async ({ request }) => {
+    const createRes = await request.post(`${API_BASE}/contents/content-001/annotations/share`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: {},
+    })
+    const created = await createRes.json()
+
+    const getRes = await request.get(`${API_BASE}/annotations/shared/${created.shareId}`, {
+      headers: { Authorization: `Bearer ${LEARNER_TOKEN}` },
+    })
+    expect(getRes.ok()).toBeTruthy()
+    const bundle = await getRes.json()
+    expect(bundle.contentId).toBe('content-001')
+    expect(bundle.annotations.length).toBe(created.annotationCount)
+  })
 })

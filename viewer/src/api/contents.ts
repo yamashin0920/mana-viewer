@@ -1,10 +1,12 @@
 import { apiFetch } from './client'
 import type {
   Annotation,
+  AnnotationShareResult,
   Content,
   ContentPolicyResponse,
   PaginatedResponse,
   Progress,
+  SharedAnnotationBundle,
   ViewSession,
 } from '../types'
 
@@ -98,6 +100,20 @@ export async function syncAnnotations(
       body: JSON.stringify(payload),
     }
   )
+}
+
+export async function shareAnnotations(
+  contentId: string,
+  payload?: { annotationIds?: string[]; expiresInDays?: number }
+) {
+  return apiFetch<AnnotationShareResult>(`/contents/${contentId}/annotations/share`, {
+    method: 'POST',
+    body: JSON.stringify(payload ?? {}),
+  })
+}
+
+export async function fetchSharedAnnotations(shareId: string) {
+  return apiFetch<SharedAnnotationBundle>(`/annotations/shared/${shareId}`)
 }
 
 export function getDemoPdfUrl(contentId: string) {

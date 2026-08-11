@@ -1,13 +1,27 @@
 import { useState } from 'react'
-import { Bookmark, Highlighter, Pencil, PenLine, StickyNote, Trash2, Underline } from 'lucide-react'
+import {
+  Bookmark,
+  Download,
+  Highlighter,
+  Pencil,
+  PenLine,
+  Share2,
+  StickyNote,
+  Trash2,
+  Underline,
+} from 'lucide-react'
 import type { Annotation } from '../../types'
 import { Button } from '../ui/Button'
 
 interface AnnotationSidebarProps {
   annotations: Annotation[]
+  sharedAnnotationIds?: Set<string>
   onJump: (page: number) => void
   onEdit: (annotation: Annotation) => void
   onDelete: (id: string) => void
+  onExport: (format: 'json' | 'markdown') => void
+  onShare: () => void
+  sharing?: boolean
 }
 
 const typeConfig: Record<
@@ -48,7 +62,16 @@ const typeConfig: Record<
 
 type Filter = 'all' | Annotation['type']
 
-export function AnnotationSidebar({ annotations, onJump, onEdit, onDelete }: AnnotationSidebarProps) {
+export function AnnotationSidebar({
+  annotations,
+  sharedAnnotationIds,
+  onJump,
+  onEdit,
+  onDelete,
+  onExport,
+  onShare,
+  sharing,
+}: AnnotationSidebarProps) {
   const [filter, setFilter] = useState<Filter>('all')
 
   const filtered = filter === 'all' ? annotations : annotations.filter((a) => a.type === filter)
@@ -80,6 +103,40 @@ export function AnnotationSidebar({ annotations, onJump, onEdit, onDelete }: Ann
 
   return (
     <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          data-testid="annotation-export-json"
+          onClick={() => onExport('json')}
+          className="gap-1.5"
+        >
+          <Download className="h-3.5 w-3.5" />
+          JSON
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          data-testid="annotation-export-markdown"
+          onClick={() => onExport('markdown')}
+          className="gap-1.5"
+        >
+          <Download className="h-3.5 w-3.5" />
+          Markdown
+        </Button>
+        <Button
+          variant="primary"
+          size="sm"
+          data-testid="annotation-share-button"
+          onClick={onShare}
+          disabled={sharing}
+          className="gap-1.5"
+        >
+          <Share2 className="h-3.5 w-3.5" />
+          {sharing ? '作成中...' : '共有'}
+        </Button>
+      </div>
+
       <div className="flex flex-wrap gap-1">
         {filters.map((f) => (
           <button
@@ -101,9 +158,11 @@ export function AnnotationSidebar({ annotations, onJump, onEdit, onDelete }: Ann
       <ul className="space-y-2">
         {sorted.map((ann) => {
           const cfg = typeConfig[ann.type]
+          const isSharedOnly = sharedAnnotationIds?.has(ann.id) ?? false
           return (
             <li
               key={ann.id}
+              data-testid={isSharedOnly ? 'shared-annotation-item' : 'annotation-item'}
               className={`rounded-xl border border-slate-100 border-l-4 bg-slate-50/50 p-3 text-sm transition hover:bg-white hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/50 dark:hover:bg-slate-800 ${cfg.accent}`}
             >
               <div className="mb-1.5 flex items-start justify-between gap-2">
@@ -120,29 +179,36 @@ export function AnnotationSidebar({ annotations, onJump, onEdit, onDelete }: Ann
                   )}
                   {cfg.icon}
                   p.{ann.page} · {cfg.label}
+                  {isSharedOnly && (
+                    <span className="rounded-full bg-sky-100 px-1.5 text-[10px] font-medium text-sky-700 dark:bg-sky-900/50 dark:text-sky-300">
+                      共有
+                    </span>
+                  )}
                 </button>
-                <div className="flex shrink-0 gap-0.5">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    data-testid="annotation-edit"
-                    onClick={() => onEdit(ann)}
-                    className="h-7 w-7 text-slate-400 hover:text-brand-600"
-                    aria-label="編集"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    data-testid="annotation-delete"
-                    onClick={() => onDelete(ann.id)}
-                    className="h-7 w-7 text-slate-400 hover:text-red-500"
-                    aria-label="削除"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+                {!isSharedOnly && (
+                  <div className="flex shrink-0 gap-0.5">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      data-testid="annotation-edit"
+                      onClick={() => onEdit(ann)}
+                      className="h-7 w-7 text-slate-400 hover:text-brand-600"
+                      aria-label="編集"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      data-testid="annotation-delete"
+                      onClick={() => onDelete(ann.id)}
+                      className="h-7 w-7 text-slate-400 hover:text-red-500"
+                      aria-label="削除"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
               </div>
               {ann.selectedText && (
                 <p className="line-clamp-2 text-slate-600 dark:text-slate-400">「{ann.selectedText}」</p>

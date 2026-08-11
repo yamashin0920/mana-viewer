@@ -91,7 +91,11 @@ B2B 向け PDF 学習プラットフォーム **manabu-kun** の要件と、現�
 | 注釈削除 | ✅ | 一覧から削除 | `annotations.spec.ts` |
 | 注釈 API CRUD | ✅ | GET / POST / PUT / DELETE | `mock-api.spec.ts` |
 | 注釈一括同期 | 🔶 | API + Dexie キュースキーマ。フラッシュ処理未 | — |
-| 下線（underline） | ❌ | 型定義のみ | — |
+| 下線（underline） | ❌ | 型定義のみ。新規作成 UI なし | — |
+| 描画（ペン） | ✅ | フリーハンド描画、5色 | `annotations.spec.ts` |
+| 付箋（sticky） | ✅ | クリック配置、黄色付箋表示 | `annotations.spec.ts` |
+| 注釈エクスポート（JSON / Markdown） | ✅ | サイドバーからダウンロード | `annotations.spec.ts` |
+| 注釈共有リンク | ✅ | POST share + `?share=` 表示 | `annotations.spec.ts`, `mock-api.spec.ts` |
 
 ---
 
@@ -148,7 +152,7 @@ B2B 向け PDF 学習プラットフォーム **manabu-kun** の要件と、現�
 | 要件 | 状態 | 実装内容 |
 |------|------|----------|
 | Mock API | ✅ | Express、seed データ、全主要エンドポイント |
-| Playwright E2E | ✅ | 36 テスト（chromium + mobile-chrome） |
+| Playwright E2E | ✅ | 48 テスト（chromium + mobile-chrome） |
 | 機能追加時のテスト必須 | ✅ | `.cursor/rules/playwright-tests.mdc` |
 
 ---

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BookX, Loader2 } from 'lucide-react'
 import {
@@ -10,8 +10,10 @@ import {
   fetchContent,
   fetchContentPolicy,
   fetchProgress,
+  fetchSharedAnnotations,
   getDemoPdfUrl,
   saveProgress,
+  shareAnnotations,
   updateAnnotation,
 } from '../api/contents'
 import { verifyLicense } from '../api/licenses'
@@ -23,6 +25,7 @@ import { SelectionToolbar } from '../components/viewer/SelectionToolbar'
 import { NoteDialog } from '../components/viewer/NoteDialog'
 import { EditAnnotationDialog } from '../components/viewer/EditAnnotationDialog'
 import { StickyNoteDialog } from '../components/viewer/StickyNoteDialog'
+import { ShareAnnotationsDialog } from '../components/viewer/ShareAnnotationsDialog'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
 import { toast } from '../components/ui/Toast'
@@ -39,11 +42,14 @@ import { DEFAULT_PEN_COLOR } from '../constants/penColors'
 import type { Annotation } from '../types'
 import type { AnnotationTool } from '../types/annotationTools'
 import { getDrawingBoundingBox, serializeDrawingPath, type DrawingPoint } from '../utils/drawingPath'
+import { exportAnnotations } from '../utils/annotationExport'
 
 const USE_DEMO_PDF = import.meta.env.VITE_USE_DEMO_PDF !== 'false'
 
 export function ViewerPage() {
   const { contentId = '' } = useParams()
+  const [searchParams] = useSearchParams()
+  const shareId = searchParams.get('share')
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -72,6 +78,10 @@ export function ViewerPage() {
   const [stickyPosition, setStickyPosition] = useState<{ page: number; x: number; y: number } | null>(
     null
   )
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [shareExpiresAt, setShareExpiresAt] = useState<string | null>(null)
+  const [shareAnnotationCount, setShareAnnotationCount] = useState(0)
 
   const totalPages = pageCount
 
@@ -103,6 +113,13 @@ export function ViewerPage() {
     queryKey: ['annotations', contentId],
     queryFn: () => fetchAnnotations(contentId),
     enabled: !!contentId,
+  })
+
+  const { data: sharedBundle, error: sharedError } = useQuery({
+    queryKey: ['shared-annotations', shareId],
+    queryFn: () => fetchSharedAnnotations(shareId!),
+    enabled: !!shareId,
+    retry: false,
   })
 
   useEffect(() => {
@@ -204,6 +221,19 @@ export function ViewerPage() {
       toast('注釈を削除しました')
     },
     onError: () => toast('削除に失敗しました', 'error'),
+  })
+
+  const shareAnnotationsMutation = useMutation({
+    mutationFn: () => shareAnnotations(contentId),
+    onSuccess: (data) => {
+      const absoluteUrl = `${window.location.origin}${data.shareUrl}`
+      setShareUrl(absoluteUrl)
+      setShareExpiresAt(data.expiresAt)
+      setShareAnnotationCount(data.annotationCount)
+      setShareDialogOpen(true)
+      toast('共有リンクを作成しました')
+    },
+    onError: () => toast('共有リンクの作成に失敗しました', 'error'),
   })
 
   const handlePageCount = useCallback((count: number) => {
@@ -349,6 +379,40 @@ export function ViewerPage() {
     setAnnotationTool('select')
   }, [addAnnotationMutation, stickyPosition, stickyText])
 
+  const ownAnnotations = annotationsData?.data ?? []
+
+  const { sharedAnnotationIds, displayAnnotations } = useMemo(() => {
+    const sharedList = sharedBundle?.annotations ?? []
+    if (sharedList.length === 0) {
+      return {
+        sharedAnnotationIds: new Set<string>(),
+        displayAnnotations: ownAnnotations,
+      }
+    }
+    const ownIds = new Set(ownAnnotations.map((a) => a.id))
+    const sharedOnly = sharedList.filter((a) => !ownIds.has(a.id))
+    return {
+      sharedAnnotationIds: new Set(sharedOnly.map((a) => a.id)),
+      displayAnnotations: [...ownAnnotations, ...sharedOnly],
+    }
+  }, [ownAnnotations, sharedBundle])
+
+  const handleExportAnnotations = useCallback(
+    (format: 'json' | 'markdown') => {
+      if (!content) return
+      exportAnnotations(ownAnnotations, {
+        contentId,
+        contentTitle: content.title,
+      }, format)
+      toast(format === 'json' ? 'JSON をエクスポートしました' : 'Markdown をエクスポートしました')
+    },
+    [content, contentId, ownAnnotations]
+  )
+
+  const handleShareAnnotations = useCallback(() => {
+    shareAnnotationsMutation.mutate()
+  }, [shareAnnotationsMutation])
+
   const pdfUrl = useMemo(() => {
     if (USE_DEMO_PDF) return getDemoPdfUrl(contentId)
     if (!sessionToken) return ''
@@ -398,6 +462,24 @@ export function ViewerPage() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [searchOpen])
 
+  useEffect(() => {
+    if (sharedBundle && shareId) {
+      setSidebarTab('annotations')
+    }
+  }, [sharedBundle, shareId])
+
+  useEffect(() => {
+    if (!sharedError || !shareId) return
+    toast('共有された注釈を読み込めませんでした', 'error')
+  }, [sharedError, shareId])
+
+  useEffect(() => {
+    if (!sharedBundle || !contentId) return
+    if (sharedBundle.contentId !== contentId) {
+      toast('共有リンクの教材 ID が一致しません', 'error')
+    }
+  }, [sharedBundle, contentId])
+
   const handleSearchPrev = useCallback(() => {
     if (searchMatches.length === 0) return
     setActiveSearchIndex((current) => {
@@ -416,7 +498,6 @@ export function ViewerPage() {
     })
   }, [searchMatches])
 
-  const annotations = annotationsData?.data ?? []
   const apiToc = content?.toc ?? []
   const mergedToc = useMemo(() => {
     if (apiToc.length > 0) return apiToc
@@ -468,6 +549,15 @@ export function ViewerPage() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-slate-200/70 dark:bg-slate-950" data-testid="viewer-page">
+      {sharedBundle && sharedBundle.annotations.length > 0 && (
+        <div
+          className="border-b border-sky-200 bg-sky-50 px-4 py-2 text-center text-sm text-sky-800 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-200"
+          data-testid="shared-annotations-banner"
+        >
+          {sharedBundle.sharedBy?.name ?? '他のユーザー'} が共有した注釈を表示中（
+          {sharedBundle.annotations.length} 件）
+        </div>
+      )}
       <ViewerToolbar
         title={content.title}
         page={page}
@@ -508,11 +598,15 @@ export function ViewerPage() {
             pdfLoading={pdfLoading}
             pageCount={displayPageCount}
             toc={mergedToc}
-            annotations={annotations}
+            annotations={displayAnnotations}
+            sharedAnnotationIds={sharedAnnotationIds}
             currentPage={page}
             onJump={setPage}
             onEditAnnotation={handleEditAnnotation}
             onDeleteAnnotation={(id) => deleteAnnotationMutation.mutate(id)}
+            onExportAnnotations={handleExportAnnotations}
+            onShareAnnotations={handleShareAnnotations}
+            sharingAnnotations={shareAnnotationsMutation.isPending}
           />
         </aside>
 
@@ -527,7 +621,7 @@ export function ViewerPage() {
                 page={page}
                 zoom={zoom}
                 viewMode={viewMode}
-                annotations={annotations}
+                annotations={displayAnnotations}
                 searchMatches={searchMatches}
                 activeSearchIndex={activeSearchIndex}
                 annotationTool={annotationTool}
@@ -559,7 +653,8 @@ export function ViewerPage() {
           pdfLoading={pdfLoading}
           pageCount={displayPageCount}
           toc={mergedToc}
-          annotations={annotations}
+          annotations={displayAnnotations}
+          sharedAnnotationIds={sharedAnnotationIds}
           currentPage={page}
           onJump={(p) => {
             setPage(p)
@@ -567,6 +662,9 @@ export function ViewerPage() {
           }}
           onEditAnnotation={handleEditAnnotation}
           onDeleteAnnotation={(id) => deleteAnnotationMutation.mutate(id)}
+          onExportAnnotations={handleExportAnnotations}
+          onShareAnnotations={handleShareAnnotations}
+          sharingAnnotations={shareAnnotationsMutation.isPending}
           onClose={() => setMobileSidebarOpen(false)}
           isMobile
         />
@@ -574,7 +672,7 @@ export function ViewerPage() {
 
       <ViewerSidebarToggle
         onClick={() => setMobileSidebarOpen(true)}
-        annotationCount={annotations.length}
+        annotationCount={displayAnnotations.length}
       />
 
       {pendingSelection && (
@@ -625,6 +723,15 @@ export function ViewerPage() {
         }}
         onSave={handleSaveSticky}
         saving={addAnnotationMutation.isPending}
+      />
+
+      <ShareAnnotationsDialog
+        open={shareDialogOpen}
+        shareUrl={shareUrl}
+        expiresAt={shareExpiresAt}
+        annotationCount={shareAnnotationCount}
+        loading={shareAnnotationsMutation.isPending}
+        onClose={() => setShareDialogOpen(false)}
       />
     </div>
   )

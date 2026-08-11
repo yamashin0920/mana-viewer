@@ -123,6 +123,24 @@ export interface Annotation {
   updatedAt: string
 }
 
+export interface AnnotationShareResult {
+  shareId: string
+  shareUrl: string
+  expiresAt: string
+  annotationCount: number
+  contentTitle: string
+}
+
+export interface SharedAnnotationBundle {
+  shareId: string
+  contentId: string
+  contentTitle: string
+  sharedBy: { id: string; name: string } | null
+  sharedAt: string
+  expiresAt: string
+  annotations: Annotation[]
+}
+
 export interface PaginatedResponse<T> {
   data: T[]
   pagination: {

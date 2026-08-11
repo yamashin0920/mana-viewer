@@ -93,6 +93,46 @@ test.describe('注釈機能', () => {
     await sidebar.getByTestId('annotation-delete').last().click()
     await expect(page.getByText('注釈を削除しました')).toBeVisible()
   })
+
+  test('注釈を JSON でエクスポートできる', async ({ page }) => {
+    const downloadPromise = page.waitForEvent('download')
+    await page.getByTestId('desktop-sidebar').getByTestId('annotation-export-json').click()
+    const download = await downloadPromise
+    expect(download.suggestedFilename()).toMatch(/annotations-.*\.json$/)
+    await expect(page.getByText('JSON をエクスポートしました')).toBeVisible()
+  })
+
+  test('注釈を Markdown でエクスポートできる', async ({ page }) => {
+    const downloadPromise = page.waitForEvent('download')
+    await page.getByTestId('desktop-sidebar').getByTestId('annotation-export-markdown').click()
+    const download = await downloadPromise
+    expect(download.suggestedFilename()).toMatch(/annotations-.*\.md$/)
+    await expect(page.getByText('Markdown をエクスポートしました')).toBeVisible()
+  })
+
+  test('注釈の共有リンクを作成できる', async ({ page }) => {
+    await page.getByTestId('desktop-sidebar').getByTestId('annotation-share-button').click()
+    await expect(page.getByText('共有リンクを作成しました')).toBeVisible()
+    await expect(page.getByTestId('modal')).toBeVisible()
+    await expect(page.getByTestId('share-url-input')).toHaveValue(/\/viewer\/content-001\?share=/)
+  })
+
+  test('共有リンクから注釈を表示できる', async ({ page, request }) => {
+    const shareRes = await request.post('http://localhost:3001/contents/content-001/annotations/share', {
+      headers: {
+        Authorization: 'Bearer mock-token-learner',
+        'Content-Type': 'application/json',
+      },
+      data: {},
+    })
+    expect(shareRes.ok()).toBeTruthy()
+    const share = await shareRes.json()
+
+    await page.goto(`/viewer/content-001?share=${share.shareId}`)
+    await expect(page.getByTestId('viewer-page')).toBeVisible()
+    await expect(page.getByTestId('shared-annotations-banner')).toBeVisible()
+    await expect(page.getByTestId('desktop-sidebar').getByTestId('sidebar-tab-annotations')).toBeVisible()
+  })
 })
 
 test.describe('テキスト選択ハイライト', () => {

@@ -8,6 +8,7 @@ const licenseRoutes = require('./routes/licenses');
 const contentRoutes = require('./routes/contents');
 const bookshelfRoutes = require('./routes/bookshelves');
 const annotationRoutes = require('./routes/annotations');
+const annotationShareRoutes = require('./routes/annotation-shares');
 const annotationByIdRoutes = require('./routes/annotation-by-id');
 const deviceRoutes = require('./routes/devices');
 const lmsRoutes = require('./routes/lms');
@@ -56,6 +57,8 @@ app.get('/', (_req, res) => {
         'GET /contents/:id/annotations',
         'POST /contents/:id/annotations',
         'POST /contents/:id/annotations/sync',
+        'POST /contents/:id/annotations/share',
+        'GET /annotations/shared/:shareId',
       ],
       devices: ['GET /devices/me', 'POST /devices/register'],
       lms: ['POST /lms/deep-link', 'POST /lms/roster/sync', 'POST /lms/xapi/statements'],
@@ -69,6 +72,8 @@ app.use('/licenses', licenseRoutes);
 app.use('/contents', contentRoutes);
 app.use('/bookshelves', bookshelfRoutes);
 app.use('/contents', annotationRoutes);
+app.use('/contents', annotationShareRoutes);
+app.use('/annotations', annotationShareRoutes);
 app.use('/annotations', annotationByIdRoutes);
 app.use('/devices', deviceRoutes);
 app.use('/lms', lmsRoutes);
