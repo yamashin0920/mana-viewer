@@ -23,3 +23,9 @@ cd mock-api && npm start
 cd viewer && npm install && npm run dev
 # → http://localhost:5173
 ```
+
+## テスト
+
+```bash
+cd viewer && npm run test:e2e
+```
