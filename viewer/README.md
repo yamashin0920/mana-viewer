@@ -79,4 +79,9 @@ npm run test:e2e
 ```
 
 mock-api と viewer を自動起動して E2E テスト（36件）を実行します。詳細は [`e2e/README.md`](e2e/README.md)。
-- [ ] 印刷・コピー制御（policy.drm 反映）
+
+**ルール**: 機能を追加・変更したら Playwright テストも追加すること（[../.cursor/rules/playwright-tests.mdc](../.cursor/rules/playwright-tests.mdc)）。
+
+## 要件と実装状況
+
+[../docs/requirements.md](../docs/requirements.md)

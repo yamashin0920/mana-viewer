@@ -2,6 +2,14 @@
 
 B2B 向け PDF 学習プラットフォーム。
 
+## 要件と実装状況
+
+[docs/requirements.md](docs/requirements.md) — 学習用ビューアの要件一覧と現状の実装マトリクス
+
+## 開発ルール
+
+- **機能を実装したら Playwright テストを追加する** — [.cursor/rules/playwright-tests.mdc](.cursor/rules/playwright-tests.mdc)
+
 ## Mock API
 
 ビューア開発用のモック API は [`mock-api/`](mock-api/README.md) にあります。
