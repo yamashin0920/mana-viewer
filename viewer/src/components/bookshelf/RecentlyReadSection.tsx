@@ -24,7 +24,7 @@ export function RecentlyReadSection({ items }: RecentlyReadSectionProps) {
   if (items.length === 0) return null
 
   return (
-    <section className="mb-10">
+    <section className="mb-10" data-testid="recently-read-section">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-brand-600 dark:text-brand-400" />

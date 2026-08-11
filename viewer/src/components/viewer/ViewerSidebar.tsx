@@ -37,13 +37,14 @@ export function ViewerSidebar({
   ]
 
   return (
-    <div className={`flex h-full flex-col bg-white dark:bg-slate-900 ${isMobile ? '' : 'border-r border-slate-200 dark:border-slate-700'}`}>
+    <div className={`flex h-full flex-col bg-white dark:bg-slate-900 ${isMobile ? '' : 'border-r border-slate-200 dark:border-slate-700'}`} data-testid="viewer-sidebar">
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-700">
         <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
           {tabs.map((t) => (
             <button
               key={t.id}
               type="button"
+              data-testid={`sidebar-tab-${t.id}`}
               onClick={() => onTabChange(t.id)}
               className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                 tab === t.id
@@ -110,7 +111,7 @@ export function MobileSidebarDrawer({
         onClick={onClose}
         aria-label="閉じる"
       />
-      <div className="animate-slide-up absolute bottom-0 left-0 right-0 top-16 rounded-t-2xl bg-white shadow-[var(--shadow-float)] dark:bg-slate-900">
+      <div className="animate-slide-up absolute bottom-0 left-0 right-0 top-16 rounded-t-2xl bg-white shadow-[var(--shadow-float)] dark:bg-slate-900" data-testid="mobile-sidebar-drawer">
         {children}
       </div>
     </div>

@@ -61,7 +61,7 @@ export function BookshelfPage() {
   const inProgress = filtered.filter((c) => (c.progress?.currentPage ?? 0) > 1)
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950" data-testid="bookshelf-page">
       <AppHeader />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <div className="mb-8 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 p-6 text-white shadow-lg sm:p-8">
@@ -91,6 +91,7 @@ export function BookshelfPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
+              data-testid="search-input"
               placeholder="教材名・著者・タグで検索..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -102,6 +103,7 @@ export function BookshelfPage() {
               <button
                 key={cat}
                 type="button"
+                data-testid={`category-filter-${cat}`}
                 onClick={() => setCategory(cat)}
                 className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
                   category === cat
@@ -124,7 +126,7 @@ export function BookshelfPage() {
             ))}
           </div>
         ) : filtered.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-testid="content-grid">
             {filtered.map((content) => (
               <ContentCard key={content.id} content={content} />
             ))}

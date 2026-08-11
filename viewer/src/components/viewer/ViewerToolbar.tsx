@@ -78,6 +78,7 @@ export function ViewerToolbar({
           <Button
             variant="ghost"
             size="icon"
+            data-testid="view-mode-single"
             onClick={() => onViewModeChange('single')}
             className={viewMode === 'single' ? 'bg-white shadow-sm dark:bg-slate-700' : ''}
             aria-label="1ページ表示"
@@ -88,6 +89,7 @@ export function ViewerToolbar({
           <Button
             variant="ghost"
             size="icon"
+            data-testid="view-mode-spread"
             onClick={() => onViewModeChange('spread')}
             className={viewMode === 'spread' ? 'bg-white shadow-sm dark:bg-slate-700' : ''}
             aria-label="見開き表示"
@@ -105,6 +107,7 @@ export function ViewerToolbar({
           <div className="flex items-center gap-0.5 px-1 text-sm">
             <input
               type="number"
+              data-testid="page-input"
               min={1}
               max={pageCount}
               value={page}
@@ -163,6 +166,7 @@ export function ViewerSidebarToggle({
   return (
     <button
       type="button"
+      data-testid="mobile-sidebar-toggle"
       onClick={onClick}
       className="fixed bottom-6 right-6 z-30 flex items-center gap-2 rounded-full bg-brand-600 px-4 py-3 text-sm font-medium text-white shadow-lg transition hover:bg-brand-700 lg:hidden"
     >

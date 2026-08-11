@@ -23,6 +23,7 @@ export function ContentCard({ content, compact = false }: ContentCardProps) {
   return (
     <Link
       to={`/viewer/${content.id}`}
+      data-testid="content-card"
       className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[var(--shadow-card)] transition hover:-translate-y-1 hover:border-brand-200 hover:shadow-lg dark:border-slate-700/80 dark:bg-slate-800 dark:hover:border-brand-700 ${
         compact ? 'rounded-xl' : ''
       }`}

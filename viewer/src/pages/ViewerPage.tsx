@@ -336,7 +336,7 @@ export function ViewerPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-slate-200/70 dark:bg-slate-950">
+    <div className="flex h-screen flex-col overflow-hidden bg-slate-200/70 dark:bg-slate-950" data-testid="viewer-page">
       <ViewerToolbar
         title={content.title}
         page={page}
@@ -356,7 +356,7 @@ export function ViewerPage() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="hidden w-80 shrink-0 lg:block">
+        <aside className="hidden w-80 shrink-0 lg:block" data-testid="desktop-sidebar">
           <ViewerSidebar
             tab={sidebarTab}
             onTabChange={setSidebarTab}

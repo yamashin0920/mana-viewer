@@ -71,6 +71,7 @@ export function AnnotationSidebar({ annotations, onJump, onEdit, onDelete }: Ann
           <button
             key={f.id}
             type="button"
+            data-testid={`annotation-tab-${f.id}`}
             onClick={() => setFilter(f.id)}
             className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
               filter === f.id
@@ -110,6 +111,7 @@ export function AnnotationSidebar({ annotations, onJump, onEdit, onDelete }: Ann
                   <Button
                     variant="ghost"
                     size="icon"
+                    data-testid="annotation-edit"
                     onClick={() => onEdit(ann)}
                     className="h-7 w-7 text-slate-400 hover:text-brand-600"
                     aria-label="編集"
@@ -119,6 +121,7 @@ export function AnnotationSidebar({ annotations, onJump, onEdit, onDelete }: Ann
                   <Button
                     variant="ghost"
                     size="icon"
+                    data-testid="annotation-delete"
                     onClick={() => onDelete(ann.id)}
                     className="h-7 w-7 text-slate-400 hover:text-red-500"
                     aria-label="削除"

@@ -10,6 +10,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggle}
+      data-testid="theme-toggle"
       aria-label={theme === 'light' ? 'ダークモードに切替' : 'ライトモードに切替'}
       title={theme === 'light' ? 'ダークモード' : 'ライトモード'}
     >

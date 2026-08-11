@@ -8,6 +8,7 @@ const licenseRoutes = require('./routes/licenses');
 const contentRoutes = require('./routes/contents');
 const bookshelfRoutes = require('./routes/bookshelves');
 const annotationRoutes = require('./routes/annotations');
+const annotationByIdRoutes = require('./routes/annotation-by-id');
 const deviceRoutes = require('./routes/devices');
 const lmsRoutes = require('./routes/lms');
 
@@ -68,7 +69,7 @@ app.use('/licenses', licenseRoutes);
 app.use('/contents', contentRoutes);
 app.use('/bookshelves', bookshelfRoutes);
 app.use('/contents', annotationRoutes);
-app.use('/annotations', annotationRoutes);
+app.use('/annotations', annotationByIdRoutes);
 app.use('/devices', deviceRoutes);
 app.use('/lms', lmsRoutes);
 

@@ -24,6 +24,7 @@ export function SelectionToolbar({
   return (
     <div
       className="animate-fade-in fixed z-50 -translate-x-1/2 -translate-y-full"
+      data-testid="selection-toolbar"
       style={{ left: position.x, top: position.y - 8 }}
     >
       <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-[var(--shadow-float)] dark:border-slate-600 dark:bg-slate-800">
@@ -42,7 +43,7 @@ export function SelectionToolbar({
           ))}
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={onHighlight} className="gap-1.5">
+          <Button variant="ghost" size="sm" onClick={onHighlight} className="gap-1.5" data-testid="highlight-button">
             <Highlighter className="h-3.5 w-3.5" />
             ハイライト
           </Button>

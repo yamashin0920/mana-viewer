@@ -30,7 +30,7 @@ export function Modal({ open, title, onClose, children, footer }: ModalProps) {
         onClick={onClose}
         aria-label="閉じる"
       />
-      <div className="animate-slide-up relative w-full max-w-md rounded-2xl bg-white shadow-[var(--shadow-float)] dark:bg-slate-900">
+      <div className="animate-slide-up relative w-full max-w-md rounded-2xl bg-white shadow-[var(--shadow-float)] dark:bg-slate-900" data-testid="modal">
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-700">
           <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
           <Button variant="ghost" size="icon" onClick={onClose} aria-label="閉じる">

@@ -106,7 +106,7 @@ export function PdfPage({
       className={`relative overflow-hidden bg-white dark:bg-slate-900 ${className}`}
       onMouseUp={handleMouseUp}
     >
-      <canvas ref={canvasRef} className="block bg-white dark:bg-slate-900" />
+      <canvas ref={canvasRef} className="block bg-white dark:bg-slate-900" data-testid="pdf-canvas" />
       <div ref={textLayerRef} className="pdf-text-layer absolute inset-0 select-text" />
       <div className="pointer-events-none absolute inset-0">
         {pageAnnotations.map((ann) =>
