@@ -29,7 +29,7 @@ const typeConfig: Record<
   { label: string; icon: React.ReactNode; accent: string }
 > = {
   highlight: {
-    label: 'ハイライト',
+    label: 'マーカー',
     icon: <Highlighter className="h-3.5 w-3.5" />,
     accent: 'border-l-yellow-400',
   },
@@ -82,7 +82,7 @@ export function AnnotationSidebar({
 
   const filters: { id: Filter; label: string }[] = [
     { id: 'all', label: 'すべて' },
-    { id: 'highlight', label: 'ハイライト' },
+    { id: 'highlight', label: 'マーカー' },
     { id: 'drawing', label: '描画' },
     { id: 'sticky', label: '付箋' },
     { id: 'bookmark', label: 'ブックマーク' },

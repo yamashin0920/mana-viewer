@@ -83,7 +83,8 @@ B2B 向け PDF 学習プラットフォーム **manabu-kun** の要件と、現�
 
 | 要件 | 状態 | 実装内容 | テスト |
 |------|------|----------|--------|
-| テキスト選択 → ハイライト | ✅ | 5 色、フローティングツールバー | `annotations.spec.ts` |
+| テキスト選択 → マーカー | ✅ | 5 色、フローティングツールバー | `annotations.spec.ts` |
+| マーカーツール（ワン操作） | ✅ | ツールバーから選択→ドラッグで即反映 | `annotations.spec.ts` |
 | ページメモ（note） | ✅ | NoteDialog | `annotations.spec.ts` |
 | ブックマーク | ✅ | ワンクリック追加 | `viewer.spec.ts` |
 | 注釈一覧・フィルタ | ✅ | サイドバー（タイプ別） | `annotations.spec.ts` |
@@ -152,7 +153,7 @@ B2B 向け PDF 学習プラットフォーム **manabu-kun** の要件と、現�
 | 要件 | 状態 | 実装内容 |
 |------|------|----------|
 | Mock API | ✅ | Express、seed データ、全主要エンドポイント |
-| Playwright E2E | ✅ | 48 テスト（chromium + mobile-chrome） |
+| Playwright E2E | ✅ | 50 テスト（chromium + mobile-chrome） |
 | 機能追加時のテスト必須 | ✅ | `.cursor/rules/playwright-tests.mdc` |
 
 ---

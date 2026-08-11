@@ -10,7 +10,7 @@ test.describe('モバイル表示', () => {
     await page.getByTestId('mobile-sidebar-toggle').click()
     await expect(page.getByTestId('mobile-sidebar-drawer')).toBeVisible()
     await page.getByTestId('mobile-sidebar-drawer').getByTestId('sidebar-tab-annotations').click()
-    await expect(page.getByTestId('mobile-sidebar-drawer').getByText(/p\.\d+ · ハイライト|p\.\d+ · ブックマーク/).first()).toBeVisible()
+    await expect(page.getByTestId('mobile-sidebar-drawer').getByText(/p\.\d+ · マーカー|p\.\d+ · ブックマーク/).first()).toBeVisible()
   })
 
   test('モバイルツールバーでページ移動できる', async ({ page }) => {

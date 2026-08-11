@@ -33,7 +33,7 @@ export function EditAnnotationDialog({
   const showPenColors = annotation.type === 'drawing'
   const title =
     annotation.type === 'highlight'
-      ? 'ハイライトを編集'
+      ? 'マーカーを編集'
       : annotation.type === 'bookmark'
         ? 'ブックマークを編集'
         : annotation.type === 'note'

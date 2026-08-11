@@ -89,8 +89,10 @@ export function PdfPage({
     }
   }, [pdfDoc, pageNumber, zoom, onRender])
 
+  const textSelectable = annotationTool === 'select' || annotationTool === 'marker'
+
   const handleMouseUp = useCallback(() => {
-    if (annotationTool !== 'select') return
+    if (!textSelectable) return
 
     const selection = window.getSelection()
     if (!selection || selection.isCollapsed || !containerRef.current) return
@@ -119,7 +121,7 @@ export function PdfPage({
       page: pageNumber,
     })
     selection.removeAllRanges()
-  }, [annotationTool, onSelection, pageNumber])
+  }, [textSelectable, onSelection, pageNumber])
 
   const handleStickyClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -145,7 +147,11 @@ export function PdfPage({
     <div
       ref={containerRef}
       className={`relative overflow-hidden bg-white dark:bg-slate-900 ${className} ${
-        annotationTool === 'sticky' ? 'cursor-cell' : ''
+        annotationTool === 'sticky'
+          ? 'cursor-cell'
+          : annotationTool === 'marker'
+            ? 'cursor-text'
+            : ''
       }`}
       onMouseUp={handleMouseUp}
       onClick={handleStickyClick}
@@ -153,7 +159,7 @@ export function PdfPage({
       <canvas ref={canvasRef} className="block bg-white dark:bg-slate-900" data-testid="pdf-canvas" />
       <div
         ref={textLayerRef}
-        className={`pdf-text-layer absolute inset-0 ${annotationTool === 'select' ? 'select-text' : 'pointer-events-none select-none'}`}
+        className={`pdf-text-layer absolute inset-0 ${textSelectable ? 'select-text' : 'pointer-events-none select-none'}`}
       />
       {onInternalLink && (
         <PdfLinkLayer

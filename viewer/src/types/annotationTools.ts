@@ -1,1 +1,1 @@
-export type AnnotationTool = 'select' | 'pen' | 'sticky'
+export type AnnotationTool = 'select' | 'marker' | 'pen' | 'sticky'

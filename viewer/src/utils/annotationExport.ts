@@ -10,7 +10,7 @@ export interface AnnotationExportMeta {
 }
 
 const TYPE_LABELS: Record<Annotation['type'], string> = {
-  highlight: 'ハイライト',
+  highlight: 'マーカー',
   bookmark: 'ブックマーク',
   note: 'メモ',
   underline: '下線',

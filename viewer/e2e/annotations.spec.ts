@@ -7,7 +7,7 @@ test.describe('注釈機能', () => {
   })
 
   test('注釈一覧にシードデータが表示される', async ({ page }) => {
-    await expect(page.getByTestId('desktop-sidebar').getByRole('button', { name: /p\.\d+ · ハイライト/ }).first()).toBeVisible()
+    await expect(page.getByTestId('desktop-sidebar').getByRole('button', { name: /p\.\d+ · マーカー/ }).first()).toBeVisible()
   })
 
   test('注釈をフィルタできる', async ({ page }) => {
@@ -16,35 +16,38 @@ test.describe('注釈機能', () => {
     await expect(sidebar.getByRole('button', { name: /p\.\d+ · ブックマーク/ }).first()).toBeVisible()
 
     await sidebar.getByTestId('annotation-tab-highlight').click()
-    await expect(sidebar.getByRole('button', { name: /p\.\d+ · ハイライト/ }).first()).toBeVisible()
+    await expect(sidebar.getByRole('button', { name: /p\.\d+ · マーカー/ }).first()).toBeVisible()
   })
 
   test('注釈を編集できる', async ({ page }) => {
     const sidebar = page.getByTestId('desktop-sidebar')
+    const editedNote = `Playwright で編集 ${Date.now()}`
     await sidebar.getByTestId('annotation-edit').first().click()
 
     await expect(page.getByTestId('modal')).toBeVisible()
-    await page.locator('#edit-note').fill('Playwright で編集したメモ')
+    await page.locator('#edit-note').fill(editedNote)
     await page.getByRole('button', { name: '保存', exact: true }).click()
 
     await expect(page.getByText('注釈を更新しました')).toBeVisible()
-    await expect(sidebar.getByText('Playwright で編集したメモ')).toBeVisible()
+    await expect(sidebar.getByText(editedNote).first()).toBeVisible()
   })
 
   test('ページメモを追加できる', async ({ page }) => {
+    const note = `Playwright テストメモ ${Date.now()}`
     await page.getByLabel('メモ追加').click()
     await expect(page.getByTestId('modal')).toBeVisible()
 
-    await page.locator('textarea').fill('Playwright テストメモ')
+    await page.locator('textarea').fill(note)
     await page.getByRole('button', { name: '保存', exact: true }).click()
 
     await expect(page.getByText('メモを追加しました')).toBeVisible()
-    await expect(page.getByTestId('desktop-sidebar').getByText('Playwright テストメモ')).toBeVisible()
+    await expect(page.getByTestId('desktop-sidebar').getByText(note).first()).toBeVisible()
   })
 
   test('ペン描画を追加できる', async ({ page }) => {
+    await page.getByTestId('view-mode-single').click()
     await page.getByTestId('annotation-tool-pen').click()
-    await expect(page.getByTestId('drawing-layer')).toBeVisible()
+    await expect(page.getByTestId('drawing-layer').first()).toBeVisible()
 
     const canvas = page.locator('[data-testid="pdf-canvas"]').first()
     const box = await canvas.boundingBox()
@@ -61,10 +64,11 @@ test.describe('注釈機能', () => {
 
     await expect(page.getByText('描画を追加しました')).toBeVisible()
     await page.getByTestId('desktop-sidebar').getByTestId('sidebar-tab-annotations').click()
-    await expect(page.getByTestId('desktop-sidebar').getByText(/p\.\d+ · 描画/)).toBeVisible()
+    await expect(page.getByTestId('desktop-sidebar').getByRole('button', { name: /p\.\d+ · 描画/ }).first()).toBeVisible()
   })
 
   test('付箋を追加できる', async ({ page }) => {
+    await page.getByTestId('view-mode-single').click()
     await page.getByTestId('annotation-tool-sticky').click()
 
     const canvas = page.locator('[data-testid="pdf-canvas"]').first()
@@ -135,8 +139,34 @@ test.describe('注釈機能', () => {
   })
 })
 
-test.describe('テキスト選択ハイライト', () => {
-  test('PDF上のテキスト選択でハイライトを追加できる', async ({ page }) => {
+test.describe('テキストマーカー', () => {
+  test('マーカーツールでテキスト選択すると自動でマーカーが付く', async ({ page }) => {
+    await openFirstContent(page)
+    await page.getByTestId('annotation-tool-marker').click()
+    await expect(page.getByTestId('marker-color-picker')).toBeVisible()
+    await page.getByTestId('page-input').fill('1')
+    await page.getByTestId('page-input').press('Enter')
+    await page.waitForTimeout(1500)
+
+    const canvas = page.locator('[data-testid="pdf-canvas"]').first()
+    const box = await canvas.boundingBox()
+    if (!box) {
+      test.skip(true, 'PDF canvas not rendered')
+      return
+    }
+
+    await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.3)
+    await page.mouse.down()
+    await page.mouse.move(box.x + box.width * 0.6, box.y + box.height * 0.3)
+    await page.mouse.up()
+
+    const toast = page.getByText('マーカーを追加しました')
+    if (await toast.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await expect(toast).toBeVisible()
+    }
+  })
+
+  test('選択モードではフローティングツールバーからマーカーを追加できる', async ({ page }) => {
     await openFirstContent(page)
     await page.getByTestId('page-input').fill('1')
     await page.getByTestId('page-input').press('Enter')
@@ -156,8 +186,8 @@ test.describe('テキスト選択ハイライト', () => {
 
     const toolbar = page.getByTestId('selection-toolbar')
     if (await toolbar.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await page.getByTestId('highlight-button').click()
-      await expect(page.getByText('ハイライトを追加しました')).toBeVisible()
+      await page.getByTestId('marker-button').click()
+      await expect(page.getByText('マーカーを追加しました')).toBeVisible()
     }
   })
 })

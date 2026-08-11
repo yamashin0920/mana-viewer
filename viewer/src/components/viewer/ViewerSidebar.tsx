@@ -114,7 +114,7 @@ export function ViewerSidebar({
       <div className="border-t border-slate-100 px-4 py-3 dark:border-slate-700">
         <p className="flex items-center gap-1.5 text-xs text-slate-400">
           <Bookmark className="h-3 w-3" />
-          テキストを選択してハイライト · ← → でページ移動
+          テキストを選択してマーカー · ← → でページ移動
         </p>
       </div>
     </div>

@@ -43,9 +43,9 @@ export function SelectionToolbar({
           ))}
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={onHighlight} className="gap-1.5" data-testid="highlight-button">
+          <Button variant="ghost" size="sm" onClick={onHighlight} className="gap-1.5" data-testid="marker-button">
             <Highlighter className="h-3.5 w-3.5" />
-            ハイライト
+            マーカー
           </Button>
           <Button variant="ghost" size="sm" onClick={onAddNote} className="gap-1.5">
             <StickyNote className="h-3.5 w-3.5" />
