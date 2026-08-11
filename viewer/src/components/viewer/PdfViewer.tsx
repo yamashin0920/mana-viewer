@@ -1,13 +1,10 @@
-import { useEffect, useState, useCallback } from 'react'
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
+import { useEffect, useCallback } from 'react'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import { Loader2 } from 'lucide-react'
 import type { Annotation, ContentPolicyResponse } from '../../types'
 import { Skeleton } from '../ui/Skeleton'
 import { PdfPage } from './PdfPage'
-
-GlobalWorkerOptions.workerSrc = pdfjsWorker
+import { usePdfDocument } from '../../hooks/usePdfDocument'
 
 export type ViewMode = 'single' | 'spread'
 
@@ -20,6 +17,9 @@ export interface TextSelection {
 
 interface PdfViewerProps {
   pdfUrl: string
+  pdfDoc?: PDFDocumentProxy | null
+  pdfLoading?: boolean
+  pdfError?: string | null
   page: number
   zoom: number
   viewMode: ViewMode
@@ -33,6 +33,9 @@ interface PdfViewerProps {
 
 export function PdfViewer({
   pdfUrl,
+  pdfDoc: externalPdfDoc,
+  pdfLoading: externalLoading,
+  pdfError: externalError,
   page,
   zoom,
   viewMode,
@@ -44,34 +47,19 @@ export function PdfViewer({
   onClearSelection,
 }: PdfViewerProps) {
   void policy
-  const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const usesSharedDoc = externalLoading !== undefined
+  const internal = usePdfDocument(usesSharedDoc ? null : pdfUrl)
+  const pdfDoc = usesSharedDoc ? (externalPdfDoc ?? null) : internal.pdfDoc
+  const loading = usesSharedDoc ? (externalLoading ?? false) : internal.loading
+  const error = usesSharedDoc ? externalError : internal.error
 
   const rightPage = viewMode === 'spread' && page < (pdfDoc?.numPages ?? 0) ? page + 1 : null
 
   useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-
-    getDocument({ url: pdfUrl })
-      .promise.then((doc) => {
-        if (cancelled) return
-        setPdfDoc(doc)
-        onPageCount(doc.numPages)
-        setLoading(false)
-      })
-      .catch((err: Error) => {
-        if (cancelled) return
-        setError(err.message)
-        setLoading(false)
-      })
-
-    return () => {
-      cancelled = true
+    if (pdfDoc) {
+      onPageCount(pdfDoc.numPages)
     }
-  }, [pdfUrl, onPageCount])
+  }, [pdfDoc, onPageCount])
 
   useEffect(() => {
     onClearSelection?.()

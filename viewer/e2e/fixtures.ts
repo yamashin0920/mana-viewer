@@ -28,12 +28,12 @@ export async function openFirstContent(page: import('@playwright/test').Page) {
   await firstCard.click()
   await expect(page).toHaveURL(/\/viewer\//)
   await expect(page.getByTestId('viewer-page')).toBeVisible()
-  await expect(page.locator('canvas').first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('[data-testid="pdf-canvas"]').first()).toBeVisible({ timeout: 30_000 })
   return href
 }
 
 /** PDF ページの描画完了を待つ */
 export async function waitForPdfRender(page: import('@playwright/test').Page) {
-  await expect(page.locator('canvas').first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('[data-testid="pdf-canvas"]').first()).toBeVisible({ timeout: 30_000 })
   await page.waitForTimeout(500)
 }

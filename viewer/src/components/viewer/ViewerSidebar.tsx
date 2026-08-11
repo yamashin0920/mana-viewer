@@ -1,14 +1,19 @@
-import { Bookmark, Highlighter, List, X } from 'lucide-react'
+import { Bookmark, Highlighter, LayoutGrid, List, X } from 'lucide-react'
+import type { PDFDocumentProxy } from 'pdfjs-dist'
 import type { Annotation, TocEntry } from '../../types'
 import { TocSidebar } from './TocSidebar'
+import { ThumbnailSidebar } from './ThumbnailSidebar'
 import { AnnotationSidebar } from './AnnotationSidebar'
 import { Button } from '../ui/Button'
 
-type SidebarTab = 'toc' | 'annotations'
+type SidebarTab = 'thumbnails' | 'toc' | 'annotations'
 
 interface ViewerSidebarProps {
   tab: SidebarTab
   onTabChange: (tab: SidebarTab) => void
+  pdfDoc: PDFDocumentProxy | null
+  pdfLoading?: boolean
+  pageCount: number
   toc: TocEntry[]
   annotations: Annotation[]
   currentPage: number
@@ -22,6 +27,9 @@ interface ViewerSidebarProps {
 export function ViewerSidebar({
   tab,
   onTabChange,
+  pdfDoc,
+  pdfLoading,
+  pageCount,
   toc,
   annotations,
   currentPage,
@@ -32,6 +40,7 @@ export function ViewerSidebar({
   isMobile,
 }: ViewerSidebarProps) {
   const tabs: { id: SidebarTab; label: string; icon: React.ReactNode; count?: number }[] = [
+    { id: 'thumbnails', label: 'サムネイル', icon: <LayoutGrid className="h-4 w-4" /> },
     { id: 'toc', label: '目次', icon: <List className="h-4 w-4" /> },
     { id: 'annotations', label: '注釈', icon: <Highlighter className="h-4 w-4" />, count: annotations.length },
   ]
@@ -70,7 +79,15 @@ export function ViewerSidebar({
       </div>
 
       <div className="custom-scrollbar flex-1 overflow-y-auto p-4">
-        {tab === 'toc' ? (
+        {tab === 'thumbnails' ? (
+          <ThumbnailSidebar
+            pdfDoc={pdfDoc}
+            loading={pdfLoading}
+            pageCount={pageCount}
+            currentPage={currentPage}
+            onJump={onJump}
+          />
+        ) : tab === 'toc' ? (
           <TocSidebar toc={toc} currentPage={currentPage} onJump={onJump} />
         ) : (
           <AnnotationSidebar
