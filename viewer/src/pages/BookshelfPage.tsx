@@ -13,19 +13,20 @@ import type { Content } from '../types'
 
 export function BookshelfPage() {
   const user = useAuthStore((s) => s.user)
+  const token = useAuthStore((s) => s.token)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<string>('all')
 
   const { data: shelves, isLoading: shelvesLoading } = useQuery({
-    queryKey: ['bookshelves', user?.id],
+    queryKey: ['bookshelves', token],
     queryFn: fetchBookshelves,
-    enabled: !!user,
+    enabled: !!token && !!user,
   })
 
   const { data: contents, isLoading: contentsLoading } = useQuery({
-    queryKey: ['contents', user?.id],
+    queryKey: ['contents', token],
     queryFn: () => fetchContents(),
-    enabled: !!user,
+    enabled: !!token && !!user,
   })
 
   const distributed = shelves?.data.find((s) => s.type === 'distributed')

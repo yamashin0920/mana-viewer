@@ -1,21 +1,13 @@
 import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { App } from './App'
+import { queryClient } from './lib/queryClient'
 import { useAuthStore } from './store/authStore'
 import { useThemeStore } from './store/themeStore'
 import { ToastContainer } from './components/ui/Toast'
 import './index.css'
 import './styles/pdf.css'
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30_000,
-      retry: 1,
-    },
-  },
-})
 
 function Bootstrap() {
   const initAuth = useAuthStore((s) => s.init)
