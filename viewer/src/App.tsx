@@ -1,37 +1,28 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { AuthGuard } from './components/auth/AuthGuard'
 import { BookshelfPage } from './pages/BookshelfPage'
-import { LoginPage } from './pages/LoginPage'
 import { ViewerPage } from './pages/ViewerPage'
-import { useAuthStore } from './store/authStore'
-
-function RootRedirect() {
-  const user = useAuthStore((s) => s.user)
-  return <Navigate to={user ? '/' : '/login'} replace />
-}
 
 export function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
         <Route
           path="/"
           element={
-            <ProtectedRoute>
+            <AuthGuard>
               <BookshelfPage />
-            </ProtectedRoute>
+            </AuthGuard>
           }
         />
         <Route
           path="/viewer/:contentId"
           element={
-            <ProtectedRoute>
+            <AuthGuard>
               <ViewerPage />
-            </ProtectedRoute>
+            </AuthGuard>
           }
         />
-        <Route path="*" element={<RootRedirect />} />
       </Routes>
     </BrowserRouter>
   )

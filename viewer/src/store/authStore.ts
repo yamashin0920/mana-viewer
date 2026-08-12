@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { setAccessToken } from '../api/client'
-import { fetchMe, loginWithCredentials } from '../api/auth'
+import { fetchMe } from '../api/auth'
+import { consumeAccessTokenFromUrl, redirectToLogin } from '../utils/authRedirect'
 import type { User } from '../types'
 
 interface AuthState {
@@ -10,7 +11,6 @@ interface AuthState {
   error: string | null
   init: () => Promise<void>
   signInWithToken: (token: string) => Promise<void>
-  signInWithCredentials: (userId: string, password: string) => Promise<void>
   signOut: () => void
 }
 
@@ -21,6 +21,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   error: null,
 
   init: async () => {
+    const urlToken = consumeAccessTokenFromUrl()
+    if (urlToken) {
+      setAccessToken(urlToken)
+    }
+
     const token = localStorage.getItem('accessToken')
     if (!token) {
       set({ user: null, token: null, loading: false, error: null })
@@ -55,27 +60,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  signInWithCredentials: async (userId: string, password: string) => {
-    if (!userId.trim() || !password.trim()) {
-      const message = 'ID とパスワードを入力してください'
-      set({ error: message })
-      throw new Error(message)
-    }
-
-    set({ error: null })
-    try {
-      const res = await loginWithCredentials(userId.trim(), password)
-      setAccessToken(res.accessToken)
-      set({ user: res.user, token: res.accessToken, error: null })
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'ログインに失敗しました'
-      set({ error: message })
-      throw new Error(message)
-    }
-  },
-
   signOut: () => {
     localStorage.removeItem('accessToken')
     set({ user: null, token: null, error: null })
+    redirectToLogin(`${window.location.origin}/`)
   },
 }))

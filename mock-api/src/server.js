@@ -37,10 +37,10 @@ app.get('/', (_req, res) => {
     docs: '/health',
     auth: {
       hint: 'Authorization: Bearer mock-token-learner',
-      tokens: 'GET /auth/tokens',
+      note: 'ログインは auth サービス (port 5180 / 3002) を使用',
     },
     endpoints: {
-      auth: ['POST /auth/login', 'POST /auth/lti/launch', 'GET /auth/tokens'],
+      auth: ['(moved) → auth-api: POST /auth/login'],
       users: ['GET /users/me', 'GET /organizations/:orgId/members'],
       licenses: ['GET /licenses/me', 'POST /licenses/verify', 'POST /licenses/offline-token'],
       contents: [
