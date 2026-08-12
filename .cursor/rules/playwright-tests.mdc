@@ -1,0 +1,55 @@
+---
+description: 機能実装時に Playwright E2E テストを追加するルール
+globs: viewer/src/**,viewer/e2e/**,mock-api/src/**,admin/web/src/**,admin/web/e2e/**,auth/api/src/**
+alwaysApply: false
+---
+
+# 機能実装時は Playwright テストを追加する
+
+viewer または mock-api にユーザー向け機能・API 挙動を追加・変更した場合、**同じ PR / コミットで Playwright テストを追加または更新すること**。
+
+## 必須
+
+1. **UI 機能**（本棚・ビューア・注釈・設定など）
+   - `viewer/e2e/` に spec を追加、または既存 spec にケースを追記
+   - 操作対象に `data-testid` を付与（既存命名に合わせる: `bookshelf-page`, `viewer-toolbar` など）
+   - 正常系を最低 1 ケース、主要な分岐があれば追加
+
+2. **Mock API のエンドポイント変更**
+   - `viewer/e2e/mock-api.spec.ts` に HTTP レベルのテストを追加
+   - 認証・バリデーション・CRUD の代表パスをカバー
+
+3. **実装完了の定義**
+   - `cd viewer && npm run test:e2e` がパスしていること
+   - 新機能にテストが無い状態でマージしない
+
+## テスト配置
+
+| 対象 | ファイル |
+|------|----------|
+| Mock API | `viewer/e2e/mock-api.spec.ts` |
+| 本棚 | `viewer/e2e/bookshelf.spec.ts` |
+| PDF ビューア | `viewer/e2e/viewer.spec.ts` |
+| 注釈 | `viewer/e2e/annotations.spec.ts` |
+| ダークモード | `viewer/e2e/dark-mode.spec.ts` |
+| モバイル UI | `viewer/e2e/mobile.spec.ts` |
+| 管理画面 | `admin/web/e2e/*.spec.ts` |
+| 共通 setup | `viewer/e2e/fixtures.ts`, `admin/web/e2e/fixtures.ts` |
+
+新カテゴリの機能は `viewer/e2e/<feature>.spec.ts` を新規作成してよい。
+
+## 書き方
+
+- `playwright.config.ts` が mock-api (:3001) と viewer (:5173) を自動起動する。テスト内でサーバー起動は不要
+- 認証は `fixtures.ts` の `setupAuth` / 開発用トークンを利用
+- セレクタは `getByTestId` を優先。テキストセレクタは最後の手段
+- フレーク対策: `await expect(...).toBeVisible()` で描画完了を待つ
+
+## 実行
+
+```bash
+cd viewer && npm run test:e2e
+cd admin/web && npm run test:e2e
+```
+
+詳細: `viewer/e2e/README.md`
