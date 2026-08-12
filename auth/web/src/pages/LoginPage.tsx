@@ -1,25 +1,60 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { BookOpen, Loader2 } from 'lucide-react'
 import {
   buildRedirectUrl,
-  loginDestinationLabel,
+  fetchSessionUser,
   loginReturnUrl,
   loginWithCredentials,
 } from '../api/client'
 import { Button } from '../components/Button'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { clearStoredAccessToken, getStoredAccessToken, persistAccessToken } from '../session'
 
 export function LoginPage() {
   const [searchParams] = useSearchParams()
   const redirect = searchParams.get('redirect')
+  const loggedOut = searchParams.get('loggedOut')
   const returnUrl = loginReturnUrl(redirect)
-  const destinationLabel = loginDestinationLabel(redirect)
 
   const [userId, setUserId] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
   const [formError, setFormError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function resumeExistingSession() {
+      if (loggedOut) {
+        clearStoredAccessToken()
+        if (!cancelled) setCheckingSession(false)
+        return
+      }
+
+      const token = getStoredAccessToken()
+      if (!token) {
+        if (!cancelled) setCheckingSession(false)
+        return
+      }
+
+      try {
+        await fetchSessionUser(token)
+        if (!cancelled) {
+          window.location.replace(buildRedirectUrl(returnUrl, token))
+        }
+      } catch {
+        clearStoredAccessToken()
+        if (!cancelled) setCheckingSession(false)
+      }
+    }
+
+    resumeExistingSession()
+    return () => {
+      cancelled = true
+    }
+  }, [returnUrl, loggedOut])
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -33,11 +68,23 @@ export function LoginPage() {
     setSubmitting(true)
     try {
       const res = await loginWithCredentials(userId, password)
+      persistAccessToken(res.accessToken)
       window.location.href = buildRedirectUrl(returnUrl, res.accessToken)
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'ログインに失敗しました')
       setSubmitting(false)
     }
+  }
+
+  if (checkingSession) {
+    return (
+      <div
+        className="flex min-h-screen items-center justify-center bg-slate-100 text-slate-500 dark:bg-slate-950"
+        data-testid="login-checking-session"
+      >
+        <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
+      </div>
+    )
   }
 
   return (
@@ -54,7 +101,10 @@ export function LoginPage() {
             </div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">マナビューア</h1>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              ログイン — {destinationLabel} へ移動します
+              アカウントにログインしてください
+            </p>
+            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+              ビューア・管理画面など、すべてのアプリで共通のログインです
             </p>
           </div>
 

@@ -6,6 +6,12 @@ export function redirectToLogin(returnUrl?: string) {
   window.location.href = `${AUTH_APP_URL}/login?redirect=${redirect}`
 }
 
+/** 共通ログアウト: 認証セッションを破棄してからログイン画面へ */
+export function redirectToLogout(returnUrl?: string) {
+  const redirect = encodeURIComponent(returnUrl ?? window.location.href)
+  window.location.href = `${AUTH_APP_URL}/logout?redirect=${redirect}`
+}
+
 /** 認証アプリから渡された accessToken を URL から取り込む */
 export function consumeAccessTokenFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search)

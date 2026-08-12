@@ -41,6 +41,18 @@ export async function loginWithCredentials(userId: string, password: string) {
   })
 }
 
+export async function fetchSessionUser(accessToken: string) {
+  return apiFetch<{
+    id: string
+    name: string
+    email: string
+    role: string
+    orgId: string
+  }>('/auth/me', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+}
+
 /** 認証成功後、呼び出し元アプリへトークン付きでリダイレクトする URL を組み立てる */
 export function buildRedirectUrl(returnUrl: string, accessToken: string) {
   const url = new URL(returnUrl)
@@ -61,16 +73,4 @@ function resolveReturnUrl(redirect: string | null): string {
 
 export function loginReturnUrl(redirect: string | null): string {
   return resolveReturnUrl(redirect)
-}
-
-export function loginDestinationLabel(redirect: string | null): string {
-  const target = resolveReturnUrl(redirect)
-  try {
-    const { port } = new URL(target)
-    if (port === '5190') return '管理画面'
-    if (port === '5173') return 'ビューア'
-  } catch {
-    // ignore
-  }
-  return 'アプリ'
 }

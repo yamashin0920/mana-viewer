@@ -26,7 +26,7 @@ app.get('/', (_req, res) => {
   res.json({
     service: 'mana-viewer Auth API',
     version: '0.1.0',
-    endpoints: ['POST /auth/login', 'POST /auth/refresh', 'GET /auth/tokens'],
+    endpoints: ['POST /auth/login', 'GET /auth/me', 'POST /auth/refresh', 'GET /auth/tokens'],
   });
 });
 

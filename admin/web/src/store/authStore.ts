@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { clearAccessToken, fetchMe, persistAccessToken } from '../api/auth'
-import { consumeAccessTokenFromUrl, redirectToLogin } from '../utils/authRedirect'
+import { consumeAccessTokenFromUrl, redirectToLogout } from '../utils/authRedirect'
 import type { User } from '../types'
 
 interface AuthState {
@@ -40,8 +40,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: () => {
     clearAccessToken()
-    set({ user: null, token: null })
-    redirectToLogin(`${window.location.origin}/accounts`)
+    // user を null にすると AuthGuard が redirectToLogin を走らせ SSO で即再ログインするため、
+    // 先に共通ログアウトへ遷移する（状態更新は不要）
+    redirectToLogout(`${window.location.origin}/accounts`)
   },
 }))
 

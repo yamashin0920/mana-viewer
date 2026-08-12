@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { setAccessToken } from '../api/client'
 import { fetchMe } from '../api/auth'
-import { consumeAccessTokenFromUrl, redirectToLogin } from '../utils/authRedirect'
+import { consumeAccessTokenFromUrl, redirectToLogout } from '../utils/authRedirect'
 import type { User } from '../types'
 
 interface AuthState {
@@ -62,7 +62,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: () => {
     localStorage.removeItem('accessToken')
-    set({ user: null, token: null, error: null })
-    redirectToLogin(`${window.location.origin}/`)
+    setAccessToken(null)
+    redirectToLogout(`${window.location.origin}/`)
   },
 }))
