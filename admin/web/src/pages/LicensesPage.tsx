@@ -152,7 +152,9 @@ export function LicensesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">ライセンス管理</h2>
-          <p className="text-sm text-slate-500">コンテンツへの閲覧権限と席数を管理します</p>
+          <p className="text-sm text-slate-500">
+            コンテンツへの閲覧権限と席数を管理します。割当変更はビューアの本棚に即時反映されます。
+          </p>
         </div>
         <Button
           variant="primary"

@@ -98,6 +98,13 @@ export async function updateUser(userId: string, data: Partial<{ name: string; e
   })
 }
 
+export async function updateUserLicenses(userId: string, licenseIds: string[]) {
+  return apiFetch<{ data: AdminUser['licenses'] }>(MOCK_BASE, `/admin/users/${userId}/licenses`, {
+    method: 'PUT',
+    body: JSON.stringify({ licenseIds }),
+  })
+}
+
 export async function deleteUser(userId: string) {
   return apiFetch<void>(MOCK_BASE, `/admin/users/${userId}`, { method: 'DELETE' })
 }

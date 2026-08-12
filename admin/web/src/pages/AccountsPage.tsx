@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Loader2, Pencil, Plus, Trash2, UserPlus } from 'lucide-react'
+import { Loader2, Pencil, Plus, Trash2, UserPlus, KeyRound } from 'lucide-react'
 import {
   createCredential,
   createUser,
@@ -7,11 +7,13 @@ import {
   deleteUser,
   fetchAdminUsers,
   fetchCredentials,
+  fetchLicenses,
   updateCredential,
   updateUser,
+  updateUserLicenses,
 } from '../api/client'
 import { Button } from '../components/Button'
-import type { AdminUser, CredentialAccount, UserRole } from '../types'
+import type { AdminUser, CredentialAccount, License, UserRole } from '../types'
 import { ROLE_LABELS } from '../types'
 
 const inputClass =
@@ -20,12 +22,16 @@ const inputClass =
 export function AccountsPage() {
   const [credentials, setCredentials] = useState<CredentialAccount[]>([])
   const [users, setUsers] = useState<AdminUser[]>([])
+  const [allLicenses, setAllLicenses] = useState<License[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const [showUserForm, setShowUserForm] = useState(false)
   const [showCredForm, setShowCredForm] = useState(false)
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null)
+  const [editingLicensesUser, setEditingLicensesUser] = useState<AdminUser | null>(null)
+  const [selectedLicenseIds, setSelectedLicenseIds] = useState<string[]>([])
+  const [savingLicenses, setSavingLicenses] = useState(false)
   const [editingCred, setEditingCred] = useState<CredentialAccount | null>(null)
 
   const [userForm, setUserForm] = useState({ name: '', email: '', role: 'learner' as UserRole })
@@ -35,9 +41,14 @@ export function AccountsPage() {
     setLoading(true)
     setError(null)
     try {
-      const [credRes, userRes] = await Promise.all([fetchCredentials(), fetchAdminUsers()])
+      const [credRes, userRes, licenseRes] = await Promise.all([
+        fetchCredentials(),
+        fetchAdminUsers(),
+        fetchLicenses(),
+      ])
       setCredentials(credRes.data)
       setUsers(userRes.data)
+      setAllLicenses(licenseRes.data)
     } catch (err) {
       setError(err instanceof Error ? err.message : '読み込みに失敗しました')
     } finally {
@@ -95,6 +106,34 @@ export function AccountsPage() {
     if (!confirm(`ログインID「${cred.loginId}」を削除しますか？`)) return
     await deleteCredential(cred.loginId)
     await load()
+  }
+
+  const startEditLicenses = (user: AdminUser) => {
+    setEditingLicensesUser(user)
+    setSelectedLicenseIds(user.licenses?.map((l) => l.id) ?? [])
+    setEditingUser(null)
+    setShowUserForm(false)
+  }
+
+  const toggleLicenseForUser = (licenseId: string) => {
+    setSelectedLicenseIds((prev) =>
+      prev.includes(licenseId) ? prev.filter((id) => id !== licenseId) : [...prev, licenseId],
+    )
+  }
+
+  const handleSaveLicenses = async () => {
+    if (!editingLicensesUser) return
+    setSavingLicenses(true)
+    setError(null)
+    try {
+      await updateUserLicenses(editingLicensesUser.id, selectedLicenseIds)
+      setEditingLicensesUser(null)
+      await load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'ライセンス更新に失敗しました')
+    } finally {
+      setSavingLicenses(false)
+    }
   }
 
   const startEditUser = (user: AdminUser) => {
@@ -200,7 +239,7 @@ export function AccountsPage() {
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">ユーザー</h2>
-            <p className="text-sm text-slate-500">組織内のユーザーとライセンス割当状況</p>
+            <p className="text-sm text-slate-500">組織内のユーザーとライセンス割当状況（ビューアの閲覧可否に反映されます）</p>
           </div>
           <Button variant="primary" size="sm" onClick={() => { setShowUserForm(true); setEditingUser(null); setUserForm({ name: '', email: '', role: 'learner' }) }}>
             <UserPlus className="h-3.5 w-3.5" />
@@ -250,7 +289,12 @@ export function AccountsPage() {
                     {user.licenses && user.licenses.length > 0 ? (
                       <ul className="space-y-0.5">
                         {user.licenses.map((l) => (
-                          <li key={l.id} className="text-xs text-slate-600 dark:text-slate-400">{l.contentTitle}</li>
+                          <li key={l.id} className="text-xs text-slate-600 dark:text-slate-400">
+                            {l.contentTitle}
+                            {!l.valid && (
+                              <span className="ml-1 text-amber-600 dark:text-amber-400">（無効）</span>
+                            )}
+                          </li>
                         ))}
                       </ul>
                     ) : (
@@ -259,6 +303,15 @@ export function AccountsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        data-testid={`user-licenses-${user.id}`}
+                        onClick={() => startEditLicenses(user)}
+                        title="ライセンス割当"
+                      >
+                        <KeyRound className="h-3.5 w-3.5" />
+                      </Button>
                       <Button size="sm" variant="ghost" onClick={() => startEditUser(user)}><Pencil className="h-3.5 w-3.5" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => handleDeleteUser(user)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
                     </div>
@@ -268,6 +321,59 @@ export function AccountsPage() {
             </tbody>
           </table>
         </div>
+
+        {editingLicensesUser && (
+          <div
+            className="mt-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
+            data-testid="user-licenses-form"
+          >
+            <h3 className="mb-1 text-sm font-medium">
+              {editingLicensesUser.name} のライセンス割当
+            </h3>
+            <p className="mb-3 text-xs text-slate-500">
+              チェックした教材のみ、ビューアの本棚に表示されます
+            </p>
+            <div className="space-y-2">
+              {allLicenses.map((license) => {
+                const selected = selectedLicenseIds.includes(license.id)
+                const seatsFull =
+                  !selected &&
+                  (license.seatsUsed ?? license.assignedUserIds.length) >= license.seatCount
+                return (
+                  <label
+                    key={license.id}
+                    className={`flex cursor-pointer items-center justify-between rounded-lg border px-3 py-2 text-sm ${
+                      selected
+                        ? 'border-brand-500 bg-brand-50 dark:bg-brand-600/20'
+                        : seatsFull
+                          ? 'cursor-not-allowed border-slate-200 opacity-50 dark:border-slate-700'
+                          : 'border-slate-200 dark:border-slate-700'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        disabled={seatsFull}
+                        onChange={() => toggleLicenseForUser(license.id)}
+                      />
+                      {license.content?.title ?? license.contentId}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {license.seatsUsed ?? license.assignedUserIds.length}/{license.seatCount} 席
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+            <div className="mt-4 flex gap-2">
+              <Button variant="primary" size="sm" disabled={savingLicenses} onClick={handleSaveLicenses}>
+                {savingLicenses ? '保存中...' : '保存'}
+              </Button>
+              <Button size="sm" onClick={() => setEditingLicensesUser(null)}>キャンセル</Button>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   )

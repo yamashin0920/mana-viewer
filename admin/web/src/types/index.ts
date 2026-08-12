@@ -14,6 +14,7 @@ export interface UserLicense {
   contentTitle?: string
   expiresAt: string
   status: string
+  valid?: boolean
 }
 
 export interface AdminUser extends User {

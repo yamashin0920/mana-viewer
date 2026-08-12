@@ -58,10 +58,23 @@ function findUser(store, userId) {
   return store.users.find((u) => u.id === userId);
 }
 
-function userLicenses(store, userId) {
-  return store.licenses.filter(
-    (l) => l.status === 'active' && l.assignedUserIds.includes(userId)
-  );
+function isLicenseValid(license, now = new Date()) {
+  if (license.status !== 'active') return false
+  if (new Date(license.startsAt) > now) return false
+  if (new Date(license.expiresAt) < now) return false
+  return true
+}
+
+function userLicenses(store, userId, { validOnly = true } = {}) {
+  return store.licenses.filter((l) => {
+    if (!l.assignedUserIds.includes(userId)) return false
+    if (validOnly && !isLicenseValid(l)) return false
+    return true
+  })
+}
+
+function userLicenseAssignments(store, userId) {
+  return store.licenses.filter((l) => l.assignedUserIds.includes(userId))
 }
 
 function canAccessContent(store, userId, contentId) {
@@ -102,6 +115,8 @@ module.exports = {
   paginate,
   findUser,
   userLicenses,
+  userLicenseAssignments,
+  isLicenseValid,
   canAccessContent,
   watermarkText,
   generateMockChunk,

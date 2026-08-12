@@ -2,6 +2,7 @@ import { test as base, expect, type Page } from '@playwright/test'
 
 export const ADMIN_TOKEN = 'mock-token-admin'
 export const LEARNER_TOKEN = 'mock-token-learner'
+export const INSTRUCTOR_TOKEN = 'mock-token-instructor'
 
 const AUTH_WEB_URL = process.env.AUTH_WEB_URL || 'http://localhost:5180'
 const ADMIN_URL = process.env.ADMIN_URL || 'http://localhost:5190'
