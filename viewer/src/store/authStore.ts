@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { setAccessToken } from '../api/client'
 import { fetchMe } from '../api/auth'
+import { resetUserQueries } from '../lib/queryClient'
 import { consumeAccessTokenFromUrl, redirectToLogout } from '../utils/authRedirect'
 import type { User } from '../types'
 
@@ -44,7 +45,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signInWithToken: async (token: string) => {
     setAccessToken(token)
-    set({ loading: true, error: null })
+    resetUserQueries()
+    set({ user: null, token, loading: true, error: null })
     try {
       const user = await fetchMe()
       set({ user, token, loading: false, error: null })
@@ -62,7 +64,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: () => {
     localStorage.removeItem('accessToken')
-    setAccessToken(null)
     redirectToLogout(`${window.location.origin}/`)
   },
 }))

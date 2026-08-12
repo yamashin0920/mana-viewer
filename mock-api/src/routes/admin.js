@@ -1,6 +1,6 @@
 const express = require('express');
 const { adminMiddleware, orgAdminMiddleware } = require('../middleware/admin');
-const { saveSeed, uuidv4, userLicenses } = require('../store');
+const { saveSeed, uuidv4, userLicenses, userLicenseAssignments, isLicenseValid } = require('../store');
 
 const router = express.Router();
 
@@ -15,15 +15,57 @@ router.get('/users', adminMiddleware, (req, res) => {
     .filter((u) => u.orgId === req.user.orgId)
     .map((u) => ({
       ...u,
-      licenses: userLicenses(req.store, u.id).map((l) => ({
+      licenses: userLicenseAssignments(req.store, u.id).map((l) => ({
         id: l.id,
         contentId: l.contentId,
         contentTitle: req.store.contents.find((c) => c.id === l.contentId)?.title,
         expiresAt: l.expiresAt,
         status: l.status,
+        valid: isLicenseValid(l),
       })),
     }));
   res.json({ data: users });
+});
+
+router.put('/users/:userId/licenses', orgAdminMiddleware, (req, res) => {
+  const user = req.store.users.find((u) => u.id === req.params.userId);
+  if (!user || !sameOrg(req, user.orgId)) {
+    return res.status(404).json({ error: 'not_found', message: 'ユーザーが見つかりません' });
+  }
+
+  const { licenseIds = [] } = req.body || {};
+  const desired = new Set(licenseIds);
+  const orgLicenses = req.store.licenses.filter((l) => l.orgId === req.user.orgId);
+
+  for (const license of orgLicenses) {
+    const shouldHave = desired.has(license.id);
+    const has = license.assignedUserIds.includes(user.id);
+
+    if (shouldHave && !has) {
+      if (license.assignedUserIds.length >= license.seatCount) {
+        const title = req.store.contents.find((c) => c.id === license.contentId)?.title ?? license.contentId;
+        return res.status(409).json({
+          error: 'seats_exhausted',
+          message: `「${title}」の席数上限に達しています`,
+        });
+      }
+      license.assignedUserIds.push(user.id);
+    } else if (!shouldHave && has) {
+      license.assignedUserIds = license.assignedUserIds.filter((id) => id !== user.id);
+    }
+  }
+
+  saveSeed(req.store);
+  res.json({
+    data: userLicenseAssignments(req.store, user.id).map((l) => ({
+      id: l.id,
+      contentId: l.contentId,
+      contentTitle: req.store.contents.find((c) => c.id === l.contentId)?.title,
+      expiresAt: l.expiresAt,
+      status: l.status,
+      valid: isLicenseValid(l),
+    })),
+  });
 });
 
 router.post('/users', orgAdminMiddleware, (req, res) => {

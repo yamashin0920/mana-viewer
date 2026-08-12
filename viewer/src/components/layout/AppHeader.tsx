@@ -4,6 +4,8 @@ import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
 import { ThemeToggle } from '../ui/ThemeToggle'
 
+const AUTH_APP_URL = import.meta.env.VITE_AUTH_APP_URL || 'http://localhost:5180'
+
 const DEV_TOKENS = [
   { token: 'mock-token-learner', label: '学習者', role: 'learner' as const },
   { token: 'mock-token-instructor', label: '教員', role: 'instructor' as const },
@@ -23,8 +25,14 @@ const roleLabel: Record<string, string> = {
 }
 
 export function AppHeader() {
-  const { user, signInWithToken, signOut } = useAuthStore()
-  const currentToken = localStorage.getItem('accessToken') ?? 'mock-token-learner'
+  const { user, token, signOut } = useAuthStore()
+  const currentToken = token ?? localStorage.getItem('accessToken') ?? 'mock-token-learner'
+
+  const handleDevUserSwitch = (newToken: string) => {
+    if (newToken === currentToken) return
+    const redirect = encodeURIComponent(window.location.href)
+    window.location.href = `${AUTH_APP_URL}/dev-sync?token=${encodeURIComponent(newToken)}&redirect=${redirect}`
+  }
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/90">
@@ -61,8 +69,9 @@ export function AppHeader() {
             <select
               className="bg-transparent text-sm text-slate-700 outline-none dark:text-slate-300"
               value={currentToken}
-              onChange={(e) => signInWithToken(e.target.value)}
+              onChange={(e) => handleDevUserSwitch(e.target.value)}
               aria-label="開発用ユーザー切替"
+              title="開発用: ユーザーを切り替え（auth セッションも同期）"
             >
               {DEV_TOKENS.map((t) => (
                 <option key={t.token} value={t.token}>

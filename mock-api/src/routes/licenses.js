@@ -1,6 +1,6 @@
 const express = require('express');
 const { authMiddleware } = require('../middleware/auth');
-const { userLicenses, canAccessContent, paginate } = require('../store');
+const { userLicenses, canAccessContent } = require('../store');
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ router.get('/me', authMiddleware, (req, res) => {
 });
 
 router.post('/verify', authMiddleware, (req, res) => {
-  const { contentId, action = 'view' } = req.body || {};
+  const { contentId } = req.body || {};
   const allowed = canAccessContent(req.store, req.user.id, contentId);
   const license = userLicenses(req.store, req.user.id).find((l) => l.contentId === contentId);
   const content = req.store.contents.find((c) => c.id === contentId);
@@ -27,17 +27,14 @@ router.post('/verify', authMiddleware, (req, res) => {
     });
   }
 
-  const now = new Date();
-  const expired = new Date(license.expiresAt) < now;
-
   res.json({
-    allowed: !expired,
-    canView: !expired,
-    canDownloadOffline: !expired && license.allowOffline && content.policy.allowOffline,
+    allowed: true,
+    canView: true,
+    canDownloadOffline: license.allowOffline && content.policy.allowOffline,
     expiresAt: license.expiresAt,
     offlineDays: content.policy.offlineDays,
     maxDevices: content.policy.maxDevices,
-    reason: expired ? 'license_expired' : null,
+    reason: null,
   });
 });
 

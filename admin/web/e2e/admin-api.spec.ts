@@ -1,4 +1,4 @@
-import { test, expect, ADMIN_TOKEN, LEARNER_TOKEN } from './fixtures'
+import { test, expect, ADMIN_TOKEN, LEARNER_TOKEN, INSTRUCTOR_TOKEN } from './fixtures'
 
 const AUTH_API = 'http://localhost:3002'
 const MOCK_API = 'http://localhost:3001'
@@ -81,5 +81,44 @@ test.describe('Admin API', () => {
       headers: { Authorization: `Bearer ${LEARNER_TOKEN}` },
     })
     expect(res.status()).toBe(403)
+  })
+
+  test('PUT /admin/users/:userId/licenses affects viewer content list', async ({ request }) => {
+    const learnerContents = await request.get(`${MOCK_API}/contents`, {
+      headers: { Authorization: `Bearer ${LEARNER_TOKEN}` },
+    })
+    expect(learnerContents.ok()).toBeTruthy()
+    const before = await learnerContents.json()
+    expect(before.data.length).toBeGreaterThanOrEqual(3)
+
+    const update = await request.put(`${MOCK_API}/admin/users/user-001/licenses`, {
+      headers: {
+        Authorization: `Bearer ${ADMIN_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: { licenseIds: ['license-001'] },
+    })
+    expect(update.ok()).toBeTruthy()
+
+    const afterRes = await request.get(`${MOCK_API}/contents`, {
+      headers: { Authorization: `Bearer ${LEARNER_TOKEN}` },
+    })
+    const after = await afterRes.json()
+    expect(after.data).toHaveLength(1)
+    expect(after.data[0].id).toBe('content-001')
+
+    const instructorRes = await request.get(`${MOCK_API}/contents`, {
+      headers: { Authorization: `Bearer ${INSTRUCTOR_TOKEN}` },
+    })
+    const instructor = await instructorRes.json()
+    expect(instructor.data).toHaveLength(1)
+
+    await request.put(`${MOCK_API}/admin/users/user-001/licenses`, {
+      headers: {
+        Authorization: `Bearer ${ADMIN_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: { licenseIds: ['license-001', 'license-002', 'license-003'] },
+    })
   })
 })

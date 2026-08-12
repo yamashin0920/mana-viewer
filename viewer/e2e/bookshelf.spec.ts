@@ -56,9 +56,14 @@ test.describe('本棚ページ', () => {
     await gotoBookshelf(page)
 
     await page.getByLabel('開発用ユーザー切替').selectOption('mock-token-instructor')
+    await page.waitForURL(/localhost:5173/)
     await expect(page.getByText('鈴木 花子')).toBeVisible()
+    await expect(page.getByTestId('content-grid').getByTestId('content-card')).toHaveCount(1)
+    await expect(page.getByTestId('content-grid').getByText('数学I 基礎テキスト')).toBeVisible()
 
     await page.getByLabel('開発用ユーザー切替').selectOption('mock-token-learner')
+    await page.waitForURL(/localhost:5173/)
     await expect(page.getByText('田中 太郎')).toBeVisible()
+    await expect(page.getByTestId('content-grid').getByTestId('content-card')).toHaveCount(3)
   })
 })

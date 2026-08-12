@@ -8,20 +8,25 @@ import { ContentCard } from '../components/bookshelf/ContentCard'
 import { RecentlyReadSection } from '../components/bookshelf/RecentlyReadSection'
 import { ContentCardSkeleton } from '../components/ui/Skeleton'
 import { EmptyState } from '../components/ui/EmptyState'
+import { useAuthStore } from '../store/authStore'
 import type { Content } from '../types'
 
 export function BookshelfPage() {
+  const user = useAuthStore((s) => s.user)
+  const token = useAuthStore((s) => s.token)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<string>('all')
 
   const { data: shelves, isLoading: shelvesLoading } = useQuery({
-    queryKey: ['bookshelves'],
+    queryKey: ['bookshelves', token],
     queryFn: fetchBookshelves,
+    enabled: !!token && !!user,
   })
 
   const { data: contents, isLoading: contentsLoading } = useQuery({
-    queryKey: ['contents'],
+    queryKey: ['contents', token],
     queryFn: () => fetchContents(),
+    enabled: !!token && !!user,
   })
 
   const distributed = shelves?.data.find((s) => s.type === 'distributed')
