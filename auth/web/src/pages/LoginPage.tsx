@@ -1,13 +1,20 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { BookOpen, Loader2 } from 'lucide-react'
-import { buildViewerRedirectUrl, loginWithCredentials, VIEWER_URL } from '../api/client'
+import {
+  buildRedirectUrl,
+  loginDestinationLabel,
+  loginReturnUrl,
+  loginWithCredentials,
+} from '../api/client'
 import { Button } from '../components/Button'
 import { ThemeToggle } from '../components/ThemeToggle'
 
 export function LoginPage() {
   const [searchParams] = useSearchParams()
   const redirect = searchParams.get('redirect')
+  const returnUrl = loginReturnUrl(redirect)
+  const destinationLabel = loginDestinationLabel(redirect)
 
   const [userId, setUserId] = useState('')
   const [password, setPassword] = useState('')
@@ -26,7 +33,7 @@ export function LoginPage() {
     setSubmitting(true)
     try {
       const res = await loginWithCredentials(userId, password)
-      window.location.href = buildViewerRedirectUrl(VIEWER_URL, res.accessToken, redirect)
+      window.location.href = buildRedirectUrl(returnUrl, res.accessToken)
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'ログインに失敗しました')
       setSubmitting(false)
@@ -46,7 +53,9 @@ export function LoginPage() {
               <BookOpen className="h-7 w-7" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">マナビューア</h1>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">認証サービス — ログイン</p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              ログイン — {destinationLabel} へ移動します
+            </p>
           </div>
 
           <form
@@ -106,7 +115,7 @@ export function LoginPage() {
                     ログイン中...
                   </>
                 ) : (
-                  'ログインしてビューアへ'
+                  'ログイン'
                 )}
               </Button>
             </div>

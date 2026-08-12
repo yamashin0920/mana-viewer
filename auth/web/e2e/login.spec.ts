@@ -37,4 +37,18 @@ test.describe('認証アプリ', () => {
     await expect(page.getByTestId('login-error')).toHaveText('ID またはパスワードが正しくありません')
     await expect(page).toHaveURL(/\/login/)
   })
+
+  test('管理画面向け redirect では行き先ラベルが表示される', async ({ page }) => {
+    const returnUrl = encodeURIComponent('http://localhost:5190/accounts')
+    await page.goto(`/login?redirect=${returnUrl}`)
+
+    await expect(page.getByText('ログイン — 管理画面 へ移動します')).toBeVisible()
+  })
+
+  test('ビューア向け redirect では行き先ラベルが表示される', async ({ page }) => {
+    const returnUrl = encodeURIComponent('http://localhost:5173/')
+    await page.goto(`/login?redirect=${returnUrl}`)
+
+    await expect(page.getByText('ログイン — ビューア へ移動します')).toBeVisible()
+  })
 })

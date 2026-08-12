@@ -9,7 +9,6 @@ import {
   updateLicense,
 } from '../api/client'
 import { Button } from '../components/Button'
-import { useAuth } from '../store/authStore'
 import type { AdminUser, Content, License } from '../types'
 import { STATUS_LABELS } from '../types'
 
@@ -21,9 +20,6 @@ function formatDate(iso: string) {
 }
 
 export function LicensesPage() {
-  const { auth } = useAuth()
-  const token = auth!.token
-
   const [licenses, setLicenses] = useState<License[]>([])
   const [contents, setContents] = useState<Content[]>([])
   const [users, setUsers] = useState<AdminUser[]>([])
@@ -47,9 +43,9 @@ export function LicensesPage() {
     setError(null)
     try {
       const [licRes, contRes, userRes] = await Promise.all([
-        fetchLicenses(token),
-        fetchContents(token),
-        fetchAdminUsers(token),
+        fetchLicenses(),
+        fetchContents(),
+        fetchAdminUsers(),
       ])
       setLicenses(licRes.data)
       setContents(contRes.data)
@@ -59,7 +55,7 @@ export function LicensesPage() {
     } finally {
       setLoading(false)
     }
-  }, [token])
+  }, [])
 
   useEffect(() => {
     load()
@@ -78,7 +74,7 @@ export function LicensesPage() {
   }
 
   const handleCreate = async () => {
-    await createLicense(token, {
+    await createLicense({
       contentId: form.contentId,
       seatCount: form.seatCount,
       startsAt: new Date(form.startsAt).toISOString(),
@@ -93,7 +89,7 @@ export function LicensesPage() {
 
   const handleUpdate = async () => {
     if (!editing) return
-    await updateLicense(token, editing.id, {
+    await updateLicense(editing.id, {
       seatCount: form.seatCount,
       startsAt: new Date(form.startsAt).toISOString(),
       expiresAt: new Date(form.expiresAt + 'T23:59:59').toISOString(),
@@ -107,7 +103,7 @@ export function LicensesPage() {
 
   const handleDelete = async (license: License) => {
     if (!confirm(`「${license.content?.title ?? license.contentId}」のライセンスを削除しますか？`)) return
-    await deleteLicense(token, license.id)
+    await deleteLicense(license.id)
     await load()
   }
 

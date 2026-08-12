@@ -11,7 +11,6 @@ import {
   updateUser,
 } from '../api/client'
 import { Button } from '../components/Button'
-import { useAuth } from '../store/authStore'
 import type { AdminUser, CredentialAccount, UserRole } from '../types'
 import { ROLE_LABELS } from '../types'
 
@@ -19,9 +18,6 @@ const inputClass =
   'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100'
 
 export function AccountsPage() {
-  const { auth } = useAuth()
-  const token = auth!.token
-
   const [credentials, setCredentials] = useState<CredentialAccount[]>([])
   const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
@@ -39,7 +35,7 @@ export function AccountsPage() {
     setLoading(true)
     setError(null)
     try {
-      const [credRes, userRes] = await Promise.all([fetchCredentials(token), fetchAdminUsers(token)])
+      const [credRes, userRes] = await Promise.all([fetchCredentials(), fetchAdminUsers()])
       setCredentials(credRes.data)
       setUsers(userRes.data)
     } catch (err) {
@@ -47,7 +43,7 @@ export function AccountsPage() {
     } finally {
       setLoading(false)
     }
-  }, [token])
+  }, [])
 
   useEffect(() => {
     load()
@@ -58,7 +54,7 @@ export function AccountsPage() {
   )
 
   const handleCreateUser = async () => {
-    await createUser(token, userForm)
+    await createUser(userForm)
     setShowUserForm(false)
     setUserForm({ name: '', email: '', role: 'learner' })
     await load()
@@ -66,19 +62,19 @@ export function AccountsPage() {
 
   const handleUpdateUser = async () => {
     if (!editingUser) return
-    await updateUser(token, editingUser.id, userForm)
+    await updateUser(editingUser.id, userForm)
     setEditingUser(null)
     await load()
   }
 
   const handleDeleteUser = async (user: AdminUser) => {
     if (!confirm(`「${user.name}」を削除しますか？`)) return
-    await deleteUser(token, user.id)
+    await deleteUser(user.id)
     await load()
   }
 
   const handleCreateCredential = async () => {
-    await createCredential(token, credForm)
+    await createCredential(credForm)
     setShowCredForm(false)
     setCredForm({ loginId: '', password: '', linkedUserId: '' })
     await load()
@@ -86,7 +82,7 @@ export function AccountsPage() {
 
   const handleUpdateCredential = async () => {
     if (!editingCred) return
-    await updateCredential(token, editingCred.loginId, {
+    await updateCredential(editingCred.loginId, {
       password: credForm.password || undefined,
       linkedUserId: credForm.linkedUserId || undefined,
       newLoginId: credForm.loginId !== editingCred.loginId ? credForm.loginId : undefined,
@@ -97,7 +93,7 @@ export function AccountsPage() {
 
   const handleDeleteCredential = async (cred: CredentialAccount) => {
     if (!confirm(`ログインID「${cred.loginId}」を削除しますか？`)) return
-    await deleteCredential(token, cred.loginId)
+    await deleteCredential(cred.loginId)
     await load()
   }
 
