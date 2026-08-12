@@ -1,4 +1,4 @@
-# manabu-kun
+# マナビューア (mana-viewer)
 
 B2B 向け PDF 学習プラットフォーム。
 

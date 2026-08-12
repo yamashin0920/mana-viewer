@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# manabu-kun 開発サーバー一括起動（Auth + Mock API + Viewer）
+# マナビューア (mana-viewer) 開発サーバー一括起動（Auth + Mock API + Viewer + Admin）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -194,7 +194,7 @@ wait_for_url "http://127.0.0.1:${VIEWER_PORT}/" "Viewer" "$LOG_DIR/viewer.log"
 
 echo ""
 echo "=========================================="
-echo "  manabu-kun 開発環境が起動しました"
+echo "  マナビューア (mana-viewer) 開発環境が起動しました"
 echo "=========================================="
 echo "  認証 (ログイン): http://localhost:${AUTH_WEB_PORT}/login"
 echo "  管理画面:        http://localhost:${ADMIN_WEB_PORT}"

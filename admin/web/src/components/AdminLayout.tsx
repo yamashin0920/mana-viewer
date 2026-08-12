@@ -31,7 +31,7 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
             <LayoutDashboard className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">manabu-kun</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">マナビューア</p>
             <p className="text-xs text-slate-500">管理画面</p>
           </div>
         </div>

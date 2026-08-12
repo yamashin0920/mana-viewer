@@ -28,12 +28,12 @@ app.use((req, _res, next) => {
 });
 
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'manabu-kun-mock-api', version: '0.1.0' });
+  res.json({ status: 'ok', service: 'mana-viewer-mock-api', version: '0.1.0' });
 });
 
 app.get('/', (_req, res) => {
   res.json({
-    service: 'manabu-kun Mock API',
+    service: 'mana-viewer Mock API',
     version: '0.1.0',
     docs: '/health',
     auth: {
@@ -100,7 +100,7 @@ app.use((_req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`manabu-kun Mock API running at http://localhost:${PORT}`);
+  console.log(`mana-viewer Mock API running at http://localhost:${PORT}`);
   console.log('開発用トークン: mock-token-learner | mock-token-instructor | mock-token-admin');
 });
 

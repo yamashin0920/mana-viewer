@@ -57,7 +57,7 @@ export function LoginPage() {
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-lg">
               <LayoutDashboard className="h-7 w-7" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">manabu-kun 管理画面</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">マナビューア 管理画面</h1>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">アカウント・ライセンス・コンテンツの管理</p>
           </div>
 

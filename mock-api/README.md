@@ -1,4 +1,4 @@
-# manabu-kun Mock API
+# mana-viewer Mock API
 
 PDF ビューア開発用のモック API サーバーです。B2B・オフライン・注釈・DRM・LMS 連携を想定したエンドポイントを提供します。
 

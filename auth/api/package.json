@@ -1,8 +1,8 @@
 {
-  "name": "manabu-kun-auth-api",
+  "name": "mana-viewer-auth-api",
   "version": "0.1.0",
   "private": true,
-  "description": "Authentication API for manabu-kun (separate from viewer)",
+  "description": "Authentication API for mana-viewer (separate from viewer)",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

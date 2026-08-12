@@ -1,6 +1,6 @@
 # viewer
 
-manabu-kun PDF ビューア（React + Vite + TypeScript + PDF.js）
+マナビューア PDF ビューア（React + Vite + TypeScript + PDF.js）
 
 ## 技術スタック
 

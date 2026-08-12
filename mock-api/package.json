@@ -1,8 +1,8 @@
 {
-  "name": "manabu-kun-mock-api",
+  "name": "mana-viewer-mock-api",
   "version": "0.1.0",
   "private": true,
-  "description": "Mock API for manabu-kun PDF viewer development",
+  "description": "Mock API for mana-viewer PDF viewer development",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
