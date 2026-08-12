@@ -265,7 +265,10 @@ export function PdfPage({
         />
       )}
       {watermark && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
+        <div
+          className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
+          data-testid="pdf-watermark"
+        >
           <span
             className="whitespace-nowrap text-[1.25rem] font-semibold text-slate-400/15 dark:text-slate-500/10"
             style={{ transform: 'rotate(-30deg)' }}

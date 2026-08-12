@@ -78,7 +78,7 @@ cd viewer
 npm run test:e2e
 ```
 
-mock-api と viewer を自動起動して E2E テスト（36件）を実行します。詳細は [`e2e/README.md`](e2e/README.md)。
+mock-api と viewer（および auth-api / auth-web）を自動起動して E2E テスト（82件）を実行します。詳細は [`e2e/README.md`](e2e/README.md)。
 
 **ルール**: 機能を追加・変更したら Playwright テストも追加すること（[../.cursor/rules/playwright-tests.mdc](../.cursor/rules/playwright-tests.mdc)）。
 
