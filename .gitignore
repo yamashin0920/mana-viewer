@@ -1,6 +1,7 @@
 .dev/
 **/node_modules/
 **/dist/
+**/.vite/
 **/test-results/
 **/playwright-report/
 **/*.tsbuildinfo
