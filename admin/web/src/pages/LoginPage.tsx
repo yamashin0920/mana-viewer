@@ -46,7 +46,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-100 dark:bg-slate-950">
+    <div className="flex min-h-screen flex-col bg-slate-100 dark:bg-slate-950" data-testid="admin-login-page">
       <div className="flex justify-end p-4">
         <ThemeToggle />
       </div>
@@ -74,6 +74,7 @@ export function LoginPage() {
                 <input
                   id="admin-user-id"
                   type="text"
+                  data-testid="admin-login-user-id"
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
                   autoComplete="username"
@@ -89,6 +90,7 @@ export function LoginPage() {
                 <input
                   id="admin-password"
                   type="password"
+                  data-testid="admin-login-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
@@ -97,9 +99,19 @@ export function LoginPage() {
                 />
               </div>
 
-              {formError && <p className="text-sm text-red-600 dark:text-red-400">{formError}</p>}
+              {formError && (
+                <p className="text-sm text-red-600 dark:text-red-400" data-testid="admin-login-error">
+                  {formError}
+                </p>
+              )}
 
-              <Button type="submit" variant="primary" disabled={submitting} className="w-full justify-center py-2.5">
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={submitting}
+                data-testid="admin-login-submit"
+                className="w-full justify-center py-2.5"
+              >
                 {submitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />

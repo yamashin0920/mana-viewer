@@ -146,7 +146,7 @@ export function LicensesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="licenses-page">
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
           {error}
@@ -259,7 +259,7 @@ export function LicensesPage() {
       )}
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm" data-testid="licenses-table">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left dark:border-slate-700 dark:bg-slate-800/50">
               <th className="px-4 py-3 font-medium">コンテンツ</th>

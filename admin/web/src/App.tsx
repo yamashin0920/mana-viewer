@@ -6,34 +6,33 @@ import { LicensesPage } from './pages/LicensesPage'
 import { LoginPage } from './pages/LoginPage'
 import { useAuth } from './store/authStore'
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { auth, isAdmin } = useAuth()
+function AdminShell() {
+  const { auth, logout, isAdmin } = useAuth()
   if (!auth || !isAdmin) {
     return <Navigate to="/login" replace />
   }
-  return <>{children}</>
+  return <AdminLayout user={auth.user} onLogout={logout} />
+}
+
+function LoginRoute() {
+  const { auth, isAdmin } = useAuth()
+  if (auth && isAdmin) {
+    return <Navigate to="/accounts" replace />
+  }
+  return <LoginPage />
 }
 
 export function App() {
-  const { auth, logout, isAdmin } = useAuth()
-
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={auth && isAdmin ? <Navigate to="/accounts" replace /> : <LoginPage />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <AdminLayout user={auth?.user!} onLogout={logout} />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="accounts" element={<AccountsPage />} />
-          <Route path="licenses" element={<LicensesPage />} />
-          <Route path="contents" element={<ContentsPage />} />
-          <Route index element={<Navigate to="/accounts" replace />} />
+        <Route path="/login" element={<LoginRoute />} />
+        <Route element={<AdminShell />}>
+          <Route path="/accounts" element={<AccountsPage />} />
+          <Route path="/licenses" element={<LicensesPage />} />
+          <Route path="/contents" element={<ContentsPage />} />
         </Route>
+        <Route path="/" element={<Navigate to="/accounts" replace />} />
         <Route path="*" element={<Navigate to="/accounts" replace />} />
       </Routes>
     </BrowserRouter>
