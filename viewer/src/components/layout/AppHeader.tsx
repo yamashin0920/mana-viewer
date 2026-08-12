@@ -34,7 +34,7 @@ export function AppHeader() {
             <BookOpen className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">manabu-kun</p>
+            <p className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">マナビューア</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               {user?.organization?.name ?? '東京学習高等学校'}
             </p>

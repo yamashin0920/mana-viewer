@@ -39,7 +39,7 @@ class ManabuOfflineDB extends Dexie {
   offlinePackages!: EntityTable<OfflinePackageRecord, 'contentId'>
 
   constructor() {
-    super('manabu-kun-offline')
+    super('mana-viewer-offline')
     this.version(1).stores({
       contents: 'id, cachedAt',
       progressQueue: '++id, contentId, synced, updatedAt',

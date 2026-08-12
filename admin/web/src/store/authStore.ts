@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { User } from '../types'
 
-const STORAGE_KEY = 'manabu-kun-admin-auth'
+const STORAGE_KEY = 'mana-viewer-admin-auth'
 
 interface AuthState {
   token: string

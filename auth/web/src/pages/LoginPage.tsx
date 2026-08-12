@@ -45,7 +45,7 @@ export function LoginPage() {
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-lg">
               <BookOpen className="h-7 w-7" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">manabu-kun</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">マナビューア</h1>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">認証サービス — ログイン</p>
           </div>
 

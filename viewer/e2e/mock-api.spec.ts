@@ -8,7 +8,7 @@ test.describe('Mock API', () => {
     expect(res.ok()).toBeTruthy()
     const body = await res.json()
     expect(body.status).toBe('ok')
-    expect(body.service).toBe('manabu-kun-mock-api')
+    expect(body.service).toBe('mana-viewer-mock-api')
   })
 
   test('GET /contents requires auth', async ({ request }) => {
