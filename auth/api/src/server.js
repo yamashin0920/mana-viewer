@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
 const { loadCredentials } = require('./store');
 
 const PORT = process.env.PORT || 3002;
@@ -30,6 +31,7 @@ app.get('/', (_req, res) => {
 });
 
 app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'not_found', message: 'エンドポイントが見つかりません' });

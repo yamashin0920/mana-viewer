@@ -3,14 +3,40 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 const SEED_PATH = path.join(__dirname, '../data/seed.json');
+const CREDENTIALS_PATH = path.join(__dirname, '../../auth/api/data/credentials.json');
 
 function loadSeed() {
   const raw = fs.readFileSync(SEED_PATH, 'utf-8');
   return JSON.parse(raw);
 }
 
+function saveSeed(store) {
+  fs.writeFileSync(SEED_PATH, `${JSON.stringify(store, null, 2)}\n`, 'utf-8');
+}
+
 function createStore() {
   return loadSeed();
+}
+
+function loadTokenMap() {
+  try {
+    const raw = fs.readFileSync(CREDENTIALS_PATH, 'utf-8');
+    const credentials = JSON.parse(raw);
+    const map = {};
+    for (const entry of credentials) {
+      if (entry.token && entry.linkedUserId) {
+        map[entry.token] = entry.linkedUserId;
+      }
+    }
+    if (Object.keys(map).length > 0) return map;
+  } catch {
+    // fall through to defaults
+  }
+  return {
+    'mock-token-learner': 'user-001',
+    'mock-token-instructor': 'user-002',
+    'mock-token-admin': 'user-admin',
+  };
 }
 
 function paginate(items, page = 1, limit = 20) {
@@ -71,6 +97,8 @@ function generateMockChunk(contentId, page) {
 
 module.exports = {
   createStore,
+  saveSeed,
+  loadTokenMap,
   paginate,
   findUser,
   userLicenses,

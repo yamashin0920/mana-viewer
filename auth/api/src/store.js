@@ -15,34 +15,64 @@ function loadCredentials() {
   return JSON.parse(raw);
 }
 
+function saveCredentials(credentials) {
+  fs.writeFileSync(CREDENTIALS_PATH, `${JSON.stringify(credentials, null, 2)}\n`, 'utf-8');
+}
+
+function getLoginId(entry) {
+  return entry.loginId || entry.userId;
+}
+
 function findCredential(userId, password) {
   const loginId = String(userId).trim();
   const pw = String(password).trim();
   return loadCredentials().find(
-    (entry) => entry.userId === loginId && entry.password === pw,
+    (entry) => getLoginId(entry) === loginId && entry.password === pw,
   );
 }
 
-const MOCK_TOKENS = {
-  'mock-token-learner': 'user-001',
-  'mock-token-instructor': 'user-002',
-  'mock-token-admin': 'user-admin',
-};
+function buildTokenMap() {
+  const map = {};
+  for (const entry of loadCredentials()) {
+    const linkedUserId = entry.linkedUserId;
+    if (entry.token && linkedUserId) {
+      map[entry.token] = linkedUserId;
+    }
+  }
+  return map;
+}
 
 function userIdForToken(token) {
-  return MOCK_TOKENS[token] || null;
+  return buildTokenMap()[token] || null;
 }
 
 function tokenForUserId(userId) {
-  const entry = Object.entries(MOCK_TOKENS).find(([, id]) => id === userId);
-  return entry ? entry[0] : 'mock-token-learner';
+  const entry = loadCredentials().find((c) => c.linkedUserId === userId);
+  return entry?.token || null;
+}
+
+function findUserById(userId) {
+  return loadUsers().find((u) => u.id === userId);
+}
+
+function isAdminUser(user) {
+  return user && ['org_admin', 'content_admin'].includes(user.role);
+}
+
+function generateToken() {
+  return `mock-token-${Date.now().toString(36)}`;
 }
 
 module.exports = {
   loadUsers,
   loadCredentials,
+  saveCredentials,
   findCredential,
-  MOCK_TOKENS,
+  getLoginId,
   userIdForToken,
   tokenForUserId,
+  findUserById,
+  isAdminUser,
+  generateToken,
+  buildTokenMap,
 };

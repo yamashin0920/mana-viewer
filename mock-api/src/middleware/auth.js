@@ -1,8 +1,4 @@
-const MOCK_TOKENS = {
-  'mock-token-learner': 'user-001',
-  'mock-token-instructor': 'user-002',
-  'mock-token-admin': 'user-admin',
-};
+const { loadTokenMap } = require('../store');
 
 function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
@@ -15,7 +11,7 @@ function authMiddleware(req, res, next) {
   }
 
   const token = header.slice(7);
-  const userId = MOCK_TOKENS[token];
+  const userId = loadTokenMap()[token];
   if (!userId) {
     return res.status(401).json({
       error: 'invalid_token',
@@ -37,7 +33,7 @@ function optionalAuth(req, _res, next) {
   const header = req.headers.authorization;
   if (header?.startsWith('Bearer ')) {
     const token = header.slice(7);
-    const userId = MOCK_TOKENS[token];
+    const userId = loadTokenMap()[token];
     if (userId) {
       req.user = req.store.users.find((u) => u.id === userId);
     }
@@ -45,4 +41,4 @@ function optionalAuth(req, _res, next) {
   next();
 }
 
-module.exports = { authMiddleware, optionalAuth, MOCK_TOKENS };
+module.exports = { authMiddleware, optionalAuth };
