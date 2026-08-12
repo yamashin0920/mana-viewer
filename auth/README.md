@@ -59,3 +59,14 @@ GET  /health
 ```bash
 cd auth/web && npm install && npm run test:e2e
 ```
+
+## トラブルシューティング
+
+ログインが `credentials.json` 以外でも通る場合、**古い Auth API プロセス**がポート 3002 を占有している可能性があります。
+
+```bash
+./start-dev.sh --restart
+curl http://localhost:3002/health
+```
+
+`authMode: "credentials-json"` と `credentialsCount: 3` が返れば正しい API が動いています。

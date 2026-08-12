@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
+const { loadCredentials } = require('./store');
 
 const PORT = process.env.PORT || 3002;
 
@@ -10,7 +11,14 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'manabu-kun-auth-api', version: '0.1.0' });
+  const credentials = loadCredentials();
+  res.json({
+    status: 'ok',
+    service: 'manabu-kun-auth-api',
+    version: '0.1.0',
+    authMode: 'credentials-json',
+    credentialsCount: credentials.length,
+  });
 });
 
 app.get('/', (_req, res) => {
@@ -28,7 +36,9 @@ app.use((_req, res) => {
 });
 
 app.listen(PORT, () => {
+  const credentials = loadCredentials();
   console.log(`manabu-kun Auth API running at http://localhost:${PORT}`);
+  console.log(`Auth mode: credentials-json (${credentials.length} accounts)`);
 });
 
 module.exports = app;
