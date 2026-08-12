@@ -35,8 +35,10 @@ interface ViewerToolbarProps {
   onSearchNext: () => void
   annotationTool: AnnotationTool
   penColor: string
+  markerColor: string
   onAnnotationToolChange: (tool: AnnotationTool) => void
   onPenColorChange: (color: string) => void
+  onMarkerColorChange: (color: string) => void
   onPageChange: (page: number) => void
   onZoomChange: (zoom: number) => void
   onViewModeChange: (mode: ViewMode) => void
@@ -66,8 +68,10 @@ export function ViewerToolbar({
   onSearchNext,
   annotationTool,
   penColor,
+  markerColor,
   onAnnotationToolChange,
   onPenColorChange,
+  onMarkerColorChange,
   onPageChange,
   onZoomChange,
   onViewModeChange,
@@ -121,8 +125,10 @@ export function ViewerToolbar({
         <AnnotationTools
           tool={annotationTool}
           penColor={penColor}
+          markerColor={markerColor}
           onToolChange={onAnnotationToolChange}
           onPenColorChange={onPenColorChange}
+          onMarkerColorChange={onMarkerColorChange}
         />
 
         {/* View mode toggle */}

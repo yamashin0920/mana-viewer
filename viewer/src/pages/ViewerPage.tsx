@@ -191,7 +191,7 @@ export function ViewerPage() {
       setNoteDialogOpen(false)
       setNoteText('')
       const labels = {
-        highlight: 'ハイライト',
+        highlight: 'マーカー',
         bookmark: 'ブックマーク',
         note: 'メモ',
         underline: '下線',
@@ -236,6 +236,12 @@ export function ViewerPage() {
     onError: () => toast('共有リンクの作成に失敗しました', 'error'),
   })
 
+  useEffect(() => {
+    if (annotationTool !== 'select') {
+      setPendingSelection(null)
+    }
+  }, [annotationTool])
+
   const handlePageCount = useCallback((count: number) => {
     setPageCount(count)
   }, [])
@@ -261,9 +267,22 @@ export function ViewerPage() {
     }
   }, [])
 
-  const handleSelection = useCallback((selection: TextSelection) => {
-    setPendingSelection(selection)
-  }, [])
+  const handleSelection = useCallback(
+    (selection: TextSelection) => {
+      if (annotationTool === 'marker') {
+        addAnnotationMutation.mutate({
+          type: 'highlight',
+          page: selection.page,
+          color: highlightColor,
+          selectedText: selection.text,
+          rects: selection.rects,
+        })
+        return
+      }
+      setPendingSelection(selection)
+    },
+    [annotationTool, addAnnotationMutation, highlightColor]
+  )
 
   const handleClearSelection = useCallback(() => {
     setPendingSelection(null)
@@ -576,8 +595,10 @@ export function ViewerPage() {
         onSearchNext={handleSearchNext}
         annotationTool={annotationTool}
         penColor={penColor}
+        markerColor={highlightColor}
         onAnnotationToolChange={setAnnotationTool}
         onPenColorChange={setPenColor}
+        onMarkerColorChange={setHighlightColor}
         onPageChange={setPage}
         onZoomChange={setZoom}
         onViewModeChange={handleViewModeChange}
