@@ -31,6 +31,7 @@ import {
   spreadPageStep,
   singlePageStep,
 } from '../hooks/useKeyboardNavigation'
+import { usePdfDocument } from '../hooks/usePdfDocument'
 import type { Annotation } from '../types'
 
 const USE_DEMO_PDF = import.meta.env.VITE_USE_DEMO_PDF !== 'false'
@@ -44,7 +45,7 @@ export function ViewerPage() {
   const [zoom, setZoom] = useState(1.2)
   const [pageCount, setPageCount] = useState(1)
   const [viewMode, setViewMode] = useState<ViewMode>('single')
-  const [sidebarTab, setSidebarTab] = useState<'toc' | 'annotations'>('toc')
+  const [sidebarTab, setSidebarTab] = useState<'thumbnails' | 'toc' | 'annotations'>('thumbnails')
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [sessionToken, setSessionToken] = useState<string | null>(null)
   const [pendingSelection, setPendingSelection] = useState<TextSelection | null>(null)
@@ -290,8 +291,19 @@ export function ViewerPage() {
     return getDemoPdfUrl(contentId)
   }, [contentId, sessionToken])
 
+  const { pdfDoc, loading: pdfLoading, error: pdfError, numPages: pdfNumPages } = usePdfDocument(
+    pdfUrl || null
+  )
+
+  useEffect(() => {
+    if (pdfNumPages > 0) {
+      setPageCount(pdfNumPages)
+    }
+  }, [pdfNumPages])
+
   const annotations = annotationsData?.data ?? []
   const toc = content?.toc ?? []
+  const displayPageCount = pdfNumPages || content?.pageCount || pageCount
 
   if (contentLoading) {
     return (
@@ -360,6 +372,9 @@ export function ViewerPage() {
           <ViewerSidebar
             tab={sidebarTab}
             onTabChange={setSidebarTab}
+            pdfDoc={pdfDoc}
+            pdfLoading={pdfLoading}
+            pageCount={displayPageCount}
             toc={toc}
             annotations={annotations}
             currentPage={page}
@@ -374,6 +389,9 @@ export function ViewerPage() {
             {pdfUrl ? (
               <PdfViewer
                 pdfUrl={pdfUrl}
+                pdfDoc={pdfDoc}
+                pdfLoading={pdfLoading}
+                pdfError={pdfError}
                 page={page}
                 zoom={zoom}
                 viewMode={viewMode}
@@ -398,6 +416,9 @@ export function ViewerPage() {
         <ViewerSidebar
           tab={sidebarTab}
           onTabChange={setSidebarTab}
+          pdfDoc={pdfDoc}
+          pdfLoading={pdfLoading}
+          pageCount={displayPageCount}
           toc={toc}
           annotations={annotations}
           currentPage={page}

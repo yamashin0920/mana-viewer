@@ -54,6 +54,19 @@ test.describe('PDF ビューア', () => {
     await expect(page.locator('[data-testid="pdf-canvas"]')).toHaveCount(1)
   })
 
+  test('サムネイル一覧からページジャンプできる', async ({ page }) => {
+    await expect(page.getByTestId('desktop-sidebar')).toBeVisible()
+    await page.getByTestId('sidebar-tab-thumbnails').click()
+
+    const grid = page.getByTestId('thumbnail-grid')
+    await expect(grid).toBeVisible()
+    await expect(page.getByTestId('thumbnail-page-1')).toBeVisible()
+
+    await page.getByTestId('thumbnail-page-3').click()
+    await expect(page.getByTestId('page-input')).toHaveValue('3')
+    await waitForPdfRender(page)
+  })
+
   test('目次からページジャンプできる', async ({ page }) => {
     await expect(page.getByTestId('desktop-sidebar')).toBeVisible()
     await page.getByTestId('sidebar-tab-toc').click()

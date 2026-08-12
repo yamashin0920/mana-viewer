@@ -55,6 +55,7 @@ B2B 向け PDF 学習プラットフォーム **manabu-kun** の要件と、現�
 | カテゴリフィルタ | ✅ | 数学 / 英語 等 | `bookshelf.spec.ts` |
 | 読書進捗バー | ✅ | カード上に進捗表示 | `bookshelf.spec.ts` |
 | 最近読んだもの | ✅ | 横スクロールセクション | `bookshelf.spec.ts` |
+| サムネイル一覧 | ✅ | サイドバー「サムネイル」タブ、2 列グリッド | `viewer.spec.ts` |
 | 教材詳細・目次 (TOC) | ✅ | ビューアサイドバーで目次ジャンプ | `viewer.spec.ts` |
 
 ---
