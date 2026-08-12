@@ -3,6 +3,12 @@ const { loadUsers, findCredential, userIdForToken } = require('../store');
 
 const router = express.Router();
 
+function bearerToken(req) {
+  const header = req.headers.authorization || '';
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1] : null;
+}
+
 router.post('/login', (req, res) => {
   const { email, userId, password } = req.body || {};
   const loginId = String(email || userId || '').trim();
@@ -57,6 +63,31 @@ router.post('/refresh', (req, res) => {
   }
   const accessToken = refreshToken.replace('refresh-', '');
   res.json({ accessToken, expiresIn: 3600, tokenType: 'Bearer' });
+});
+
+router.get('/me', (req, res) => {
+  const token = bearerToken(req);
+  if (!token) {
+    return res.status(401).json({ error: 'unauthorized', message: '認証が必要です' });
+  }
+
+  const mappedUserId = userIdForToken(token);
+  if (!mappedUserId) {
+    return res.status(401).json({ error: 'invalid_token', message: '無効なトークンです' });
+  }
+
+  const user = loadUsers().find((u) => u.id === mappedUserId);
+  if (!user) {
+    return res.status(401).json({ error: 'user_not_found', message: 'アカウント情報が見つかりません' });
+  }
+
+  res.json({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    orgId: user.orgId,
+  });
 });
 
 router.get('/tokens', (_req, res) => {

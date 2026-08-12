@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet } from 'react-router-dom'
 import { BookOpen, KeyRound, LayoutDashboard, LogOut, Shield } from 'lucide-react'
 import { Button } from './Button'
 import { ThemeToggle } from './ThemeToggle'
@@ -16,13 +16,6 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    onLogout()
-    navigate('/login')
-  }
-
   return (
     <div className="flex min-h-screen bg-slate-100 dark:bg-slate-950" data-testid="admin-layout">
       <aside className="flex w-56 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
@@ -59,7 +52,7 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
         <div className="border-t border-slate-200 p-3 dark:border-slate-800">
           <p className="truncate px-3 text-xs font-medium text-slate-700 dark:text-slate-300">{user.name}</p>
           <p className="truncate px-3 text-xs text-slate-400">{user.email}</p>
-          <Button variant="ghost" size="sm" className="mt-2 w-full justify-start" data-testid="admin-logout" onClick={handleLogout}>
+          <Button variant="ghost" size="sm" className="mt-2 w-full justify-start" data-testid="admin-logout" onClick={onLogout}>
             <LogOut className="h-3.5 w-3.5" />
             ログアウト
           </Button>

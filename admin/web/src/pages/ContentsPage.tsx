@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { createContent, deleteContent, fetchContents, updateContent } from '../api/client'
 import { Button } from '../components/Button'
-import { useAuth } from '../store/authStore'
 import type { Content } from '../types'
 import { STATUS_LABELS } from '../types'
 
@@ -23,9 +22,6 @@ const defaultForm = {
 }
 
 export function ContentsPage() {
-  const { auth } = useAuth()
-  const token = auth!.token
-
   const [contents, setContents] = useState<Content[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -38,21 +34,21 @@ export function ContentsPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetchContents(token)
+      const res = await fetchContents()
       setContents(res.data)
     } catch (err) {
       setError(err instanceof Error ? err.message : '読み込みに失敗しました')
     } finally {
       setLoading(false)
     }
-  }, [token])
+  }, [])
 
   useEffect(() => {
     load()
   }, [load])
 
   const handleCreate = async () => {
-    await createContent(token, {
+    await createContent({
       title: form.title,
       author: form.author,
       category: form.category,
@@ -73,7 +69,7 @@ export function ContentsPage() {
 
   const handleUpdate = async () => {
     if (!editing) return
-    await updateContent(token, editing.id, {
+    await updateContent(editing.id, {
       title: form.title,
       author: form.author,
       category: form.category,
@@ -93,7 +89,7 @@ export function ContentsPage() {
 
   const handleDelete = async (content: Content) => {
     if (!confirm(`「${content.title}」を削除しますか？関連ライセンスも削除されます。`)) return
-    await deleteContent(token, content.id)
+    await deleteContent(content.id)
     await load()
   }
 

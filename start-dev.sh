@@ -177,10 +177,12 @@ echo "Admin Web を起動中... (http://localhost:${ADMIN_WEB_PORT})"
   cd "$ROOT/admin/web"
   export AUTH_API_PORT="$AUTH_API_PORT"
   export MOCK_API_PORT="$MOCK_PORT"
+  export VITE_AUTH_APP_URL="http://localhost:${AUTH_WEB_PORT}"
+  export VITE_VIEWER_URL="http://localhost:${VIEWER_PORT}"
   npm run dev -- --host 127.0.0.1 --port "$ADMIN_WEB_PORT"
 ) >>"$LOG_DIR/admin-web.log" 2>&1 &
 echo $! >"$admin_web_pid_file"
-wait_for_url "http://127.0.0.1:${ADMIN_WEB_PORT}/login" "Admin Web" "$LOG_DIR/admin-web.log"
+wait_for_url "http://127.0.0.1:${ADMIN_WEB_PORT}/accounts" "Admin Web" "$LOG_DIR/admin-web.log"
 
 echo "Viewer を起動中... (http://localhost:${VIEWER_PORT})"
 (

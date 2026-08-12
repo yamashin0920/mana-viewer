@@ -1,6 +1,6 @@
 export const AUTH_APP_URL = import.meta.env.VITE_AUTH_APP_URL || 'http://localhost:5180'
 
-/** 認証アプリのログイン画面へリダイレクト */
+/** 認証アプリのログイン画面へリダイレクト（認証） */
 export function redirectToLogin(returnUrl?: string) {
   const redirect = encodeURIComponent(returnUrl ?? window.location.href)
   window.location.href = `${AUTH_APP_URL}/login?redirect=${redirect}`
@@ -23,7 +23,7 @@ export function consumeAccessTokenFromUrl(): string | null {
   window.history.replaceState(
     {},
     '',
-    `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`
+    `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`,
   )
   return token
 }

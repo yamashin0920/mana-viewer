@@ -1,43 +1,59 @@
-import { useCallback, useEffect, useState } from 'react'
+import { create } from 'zustand'
+import { clearAccessToken, fetchMe, persistAccessToken } from '../api/auth'
+import { consumeAccessTokenFromUrl, redirectToLogout } from '../utils/authRedirect'
 import type { User } from '../types'
 
-const STORAGE_KEY = 'mana-viewer-admin-auth'
-
 interface AuthState {
-  token: string
-  user: User
+  user: User | null
+  token: string | null
+  loading: boolean
+  init: () => Promise<void>
+  signOut: () => void
 }
 
-function loadAuth(): AuthState | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
-    return JSON.parse(raw) as AuthState
-  } catch {
-    return null
-  }
-}
+export const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  token: localStorage.getItem('accessToken'),
+  loading: true,
 
-export function useAuth() {
-  const [auth, setAuth] = useState<AuthState | null>(() => loadAuth())
-
-  useEffect(() => {
-    if (auth) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(auth))
-    } else {
-      localStorage.removeItem(STORAGE_KEY)
+  init: async () => {
+    const urlToken = consumeAccessTokenFromUrl()
+    if (urlToken) {
+      persistAccessToken(urlToken)
     }
-  }, [auth])
 
-  const login = useCallback((token: string, user: User) => {
-    setAuth({ token, user })
-  }, [])
+    const token = localStorage.getItem('accessToken')
+    if (!token) {
+      set({ user: null, token: null, loading: false })
+      return
+    }
 
-  const logout = useCallback(() => {
-    setAuth(null)
-  }, [])
+    persistAccessToken(token)
+    try {
+      const user = await fetchMe()
+      set({ user, token, loading: false })
+    } catch {
+      clearAccessToken()
+      set({ user: null, token: null, loading: false })
+    }
+  },
 
-  const isAdmin = auth?.user.role === 'org_admin' || auth?.user.role === 'content_admin'
+  signOut: () => {
+    clearAccessToken()
+    // user を null にすると AuthGuard が redirectToLogin を走らせ SSO で即再ログインするため、
+    // 先に共通ログアウトへ遷移する（状態更新は不要）
+    redirectToLogout(`${window.location.origin}/accounts`)
+  },
+}))
 
-  return { auth, login, logout, isAdmin }
+/** @deprecated useAuthStore を直接使用してください */
+export function useAuth() {
+  const user = useAuthStore((s) => s.user)
+  const token = useAuthStore((s) => s.token)
+  const signOut = useAuthStore((s) => s.signOut)
+  return {
+    auth: user && token ? { user, token } : null,
+    logout: signOut,
+    isAdmin: user?.role === 'org_admin' || user?.role === 'content_admin',
+  }
 }

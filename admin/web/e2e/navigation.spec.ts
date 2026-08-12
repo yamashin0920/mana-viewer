@@ -19,15 +19,17 @@ test.describe('管理画面ナビゲーション', () => {
     await expect(page.getByTestId('accounts-page')).toBeVisible()
   })
 
-  test('ログアウトできる', async ({ page }) => {
+  test('ログアウトすると共通ログイン画面へ移動する', async ({ page }) => {
     await page.getByTestId('admin-logout').click()
-    await expect(page).toHaveURL(/\/login/)
-    await expect(page.getByTestId('admin-login-page')).toBeVisible()
+    await page.waitForURL(/localhost:5180\/login/)
+    await expect(page.getByTestId('login-page')).toBeVisible()
   })
 
   test('未ログイン時は保護ページにアクセスできない', async ({ page }) => {
     await page.getByTestId('admin-logout').click()
+    await page.waitForURL(/localhost:5180\/login/)
     await page.goto('/licenses')
-    await expect(page).toHaveURL(/\/login/)
+    await page.waitForURL(/localhost:5180\/login/)
+    await expect(page.getByTestId('login-page')).toBeVisible()
   })
 })
