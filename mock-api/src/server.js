@@ -12,6 +12,7 @@ const annotationShareRoutes = require('./routes/annotation-shares');
 const annotationByIdRoutes = require('./routes/annotation-by-id');
 const deviceRoutes = require('./routes/devices');
 const lmsRoutes = require('./routes/lms');
+const adminRoutes = require('./routes/admin');
 
 const PORT = process.env.PORT || 3001;
 
@@ -77,6 +78,7 @@ app.use('/annotations', annotationShareRoutes);
 app.use('/annotations', annotationByIdRoutes);
 app.use('/devices', deviceRoutes);
 app.use('/lms', lmsRoutes);
+app.use('/admin', adminRoutes);
 
 app.get('/mock/offline/:filename', (req, res) => {
   res.set('Content-Type', 'application/octet-stream');

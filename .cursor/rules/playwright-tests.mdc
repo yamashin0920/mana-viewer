@@ -1,6 +1,6 @@
 ---
 description: 機能実装時に Playwright E2E テストを追加するルール
-globs: viewer/src/**,viewer/e2e/**,mock-api/src/**
+globs: viewer/src/**,viewer/e2e/**,mock-api/src/**,admin/web/src/**,admin/web/e2e/**,auth/api/src/**
 alwaysApply: false
 ---
 
@@ -33,7 +33,8 @@ viewer または mock-api にユーザー向け機能・API 挙動を追加・�
 | 注釈 | `viewer/e2e/annotations.spec.ts` |
 | ダークモード | `viewer/e2e/dark-mode.spec.ts` |
 | モバイル UI | `viewer/e2e/mobile.spec.ts` |
-| 共通 setup | `viewer/e2e/fixtures.ts` |
+| 管理画面 | `admin/web/e2e/*.spec.ts` |
+| 共通 setup | `viewer/e2e/fixtures.ts`, `admin/web/e2e/fixtures.ts` |
 
 新カテゴリの機能は `viewer/e2e/<feature>.spec.ts` を新規作成してよい。
 
@@ -48,6 +49,7 @@ viewer または mock-api にユーザー向け機能・API 挙動を追加・�
 
 ```bash
 cd viewer && npm run test:e2e
+cd admin/web && npm run test:e2e
 ```
 
 詳細: `viewer/e2e/README.md`

@@ -1,0 +1,33 @@
+import { test, expect, loginAsAdmin } from './fixtures'
+
+test.describe('管理画面ナビゲーション', () => {
+  test.beforeEach(async ({ page }) => {
+    await loginAsAdmin(page)
+  })
+
+  test('サイドバーから各ページに遷移できる', async ({ page }) => {
+    await page.getByTestId('admin-nav-licenses').click()
+    await expect(page).toHaveURL(/\/licenses/)
+    await expect(page.getByTestId('licenses-page')).toBeVisible()
+
+    await page.getByTestId('admin-nav-contents').click()
+    await expect(page).toHaveURL(/\/contents/)
+    await expect(page.getByTestId('contents-page')).toBeVisible()
+
+    await page.getByTestId('admin-nav-accounts').click()
+    await expect(page).toHaveURL(/\/accounts/)
+    await expect(page.getByTestId('accounts-page')).toBeVisible()
+  })
+
+  test('ログアウトできる', async ({ page }) => {
+    await page.getByTestId('admin-logout').click()
+    await expect(page).toHaveURL(/\/login/)
+    await expect(page.getByTestId('admin-login-page')).toBeVisible()
+  })
+
+  test('未ログイン時は保護ページにアクセスできない', async ({ page }) => {
+    await page.getByTestId('admin-logout').click()
+    await page.goto('/licenses')
+    await expect(page).toHaveURL(/\/login/)
+  })
+})
