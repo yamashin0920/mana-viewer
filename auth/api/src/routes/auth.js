@@ -1,5 +1,5 @@
 const express = require('express');
-const { loadUsers, tokenForUserId } = require('../store');
+const { loadUsers, findCredential, userIdForToken } = require('../store');
 
 const router = express.Router();
 
@@ -15,13 +15,25 @@ router.post('/login', (req, res) => {
     });
   }
 
-  const users = loadUsers();
-  let user = users.find((u) => u.email === loginId || u.id === loginId);
-  if (!user) {
-    user = users.find((u) => u.id === 'user-001');
+  const credential = findCredential(loginId, pw);
+  if (!credential) {
+    return res.status(401).json({
+      error: 'invalid_credentials',
+      message: 'ID またはパスワードが正しくありません',
+    });
   }
 
-  const accessToken = tokenForUserId(user.id);
+  const mappedUserId = userIdForToken(credential.token);
+  const users = loadUsers();
+  const user = users.find((u) => u.id === mappedUserId);
+  if (!user) {
+    return res.status(500).json({
+      error: 'user_not_found',
+      message: 'アカウント情報が見つかりません',
+    });
+  }
+
+  const accessToken = credential.token;
 
   res.json({
     accessToken,

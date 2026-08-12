@@ -66,7 +66,7 @@ export function LoginPage() {
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
                   autoComplete="username"
-                  placeholder="任意の ID"
+                  placeholder="ユーザー ID"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                 />
               </div>
@@ -82,7 +82,7 @@ export function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
-                  placeholder="任意のパスワード"
+                  placeholder="パスワード"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                 />
               </div>
@@ -112,7 +112,7 @@ export function LoginPage() {
             </div>
 
             <p className="mt-4 text-center text-xs text-slate-400">
-              開発用: ID・パスワードを入力すればログインできます
+              開発用: demo / demo（学習者）、instructor / instructor、admin / admin
             </p>
           </form>
         </div>

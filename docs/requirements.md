@@ -32,7 +32,7 @@ B2B 向け PDF 学習プラットフォーム **manabu-kun** の要件と、現�
 | Bearer トークン認証 | ✅ | `Authorization` ヘッダー、Zustand + localStorage | `mock-api.spec.ts` |
 | プロフィール取得 (`/users/me`) | ✅ | ヘッダーにユーザー名・ロール表示 | `bookshelf.spec.ts` |
 | メールログイン (`/auth/login`) | 🔶 | **auth/** 別プロジェクト (api:3002, web:5180) | `auth/web/e2e/login.spec.ts` |
-| ログイン画面（ID / PW） | ✅ | auth/web — 任意の非空 ID・PW | `auth/web/e2e/login.spec.ts` |
+| ログイン画面（ID / PW） | ✅ | auth/web — `credentials.json` の ID・PW で照合 | `auth/web/e2e/login.spec.ts` |
 | ビューア連携 | ✅ | 未ログイン → auth へリダイレクト、トークン引き渡し | `viewer` AuthGuard |
 | ルート保護 | ✅ | ビューア側 AuthGuard | — |
 | ログアウト | ✅ | ビューア → auth ログインへ | — |

@@ -31,9 +31,10 @@ cd auth/web && npm install && npm run dev
 
 1. ユーザーがビューア (`http://localhost:5173`) にアクセス
 2. 未ログイン → **認証アプリ** (`http://localhost:5180/login?redirect=...`) へリダイレクト
-3. ID / PW を入力（開発用: 任意の非空値で OK）
-4. 認証成功 → ビューアへ `?accessToken=...` 付きでリダイレクト
-5. ビューアがトークンを保存し、本棚を表示
+3. ID / PW を入力（`auth/api/data/credentials.json` に登録された組み合わせのみ成功）
+4. 開発用アカウント例: `demo` / `demo`（学習者）、`instructor` / `instructor`、`admin` / `admin`
+5. 認証成功 → ビューアへ `?accessToken=...` 付きでリダイレクト
+6. ビューアがトークンを保存し、本棚を表示
 
 ## API
 
@@ -42,6 +43,16 @@ POST /auth/login   { userId, password }  → { accessToken, user, ... }
 GET  /auth/tokens                        → 開発用トークン一覧
 GET  /health
 ```
+
+ログイン可能な ID / パスワードは `auth/api/data/credentials.json` で管理します。
+
+```json
+[
+  { "userId": "demo", "password": "demo", "token": "mock-token-learner" }
+]
+```
+
+`token` は mock-api の seed ユーザーに対応する開発用トークンです。
 
 ## テスト
 

@@ -16,13 +16,25 @@ test.describe('認証アプリ', () => {
     await expect(page.getByTestId('login-error')).toHaveText('ID とパスワードを入力してください')
   })
 
-  test('任意の ID / パスワードでトークン付き URL にリダイレクトする', async ({ page }) => {
+  test('登録済み ID / パスワードでトークン付き URL にリダイレクトする', async ({ page }) => {
+    const returnUrl = encodeURIComponent('http://localhost:5180/login?from=test')
+    await page.goto(`/login?redirect=${returnUrl}`)
+
     await page.getByTestId('login-user-id').fill('demo')
     await page.getByTestId('login-password').fill('demo')
     await page.getByTestId('login-submit').click()
 
     await page.waitForURL(/accessToken=mock-token-learner/, { timeout: 10_000 })
-    expect(page.url()).toContain('localhost:5173')
-    expect(page.url()).toContain('accessToken=')
+    expect(page.url()).toContain('accessToken=mock-token-learner')
+    expect(page.url()).toContain('from=test')
+  })
+
+  test('未登録の ID / パスワードではログインできない', async ({ page }) => {
+    await page.getByTestId('login-user-id').fill('unknown')
+    await page.getByTestId('login-password').fill('wrong')
+    await page.getByTestId('login-submit').click()
+
+    await expect(page.getByTestId('login-error')).toHaveText('ID またはパスワードが正しくありません')
+    await expect(page).toHaveURL(/\/login/)
   })
 })
