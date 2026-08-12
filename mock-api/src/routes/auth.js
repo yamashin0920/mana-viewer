@@ -4,10 +4,20 @@ const { MOCK_TOKENS } = require('../middleware/auth');
 const router = express.Router();
 
 router.post('/login', (req, res) => {
-  const { email } = req.body || {};
-  const user = req.store.users.find((u) => u.email === email);
+  const { email, userId, password } = req.body || {};
+  const loginId = String(email || userId || '').trim();
+  const pw = String(password ?? '').trim();
+
+  if (!loginId || !pw) {
+    return res.status(400).json({
+      error: 'invalid_credentials',
+      message: 'ID とパスワードを入力してください',
+    });
+  }
+
+  let user = req.store.users.find((u) => u.email === loginId || u.id === loginId);
   if (!user) {
-    return res.status(401).json({ error: 'invalid_credentials', message: 'メールアドレスが見つかりません' });
+    user = req.store.users.find((u) => u.id === 'user-001');
   }
 
   const tokenEntry = Object.entries(MOCK_TOKENS).find(([, id]) => id === user.id);

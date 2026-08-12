@@ -1,6 +1,8 @@
-import { BookOpen, GraduationCap } from 'lucide-react'
+import { BookOpen, GraduationCap, LogOut } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { Badge } from '../ui/Badge'
+import { Button } from '../ui/Button'
 import { ThemeToggle } from '../ui/ThemeToggle'
 
 const DEV_TOKENS = [
@@ -22,8 +24,14 @@ const roleLabel: Record<string, string> = {
 }
 
 export function AppHeader() {
-  const { user, signInWithToken } = useAuthStore()
+  const navigate = useNavigate()
+  const { user, signInWithToken, signOut } = useAuthStore()
   const currentToken = localStorage.getItem('accessToken') ?? 'mock-token-learner'
+
+  const handleSignOut = () => {
+    signOut()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/90">
@@ -70,6 +78,17 @@ export function AppHeader() {
               ))}
             </select>
           </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            data-testid="logout-button"
+            onClick={handleSignOut}
+            aria-label="ログアウト"
+            title="ログアウト"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </header>

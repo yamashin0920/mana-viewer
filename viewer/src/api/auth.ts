@@ -5,15 +5,19 @@ export async function fetchMe(): Promise<User> {
   return apiFetch<User>('/users/me')
 }
 
-export async function login(email: string) {
+export async function loginWithCredentials(userId: string, password: string) {
   return apiFetch<{
     accessToken: string
     refreshToken: string
     user: User
   }>('/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ userId, password }),
   })
+}
+
+export async function login(email: string) {
+  return loginWithCredentials(email, 'dev')
 }
 
 export async function fetchDevTokens() {

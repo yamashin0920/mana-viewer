@@ -118,6 +118,17 @@ test.describe('Mock API', () => {
     expect(body.currentPage).toBe(5)
   })
 
+  test('POST /auth/login accepts any non-empty credentials', async ({ request }) => {
+    const res = await request.post(`${API_BASE}/auth/login`, {
+      headers: { 'Content-Type': 'application/json' },
+      data: { userId: 'anyone', password: 'anything' },
+    })
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    expect(body.accessToken).toBeTruthy()
+    expect(body.user).toHaveProperty('name')
+  })
+
   test('POST /contents/:id/annotations/share creates share link', async ({ request }) => {
     const res = await request.post(`${API_BASE}/contents/content-001/annotations/share`, {
       headers: {
