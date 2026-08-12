@@ -100,7 +100,7 @@ export interface ContentPolicyResponse extends ContentPolicy {
   }
 }
 
-export type AnnotationType = 'highlight' | 'bookmark' | 'note' | 'underline'
+export type AnnotationType = 'highlight' | 'bookmark' | 'note' | 'underline' | 'drawing' | 'sticky'
 
 export interface AnnotationRect {
   x: number

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Bookmark, Highlighter, Pencil, StickyNote, Trash2, Underline } from 'lucide-react'
+import { Bookmark, Highlighter, Pencil, PenLine, StickyNote, Trash2, Underline } from 'lucide-react'
 import type { Annotation } from '../../types'
 import { Button } from '../ui/Button'
 
@@ -34,6 +34,16 @@ const typeConfig: Record<
     icon: <Underline className="h-3.5 w-3.5" />,
     accent: 'border-l-amber-400',
   },
+  drawing: {
+    label: '描画',
+    icon: <PenLine className="h-3.5 w-3.5" />,
+    accent: 'border-l-red-400',
+  },
+  sticky: {
+    label: '付箋',
+    icon: <StickyNote className="h-3.5 w-3.5" />,
+    accent: 'border-l-yellow-500',
+  },
 }
 
 type Filter = 'all' | Annotation['type']
@@ -50,6 +60,8 @@ export function AnnotationSidebar({ annotations, onJump, onEdit, onDelete }: Ann
   const filters: { id: Filter; label: string }[] = [
     { id: 'all', label: 'すべて' },
     { id: 'highlight', label: 'ハイライト' },
+    { id: 'drawing', label: '描画' },
+    { id: 'sticky', label: '付箋' },
     { id: 'bookmark', label: 'ブックマーク' },
     { id: 'note', label: 'メモ' },
   ]
@@ -59,7 +71,9 @@ export function AnnotationSidebar({ annotations, onJump, onEdit, onDelete }: Ann
       <div className="rounded-xl bg-slate-50 px-4 py-8 text-center dark:bg-slate-800/50">
         <Highlighter className="mx-auto mb-3 h-8 w-8 text-slate-300 dark:text-slate-600" />
         <p className="text-sm font-medium text-slate-600 dark:text-slate-300">注釈はまだありません</p>
-        <p className="mt-1 text-xs text-slate-400">テキストを選択してハイライトやメモを追加できます</p>
+        <p className="mt-1 text-xs text-slate-400">
+          テキスト選択、ペン描画、付箋で注釈を追加できます
+        </p>
       </div>
     )
   }
@@ -98,7 +112,7 @@ export function AnnotationSidebar({ annotations, onJump, onEdit, onDelete }: Ann
                   onClick={() => onJump(ann.page)}
                   className="flex items-center gap-1.5 font-medium text-brand-700 hover:underline dark:text-brand-400"
                 >
-                  {ann.color && ann.type === 'highlight' && (
+                  {(ann.color && (ann.type === 'highlight' || ann.type === 'drawing')) && (
                     <span
                       className="h-3 w-3 shrink-0 rounded-full border border-black/10"
                       style={{ backgroundColor: ann.color }}
@@ -133,10 +147,13 @@ export function AnnotationSidebar({ annotations, onJump, onEdit, onDelete }: Ann
               {ann.selectedText && (
                 <p className="line-clamp-2 text-slate-600 dark:text-slate-400">「{ann.selectedText}」</p>
               )}
-              {ann.note && (
+              {ann.note && ann.type !== 'drawing' && (
                 <p className="mt-1.5 rounded-lg bg-white px-2.5 py-1.5 text-xs text-slate-500 dark:bg-slate-900 dark:text-slate-400">
                   {ann.note}
                 </p>
+              )}
+              {ann.type === 'drawing' && (
+                <p className="mt-1 text-xs text-slate-400">ペン描画</p>
               )}
             </li>
           )

@@ -13,7 +13,9 @@ import {
 import { Button } from '../ui/Button'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { SearchBar } from './SearchBar'
+import { AnnotationTools } from './AnnotationTools'
 import type { ViewMode } from './PdfViewer'
+import type { AnnotationTool } from '../../types/annotationTools'
 
 interface ViewerToolbarProps {
   title: string
@@ -31,6 +33,10 @@ interface ViewerToolbarProps {
   onSearchQueryChange: (query: string) => void
   onSearchPrev: () => void
   onSearchNext: () => void
+  annotationTool: AnnotationTool
+  penColor: string
+  onAnnotationToolChange: (tool: AnnotationTool) => void
+  onPenColorChange: (color: string) => void
   onPageChange: (page: number) => void
   onZoomChange: (zoom: number) => void
   onViewModeChange: (mode: ViewMode) => void
@@ -58,6 +64,10 @@ export function ViewerToolbar({
   onSearchQueryChange,
   onSearchPrev,
   onSearchNext,
+  annotationTool,
+  penColor,
+  onAnnotationToolChange,
+  onPenColorChange,
   onPageChange,
   onZoomChange,
   onViewModeChange,
@@ -108,6 +118,13 @@ export function ViewerToolbar({
 
         {!searchOpen && (
           <>
+        <AnnotationTools
+          tool={annotationTool}
+          penColor={penColor}
+          onToolChange={onAnnotationToolChange}
+          onPenColorChange={onPenColorChange}
+        />
+
         {/* View mode toggle */}
         <div className="hidden items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-600 dark:bg-slate-800 sm:flex">
           <Button
