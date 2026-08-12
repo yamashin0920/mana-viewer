@@ -32,6 +32,8 @@ import {
   singlePageStep,
 } from '../hooks/useKeyboardNavigation'
 import { usePdfDocument } from '../hooks/usePdfDocument'
+import { usePdfTextSearch } from '../hooks/usePdfTextSearch'
+import { usePdfOutline } from '../hooks/usePdfOutline'
 import type { Annotation } from '../types'
 
 const USE_DEMO_PDF = import.meta.env.VITE_USE_DEMO_PDF !== 'false'
@@ -56,6 +58,9 @@ export function ViewerPage() {
   const [editingAnnotation, setEditingAnnotation] = useState<Annotation | null>(null)
   const [editNote, setEditNote] = useState('')
   const [editColor, setEditColor] = useState<string>(DEFAULT_HIGHLIGHT_COLOR)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeSearchIndex, setActiveSearchIndex] = useState(-1)
 
   const totalPages = pageCount
 
@@ -295,14 +300,69 @@ export function ViewerPage() {
     pdfUrl || null
   )
 
+  const { matches: searchMatches, searching: searchSearching } = usePdfTextSearch(
+    pdfDoc,
+    searchQuery,
+    zoom
+  )
+
+  const { outlineToc } = usePdfOutline(pdfDoc)
+
   useEffect(() => {
     if (pdfNumPages > 0) {
       setPageCount(pdfNumPages)
     }
   }, [pdfNumPages])
 
+  useEffect(() => {
+    if (!searchQuery.trim() || searchSearching) return
+    if (searchMatches.length === 0) {
+      setActiveSearchIndex(-1)
+      return
+    }
+    setActiveSearchIndex(0)
+    setPage(searchMatches[0].page)
+  }, [searchQuery, searchMatches, searchSearching])
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+        event.preventDefault()
+        setSearchOpen(true)
+      }
+      if (event.key === 'Escape' && searchOpen) {
+        setSearchOpen(false)
+        setSearchQuery('')
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [searchOpen])
+
+  const handleSearchPrev = useCallback(() => {
+    if (searchMatches.length === 0) return
+    setActiveSearchIndex((current) => {
+      const nextIndex = current <= 0 ? searchMatches.length - 1 : current - 1
+      setPage(searchMatches[nextIndex].page)
+      return nextIndex
+    })
+  }, [searchMatches])
+
+  const handleSearchNext = useCallback(() => {
+    if (searchMatches.length === 0) return
+    setActiveSearchIndex((current) => {
+      const nextIndex = current >= searchMatches.length - 1 ? 0 : current + 1
+      setPage(searchMatches[nextIndex].page)
+      return nextIndex
+    })
+  }, [searchMatches])
+
   const annotations = annotationsData?.data ?? []
-  const toc = content?.toc ?? []
+  const apiToc = content?.toc ?? []
+  const mergedToc = useMemo(() => {
+    if (apiToc.length > 0) return apiToc
+    return outlineToc
+  }, [apiToc, outlineToc])
   const displayPageCount = pdfNumPages || content?.pageCount || pageCount
 
   if (contentLoading) {
@@ -356,6 +416,15 @@ export function ViewerPage() {
         zoom={zoom}
         viewMode={viewMode}
         saving={progressMutation.isPending}
+        searchOpen={searchOpen}
+        searchQuery={searchQuery}
+        searchMatchCount={searchMatches.length}
+        activeSearchIndex={activeSearchIndex}
+        searchSearching={searchSearching}
+        onSearchOpenChange={setSearchOpen}
+        onSearchQueryChange={setSearchQuery}
+        onSearchPrev={handleSearchPrev}
+        onSearchNext={handleSearchNext}
         onPageChange={setPage}
         onZoomChange={setZoom}
         onViewModeChange={handleViewModeChange}
@@ -375,7 +444,7 @@ export function ViewerPage() {
             pdfDoc={pdfDoc}
             pdfLoading={pdfLoading}
             pageCount={displayPageCount}
-            toc={toc}
+            toc={mergedToc}
             annotations={annotations}
             currentPage={page}
             onJump={setPage}
@@ -396,9 +465,12 @@ export function ViewerPage() {
                 zoom={zoom}
                 viewMode={viewMode}
                 annotations={annotations}
+                searchMatches={searchMatches}
+                activeSearchIndex={activeSearchIndex}
                 watermark={policy?.watermark}
                 policy={policy ?? null}
                 onPageCount={handlePageCount}
+                onPageJump={setPage}
                 onSelection={handleSelection}
                 onClearSelection={handleClearSelection}
               />
@@ -419,7 +491,7 @@ export function ViewerPage() {
           pdfDoc={pdfDoc}
           pdfLoading={pdfLoading}
           pageCount={displayPageCount}
-          toc={toc}
+          toc={mergedToc}
           annotations={annotations}
           currentPage={page}
           onJump={(p) => {

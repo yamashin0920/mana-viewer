@@ -1,4 +1,4 @@
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, ExternalLink } from 'lucide-react'
 import type { TocEntry } from '../../types'
 
 interface TocSidebarProps {
@@ -10,27 +10,51 @@ interface TocSidebarProps {
 export function TocSidebar({ toc, currentPage, onJump }: TocSidebarProps) {
   if (toc.length === 0) {
     return (
-      <div className="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+      <div className="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
         目次がありません
       </div>
     )
   }
 
   return (
-    <ul className="space-y-0.5">
+    <ul className="space-y-0.5" data-testid="toc-list">
       {toc.map((entry, idx) => {
-        const isActive = currentPage === entry.page
+        const isActive = !entry.url && currentPage === entry.page
+        const paddingLeft = `${(entry.level - 1) * 14 + 12}px`
+
+        if (entry.url) {
+          return (
+            <li key={`${entry.title}-${idx}`}>
+              <a
+                href={entry.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="toc-external-link"
+                className="group flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
+                style={{ paddingLeft }}
+              >
+                <span className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+                  外部
+                </span>
+                <span className="min-w-0 flex-1 truncate">{entry.title}</span>
+                <ExternalLink className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              </a>
+            </li>
+          )
+        }
+
         return (
           <li key={`${entry.page}-${idx}`}>
             <button
               type="button"
+              data-testid="toc-page-link"
               onClick={() => onJump(entry.page)}
               className={`group flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition ${
                 isActive
                   ? 'bg-brand-50 font-medium text-brand-700 dark:bg-brand-950/40 dark:text-brand-300'
                   : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800'
               }`}
-              style={{ paddingLeft: `${(entry.level - 1) * 14 + 12}px` }}
+              style={{ paddingLeft }}
             >
               <span
                 className={`shrink-0 rounded-md px-1.5 py-0.5 text-xs ${

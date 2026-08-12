@@ -58,6 +58,7 @@ export interface TocEntry {
   title: string
   page: number
   level: number
+  url?: string | null
 }
 
 export interface BookshelfItem {
