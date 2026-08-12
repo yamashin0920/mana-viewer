@@ -39,11 +39,14 @@ test.describe('PDF ビューア', () => {
   })
 
   test('ズームが変更できる', async ({ page }) => {
+    const zoomDisplay = page.getByLabel('拡大').locator('xpath=preceding-sibling::span[1]')
+    const before = Number((await zoomDisplay.textContent())?.replace('%', '') ?? 0)
+
     await page.getByLabel('拡大').click()
-    await expect(page.getByText('130%')).toBeVisible()
+    await expect(zoomDisplay).toHaveText(`${before + 10}%`)
 
     await page.getByLabel('縮小').click()
-    await expect(page.getByText('120%')).toBeVisible()
+    await expect(zoomDisplay).toHaveText(`${before}%`)
   })
 
   test('見開き表示に切り替えられる', async ({ page }) => {

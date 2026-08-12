@@ -11,7 +11,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | ❌ | 未実装 |
 | ➖ | 対象外（今回スコープに含めない） |
 
-**テスト**: Playwright E2E の有無（`viewer/e2e/`、現状 **36 テスト**）
+**テスト**: Playwright E2E の有無（`viewer/e2e/`、現状 **82 テスト**）
 
 ---
 
@@ -19,7 +19,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 
 | 要件 | 状態 | 実装内容 | テスト |
 |------|------|----------|--------|
-| B2B（組織単位・ロール） | ✅ | 組織名表示、learner / instructor / org_admin ロール、開発用トークン切替 | `bookshelf.spec.ts` |
+| B2B（組織単位・ロール） | ✅ | 組織名表示、learner / instructor / org_admin ロール、開発用トークン切替 | `bookshelf.spec.ts`, `auth.spec.ts` |
 | 課金・決済 | ➖ | スコープ外 | — |
 | マルチテナント（組織分離） | 🔶 | Mock API seed で組織データあり。本番テナント分離は未 | `mock-api.spec.ts` |
 
@@ -33,10 +33,10 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | プロフィール取得 (`/users/me`) | ✅ | ヘッダーにユーザー名・ロール表示 | `bookshelf.spec.ts` |
 | メールログイン (`/auth/login`) | 🔶 | **auth/** 別プロジェクト (api:3002, web:5180) | `auth/web/e2e/login.spec.ts` |
 | ログイン画面（ID / PW） | ✅ | auth/web — `credentials.json` の ID・PW で照合 | `auth/web/e2e/login.spec.ts` |
-| ビューア連携 | ✅ | 未ログイン → auth へリダイレクト、トークン引き渡し | `viewer` AuthGuard |
-| ルート保護 | ✅ | ビューア側 AuthGuard | — |
-| ログアウト | ✅ | ビューア → auth ログインへ | — |
-| LTI 起動 (`/auth/lti/launch`) | 🔶 | Mock API のみ。ビューア側未対応 | — |
+| ビューア連携 | ✅ | 未ログイン → auth へリダイレクト、トークン引き渡し | `auth.spec.ts` |
+| ルート保護 | ✅ | ビューア側 AuthGuard | `auth.spec.ts` |
+| ログアウト | ✅ | ビューア → auth ログインへ | `auth.spec.ts` |
+| LTI 起動 (`/auth/lti/launch`) | 🔶 | Mock API のみ。ビューア側未対応 | `mock-api.spec.ts` |
 
 ---
 
@@ -44,9 +44,9 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 
 | 要件 | 状態 | 実装内容 | テスト |
 |------|------|----------|--------|
-| ライセンス一覧 (`/licenses/me`) | 🔶 | Mock API のみ | — |
-| 閲覧前ライセンス検証 | ✅ | ビューア起動時に `verifyLicense` | `mock-api.spec.ts` |
-| オフラインライセンストークン | 🔶 | Mock API のみ | — |
+| ライセンス一覧 (`/licenses/me`) | 🔶 | Mock API のみ | `mock-api.spec.ts` |
+| 閲覧前ライセンス検証 | ✅ | ビューア起動時に `verifyLicense` | `mock-api.spec.ts`, `drm.spec.ts` |
+| オフラインライセンストークン | 🔶 | Mock API のみ | `mock-api.spec.ts` |
 
 ---
 
@@ -77,8 +77,8 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | PDF 内テキスト検索 | ✅ | ツールバー検索、ハイライト、前後ナビ | `viewer.spec.ts` |
 | リンク（目次内・PDF内） | ✅ | 目次の外部 URL / ページジャンプ、PDF Link アノテーション | `viewer.spec.ts` |
 | 閲覧セッション | ✅ | `createViewSession`、sessionToken 保持 | `mock-api.spec.ts` |
-| 暗号化チャンク取得・復号 | 🔶 | Mock API エンドポイントあり。ビューアはデモ PDF 固定 | — |
-| 読書進捗の自動保存 | ✅ | ページ・ズーム・表示モードを API 保存 | `mock-api.spec.ts` |
+| 暗号化チャンク取得・復号 | 🔶 | Mock API エンドポイントあり。ビューアはデモ PDF 固定 | `mock-api.spec.ts` |
+| 読書進捗の自動保存 | ✅ | ページ・ズーム・表示モードを API 保存 | `mock-api.spec.ts`, `progress.spec.ts` |
 | 本棚へ戻る | ✅ | ツールバーリンク | `viewer.spec.ts` |
 
 ---
@@ -95,7 +95,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | 注釈編集（色・メモ） | ✅ | EditAnnotationDialog | `annotations.spec.ts` |
 | 注釈削除 | ✅ | 一覧から削除 | `annotations.spec.ts` |
 | 注釈 API CRUD | ✅ | GET / POST / PUT / DELETE | `mock-api.spec.ts` |
-| 注釈一括同期 | 🔶 | API + Dexie キュースキーマ。フラッシュ処理未 | — |
+| 注釈一括同期 | 🔶 | API + Dexie キュースキーマ。フラッシュ処理未 | `mock-api.spec.ts` |
 | 下線（underline） | ❌ | 型定義のみ。新規作成 UI なし | — |
 | 描画（ペン） | ✅ | フリーハンド描画、5色 | `annotations.spec.ts` |
 | 付箋（sticky） | ✅ | クリック配置、黄色付箋表示 | `annotations.spec.ts` |
@@ -108,11 +108,11 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 
 | 要件 | 状態 | 実装内容 | テスト |
 |------|------|----------|--------|
-| コンテンツメタデータキャッシュ | 🔶 | Dexie `cacheContent`（閲覧時に保存） | — |
-| 進捗オフラインキュー | 🔶 | API 失敗時 `queueProgress`。再同期フラッシュ未 | — |
+| コンテンツメタデータキャッシュ | 🔶 | Dexie `cacheContent`（閲覧時に保存） | `offline.spec.ts` |
+| 進捗オフラインキュー | 🔶 | API 失敗時 `queueProgress`。再同期フラッシュ未 | `offline.spec.ts` |
 | 注釈オフラインキュー | 🔶 | Dexie スキーマのみ。UI から未使用 | — |
-| オフラインパッケージ DL | 🔶 | Mock API + Dexie テーブル。UI・DL 未 | — |
-| 端末登録 (`/devices`) | 🔶 | Mock API のみ | — |
+| オフラインパッケージ DL | 🔶 | Mock API + Dexie テーブル。UI・DL 未 | `mock-api.spec.ts` |
+| 端末登録 (`/devices`) | 🔶 | Mock API のみ | `mock-api.spec.ts` |
 | 完全オフライン閲覧 | ❌ | パッケージ復号・Service Worker 未 | — |
 
 ---
@@ -121,8 +121,8 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 
 | 要件 | 状態 | 実装内容 | テスト |
 |------|------|----------|--------|
-| ウォーターマーク表示 | ✅ | セッション / policy から PDF 上にオーバーレイ | — |
-| DRM ポリシー取得 | ✅ | `/contents/:id/policy` | — |
+| ウォーターマーク表示 | ✅ | セッション / policy から PDF 上にオーバーレイ | `drm.spec.ts` |
+| DRM ポリシー取得 | ✅ | `/contents/:id/policy` | `mock-api.spec.ts` |
 | 印刷制御 (`allowPrint`) | ❌ | 型・seed のみ。UI 未反映 | — |
 | コピー制御 (`allowCopy`) | ❌ | 型・seed のみ。選択禁止未 | — |
 | スクリーンショット防止 | ❌ | policy フィールドのみ | — |
@@ -133,10 +133,10 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 
 | 要件 | 状態 | 実装内容 | テスト |
 |------|------|----------|--------|
-| Deep Link 起動 | 🔶 | Mock API `POST /lms/deep-link`。ビューア URL パラメータ未 | — |
+| Deep Link 起動 | 🔶 | Mock API `POST /lms/deep-link`。ビューア URL パラメータ未 | `mock-api.spec.ts` |
 | LTI 起動 → 教材表示 | ❌ | `/viewer/:id?page=` 等未対応 | — |
-| 名簿同期 (`/lms/roster/sync`) | 🔶 | Mock API のみ | — |
-| xAPI 学習記録 | 🔶 | Mock API のみ | — |
+| 名簿同期 (`/lms/roster/sync`) | 🔶 | Mock API のみ | `mock-api.spec.ts` |
+| xAPI 学習記録 | 🔶 | Mock API のみ | `mock-api.spec.ts` |
 
 ---
 
@@ -157,7 +157,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | 要件 | 状態 | 実装内容 |
 |------|------|----------|
 | Mock API | ✅ | Express、seed データ、全主要エンドポイント |
-| Playwright E2E | ✅ | viewer 50 + auth/web 3 テスト |
+| Playwright E2E | ✅ | viewer 82 テスト（mock-api / auth / drm / offline / progress 含む）+ auth/web 3 テスト |
 | 機能追加時のテスト必須 | ✅ | `.cursor/rules/playwright-tests.mdc` |
 
 ---
@@ -169,7 +169,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 3. 注釈・進捗同期キューのフラッシュ（オンライン復帰時）
 4. LTI / Deep Link 起動（`/viewer/:id?page=`）
 5. 印刷・コピー制御（`policy.drm` 反映）
-6. 各項目に Playwright テスト追加（[ルール](../.cursor/rules/playwright-tests.mdc) 参照）
+6. ~~各項目に Playwright テスト追加~~（2026-08 完了。未実装機能の UI テストは実装後に追加）
 
 ---
 

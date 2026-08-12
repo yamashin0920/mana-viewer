@@ -551,7 +551,10 @@ export function ViewerPage() {
 
   if (license && !license.canView) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4 dark:bg-slate-950">
+      <div
+        className="flex min-h-screen items-center justify-center bg-slate-100 p-4 dark:bg-slate-950"
+        data-testid="license-denied"
+      >
         <EmptyState
           icon={<BookX className="h-12 w-12" />}
           title="ライセンスがありません"
