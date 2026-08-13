@@ -2,6 +2,8 @@ import { useState } from 'react'
 import {
   Bookmark,
   Download,
+  Eye,
+  EyeOff,
   Highlighter,
   Pencil,
   PenLine,
@@ -16,9 +18,11 @@ import { Button } from '../ui/Button'
 interface AnnotationSidebarProps {
   annotations: Annotation[]
   sharedAnnotationIds?: Set<string>
+  hiddenAnnotationIds?: Set<string>
   onJump: (page: number) => void
   onEdit: (annotation: Annotation) => void
   onDelete: (id: string) => void
+  onToggleVisibility: (id: string) => void
   onExport: (format: 'json' | 'markdown') => void
   onShare: () => void
   sharing?: boolean
@@ -65,9 +69,11 @@ type Filter = 'all' | Annotation['type']
 export function AnnotationSidebar({
   annotations,
   sharedAnnotationIds,
+  hiddenAnnotationIds,
   onJump,
   onEdit,
   onDelete,
+  onToggleVisibility,
   onExport,
   onShare,
   sharing,
@@ -159,17 +165,25 @@ export function AnnotationSidebar({
         {sorted.map((ann) => {
           const cfg = typeConfig[ann.type]
           const isSharedOnly = sharedAnnotationIds?.has(ann.id) ?? false
+          const isHidden = hiddenAnnotationIds?.has(ann.id) ?? false
           return (
             <li
               key={ann.id}
               data-testid={isSharedOnly ? 'shared-annotation-item' : 'annotation-item'}
-              className={`rounded-xl border border-slate-100 border-l-4 bg-slate-50/50 p-3 text-sm transition hover:bg-white hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/50 dark:hover:bg-slate-800 ${cfg.accent}`}
+              data-annotation-hidden={isHidden ? 'true' : 'false'}
+              className={`rounded-xl border border-slate-100 border-l-4 bg-slate-50/50 p-3 text-sm transition hover:bg-white hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/50 dark:hover:bg-slate-800 ${cfg.accent} ${
+                isHidden ? 'opacity-50' : ''
+              }`}
             >
               <div className="mb-1.5 flex items-start justify-between gap-2">
                 <button
                   type="button"
                   onClick={() => onJump(ann.page)}
-                  className="flex items-center gap-1.5 font-medium text-brand-700 hover:underline dark:text-brand-400"
+                  className={`flex items-center gap-1.5 font-medium hover:underline ${
+                    isHidden
+                      ? 'text-slate-500 dark:text-slate-400'
+                      : 'text-brand-700 dark:text-brand-400'
+                  }`}
                 >
                   {(ann.color && (ann.type === 'highlight' || ann.type === 'drawing')) && (
                     <span
@@ -185,8 +199,20 @@ export function AnnotationSidebar({
                     </span>
                   )}
                 </button>
-                {!isSharedOnly && (
-                  <div className="flex shrink-0 gap-0.5">
+                <div className="flex shrink-0 gap-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    data-testid="annotation-item-visibility-toggle"
+                    onClick={() => onToggleVisibility(ann.id)}
+                    className={`h-7 w-7 ${isHidden ? 'text-slate-400' : 'text-slate-500 hover:text-brand-600'}`}
+                    aria-label={isHidden ? '注釈を表示' : '注釈を非表示'}
+                    title={isHidden ? '注釈を表示' : '注釈を非表示'}
+                  >
+                    {isHidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </Button>
+                  {!isSharedOnly && (
+                    <>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -207,8 +233,9 @@ export function AnnotationSidebar({
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
-                  </div>
-                )}
+                    </>
+                  )}
+                </div>
               </div>
               {ann.selectedText && (
                 <p className="line-clamp-2 text-slate-600 dark:text-slate-400">「{ann.selectedText}」</p>

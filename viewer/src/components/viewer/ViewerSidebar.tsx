@@ -17,10 +17,12 @@ interface ViewerSidebarProps {
   toc: TocEntry[]
   annotations: Annotation[]
   sharedAnnotationIds?: Set<string>
+  hiddenAnnotationIds?: Set<string>
   currentPage: number
   onJump: (page: number) => void
   onEditAnnotation: (annotation: Annotation) => void
   onDeleteAnnotation: (id: string) => void
+  onToggleAnnotationVisibility: (id: string) => void
   onExportAnnotations: (format: 'json' | 'markdown') => void
   onShareAnnotations: () => void
   sharingAnnotations?: boolean
@@ -37,10 +39,12 @@ export function ViewerSidebar({
   toc,
   annotations,
   sharedAnnotationIds,
+  hiddenAnnotationIds,
   currentPage,
   onJump,
   onEditAnnotation,
   onDeleteAnnotation,
+  onToggleAnnotationVisibility,
   onExportAnnotations,
   onShareAnnotations,
   sharingAnnotations,
@@ -101,9 +105,11 @@ export function ViewerSidebar({
           <AnnotationSidebar
             annotations={annotations}
             sharedAnnotationIds={sharedAnnotationIds}
+            hiddenAnnotationIds={hiddenAnnotationIds}
             onJump={onJump}
             onEdit={onEditAnnotation}
             onDelete={onDeleteAnnotation}
+            onToggleVisibility={onToggleAnnotationVisibility}
             onExport={onExportAnnotations}
             onShare={onShareAnnotations}
             sharing={sharingAnnotations}

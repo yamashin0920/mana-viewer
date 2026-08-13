@@ -43,7 +43,9 @@ import type { Annotation } from '../types'
 import type { AnnotationTool } from '../types/annotationTools'
 import {
   loadAnnotationVisibility,
+  loadHiddenAnnotationIds,
   saveAnnotationVisibility,
+  saveHiddenAnnotationIds,
   type AnnotationVisibility,
 } from '../types/annotationVisibility'
 import { getDrawingBoundingBox, serializeDrawingPath, type DrawingPoint } from '../utils/drawingPath'
@@ -98,6 +100,7 @@ export function ViewerPage() {
   const [shareAnnotationCount, setShareAnnotationCount] = useState(0)
   const [showAnnotations, setShowAnnotations] = useState(loadShowAnnotations)
   const [annotationVisibility, setAnnotationVisibility] = useState(loadAnnotationVisibility)
+  const [hiddenAnnotationIds, setHiddenAnnotationIds] = useState<Set<string>>(() => new Set())
 
   const totalPages = pageCount
 
@@ -512,6 +515,40 @@ export function ViewerPage() {
     saveAnnotationVisibility(visibility)
   }, [])
 
+  useEffect(() => {
+    setHiddenAnnotationIds(loadHiddenAnnotationIds(contentId))
+  }, [contentId])
+
+  const handleToggleAnnotationVisibility = useCallback(
+    (annotationId: string) => {
+      setHiddenAnnotationIds((prev) => {
+        const next = new Set(prev)
+        if (next.has(annotationId)) {
+          next.delete(annotationId)
+        } else {
+          next.add(annotationId)
+        }
+        saveHiddenAnnotationIds(contentId, next)
+        return next
+      })
+    },
+    [contentId]
+  )
+
+  const handleDeleteAnnotation = useCallback(
+    (id: string) => {
+      deleteAnnotationMutation.mutate(id)
+      setHiddenAnnotationIds((prev) => {
+        if (!prev.has(id)) return prev
+        const next = new Set(prev)
+        next.delete(id)
+        saveHiddenAnnotationIds(contentId, next)
+        return next
+      })
+    },
+    [contentId, deleteAnnotationMutation]
+  )
+
   const pdfUrl = useMemo(() => {
     if (USE_DEMO_PDF) return getDemoPdfUrl(contentId)
     if (!sessionToken) return ''
@@ -706,10 +743,12 @@ export function ViewerPage() {
             toc={mergedToc}
             annotations={displayAnnotations}
             sharedAnnotationIds={sharedAnnotationIds}
+            hiddenAnnotationIds={hiddenAnnotationIds}
             currentPage={page}
             onJump={setPage}
             onEditAnnotation={handleEditAnnotation}
-            onDeleteAnnotation={(id) => deleteAnnotationMutation.mutate(id)}
+            onDeleteAnnotation={handleDeleteAnnotation}
+            onToggleAnnotationVisibility={handleToggleAnnotationVisibility}
             onExportAnnotations={handleExportAnnotations}
             onShareAnnotations={handleShareAnnotations}
             sharingAnnotations={shareAnnotationsMutation.isPending}
@@ -735,6 +774,7 @@ export function ViewerPage() {
                 watermark={policy?.watermark}
                 showAnnotations={showAnnotations}
                 annotationVisibility={annotationVisibility}
+                hiddenAnnotationIds={hiddenAnnotationIds}
                 policy={policy ?? null}
                 onPageCount={handlePageCount}
                 onPageJump={setPage}
@@ -763,13 +803,15 @@ export function ViewerPage() {
           toc={mergedToc}
           annotations={displayAnnotations}
           sharedAnnotationIds={sharedAnnotationIds}
+          hiddenAnnotationIds={hiddenAnnotationIds}
           currentPage={page}
           onJump={(p) => {
             setPage(p)
             setMobileSidebarOpen(false)
           }}
           onEditAnnotation={handleEditAnnotation}
-          onDeleteAnnotation={(id) => deleteAnnotationMutation.mutate(id)}
+          onDeleteAnnotation={handleDeleteAnnotation}
+          onToggleAnnotationVisibility={handleToggleAnnotationVisibility}
           onExportAnnotations={handleExportAnnotations}
           onShareAnnotations={handleShareAnnotations}
           sharingAnnotations={shareAnnotationsMutation.isPending}

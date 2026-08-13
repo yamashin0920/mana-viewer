@@ -226,6 +226,45 @@ test.describe('注釈の表示切替', () => {
     await expect(page.getByTestId('markup-annotation').first()).toBeVisible()
     await expect(page.getByTestId('sticky-note')).toHaveCount(0)
   })
+
+  test('個別の注釈を表示・非表示にできる', async ({ page, request }) => {
+    await request.put(`${API_BASE}/contents/content-001/progress`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: { currentPage: 1, progressPercent: 0.4, zoom: 1.2, viewMode: 'single' },
+    })
+    const createRes = await request.post(`${API_BASE}/contents/content-001/annotations`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        type: 'highlight',
+        page: 1,
+        color: '#FFEB3B',
+        rects: [{ x: 80, y: 120, width: 240, height: 20 }],
+        selectedText: 'individual visibility test',
+      },
+    })
+    expect(createRes.ok()).toBeTruthy()
+    const created = await createRes.json()
+
+    await openFirstContent(page)
+    await page.getByTestId('desktop-sidebar').getByTestId('sidebar-tab-annotations').click()
+    await expect(page.getByTestId('page-input')).toHaveValue('1')
+    await expect(page.locator(`[data-annotation-id="${created.id}"]`)).toBeVisible()
+
+    const item = page.getByTestId('annotation-item').filter({ hasText: 'individual visibility test' })
+    await item.getByTestId('annotation-item-visibility-toggle').click()
+    await expect(page.locator(`[data-annotation-id="${created.id}"]`)).toHaveCount(0)
+    await expect(item).toHaveAttribute('data-annotation-hidden', 'true')
+
+    await item.getByTestId('annotation-item-visibility-toggle').click()
+    await expect(page.locator(`[data-annotation-id="${created.id}"]`)).toBeVisible()
+    await expect(item).toHaveAttribute('data-annotation-hidden', 'false')
+  })
 })
 
 test.describe('テキストマーカー', () => {

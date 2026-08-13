@@ -35,6 +35,7 @@ interface PdfViewerProps {
   watermark?: string | null
   showAnnotations?: boolean
   annotationVisibility?: AnnotationVisibility
+  hiddenAnnotationIds?: Set<string>
   policy?: ContentPolicyResponse | null
   onPageCount: (count: number) => void
   onPageJump?: (page: number) => void
@@ -60,6 +61,7 @@ export function PdfViewer({
   watermark,
   showAnnotations = true,
   annotationVisibility,
+  hiddenAnnotationIds,
   policy,
   onPageCount,
   onPageJump,
@@ -147,6 +149,7 @@ export function PdfViewer({
             watermark={watermark}
             showAnnotations={showAnnotations}
             annotationVisibility={annotationVisibility}
+            hiddenAnnotationIds={hiddenAnnotationIds}
             onSelection={handleSelection}
             onInternalLink={onPageJump}
             onDrawingComplete={onDrawingComplete}
@@ -165,6 +168,7 @@ export function PdfViewer({
               watermark={watermark}
               showAnnotations={showAnnotations}
               annotationVisibility={annotationVisibility}
+              hiddenAnnotationIds={hiddenAnnotationIds}
               onSelection={handleSelection}
               onInternalLink={onPageJump}
               onDrawingComplete={onDrawingComplete}
@@ -196,6 +200,7 @@ export function PdfViewer({
           watermark={watermark}
           showAnnotations={showAnnotations}
           annotationVisibility={annotationVisibility}
+          hiddenAnnotationIds={hiddenAnnotationIds}
           onSelection={handleSelection}
           onInternalLink={onPageJump}
           onDrawingComplete={onDrawingComplete}

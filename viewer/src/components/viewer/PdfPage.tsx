@@ -5,7 +5,7 @@ import type { Annotation, AnnotationRect } from '../../types'
 import type { AnnotationTool } from '../../types/annotationTools'
 import {
   DEFAULT_ANNOTATION_VISIBILITY,
-  isAnnotationTypeVisible,
+  isAnnotationVisible,
   type AnnotationVisibility,
 } from '../../types/annotationVisibility'
 import type { TextSelection } from './PdfViewer'
@@ -34,6 +34,7 @@ interface PdfPageProps {
   onRender?: (width: number, height: number) => void
   showAnnotations?: boolean
   annotationVisibility?: AnnotationVisibility
+  hiddenAnnotationIds?: Set<string>
   className?: string
 }
 
@@ -53,6 +54,7 @@ export function PdfPage({
   onRender,
   showAnnotations = true,
   annotationVisibility = DEFAULT_ANNOTATION_VISIBILITY,
+  hiddenAnnotationIds = new Set<string>(),
   className = '',
 }: PdfPageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -144,23 +146,16 @@ export function PdfPage({
     [annotationTool, onStickyPlace]
   )
 
+  const isVisible = (annotation: (typeof annotations)[number]) =>
+    isAnnotationVisible(annotation, showAnnotations, annotationVisibility, hiddenAnnotationIds)
+
   const pageAnnotations = annotations.filter((a) => a.page === pageNumber && a.type !== 'bookmark')
-  const drawingAnnotations = pageAnnotations.filter(
-    (a) => a.type === 'drawing' && isAnnotationTypeVisible(a.type, showAnnotations, annotationVisibility)
-  )
-  const stickyAnnotations = pageAnnotations.filter(
-    (a) => a.type === 'sticky' && isAnnotationTypeVisible(a.type, showAnnotations, annotationVisibility)
-  )
+  const drawingAnnotations = pageAnnotations.filter((a) => a.type === 'drawing' && isVisible(a))
+  const stickyAnnotations = pageAnnotations.filter((a) => a.type === 'sticky' && isVisible(a))
   const markupAnnotations = pageAnnotations.filter(
-    (a) =>
-      a.type !== 'drawing' &&
-      a.type !== 'sticky' &&
-      a.type !== 'note' &&
-      isAnnotationTypeVisible(a.type, showAnnotations, annotationVisibility)
+    (a) => a.type !== 'drawing' && a.type !== 'sticky' && a.type !== 'note' && isVisible(a)
   )
-  const noteAnnotations = pageAnnotations.filter(
-    (a) => a.type === 'note' && isAnnotationTypeVisible(a.type, showAnnotations, annotationVisibility)
-  )
+  const noteAnnotations = pageAnnotations.filter((a) => a.type === 'note' && isVisible(a))
   const showDrawingLayer =
     (showAnnotations && annotationVisibility.drawing) || annotationTool === 'pen'
 
@@ -213,6 +208,7 @@ export function PdfPage({
             <svg
               key={ann.id}
               data-testid="drawing-annotation"
+              data-annotation-id={ann.id}
               className="absolute inset-0 overflow-visible"
               aria-hidden
             >
@@ -232,6 +228,7 @@ export function PdfPage({
             <div
               key={`${ann.id}-${idx}`}
               data-testid="markup-annotation"
+              data-annotation-id={ann.id}
               className="absolute rounded-sm"
               style={{
                 left: rect.x,
@@ -255,6 +252,7 @@ export function PdfPage({
               <div
                 key={ann.id}
                 data-testid="note-annotation"
+                data-annotation-id={ann.id}
                 className="absolute flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-sm text-white shadow-md ring-2 ring-white dark:ring-slate-800"
                 style={{ left: rect.x, top: rect.y }}
                 title={ann.note ?? ''}
@@ -271,6 +269,7 @@ export function PdfPage({
               <div
                 key={ann.id}
                 data-testid="sticky-note"
+                data-annotation-id={ann.id}
                 className="absolute w-28 rounded-md border border-yellow-300 bg-yellow-100 p-2 text-xs text-slate-800 shadow-md dark:border-yellow-700 dark:bg-yellow-200/90"
                 style={{ left: rect.x, top: rect.y }}
                 title={ann.note ?? ''}

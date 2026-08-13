@@ -1,4 +1,4 @@
-import type { AnnotationType } from '../types'
+import type { Annotation, AnnotationType } from '../types'
 
 export type AnnotationVisibilityType = 'marker' | 'drawing' | 'sticky' | 'note'
 
@@ -75,4 +75,44 @@ export function isAnnotationTypeVisible(
     default:
       return true
   }
+}
+
+const HIDDEN_ANNOTATIONS_KEY = 'viewer-hidden-annotation-ids'
+
+type HiddenAnnotationsByContent = Record<string, string[]>
+
+export function loadHiddenAnnotationIds(contentId: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(HIDDEN_ANNOTATIONS_KEY)
+    if (!raw) return new Set()
+    const parsed = JSON.parse(raw) as HiddenAnnotationsByContent
+    return new Set(parsed[contentId] ?? [])
+  } catch {
+    return new Set()
+  }
+}
+
+export function saveHiddenAnnotationIds(contentId: string, ids: Set<string>) {
+  try {
+    const raw = localStorage.getItem(HIDDEN_ANNOTATIONS_KEY)
+    const parsed = raw ? (JSON.parse(raw) as HiddenAnnotationsByContent) : {}
+    if (ids.size === 0) {
+      delete parsed[contentId]
+    } else {
+      parsed[contentId] = [...ids]
+    }
+    localStorage.setItem(HIDDEN_ANNOTATIONS_KEY, JSON.stringify(parsed))
+  } catch {
+    /* ignore */
+  }
+}
+
+export function isAnnotationVisible(
+  annotation: Pick<Annotation, 'id' | 'type'>,
+  showAll: boolean,
+  visibility: AnnotationVisibility,
+  hiddenIds: Set<string>
+): boolean {
+  if (hiddenIds.has(annotation.id)) return false
+  return isAnnotationTypeVisible(annotation.type, showAll, visibility)
 }
