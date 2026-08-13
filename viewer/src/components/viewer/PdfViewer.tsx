@@ -32,6 +32,7 @@ interface PdfViewerProps {
   annotationTool?: AnnotationTool
   penColor?: string
   watermark?: string | null
+  showAnnotations?: boolean
   policy?: ContentPolicyResponse | null
   onPageCount: (count: number) => void
   onPageJump?: (page: number) => void
@@ -55,6 +56,7 @@ export function PdfViewer({
   annotationTool = 'select',
   penColor = '#E53935',
   watermark,
+  showAnnotations = true,
   policy,
   onPageCount,
   onPageJump,
@@ -140,6 +142,7 @@ export function PdfViewer({
             annotationTool={annotationTool}
             penColor={penColor}
             watermark={watermark}
+            showAnnotations={showAnnotations}
             onSelection={handleSelection}
             onInternalLink={onPageJump}
             onDrawingComplete={onDrawingComplete}
@@ -156,6 +159,7 @@ export function PdfViewer({
               annotationTool={annotationTool}
               penColor={penColor}
               watermark={watermark}
+              showAnnotations={showAnnotations}
               onSelection={handleSelection}
               onInternalLink={onPageJump}
               onDrawingComplete={onDrawingComplete}
@@ -185,6 +189,7 @@ export function PdfViewer({
           annotationTool={annotationTool}
           penColor={penColor}
           watermark={watermark}
+          showAnnotations={showAnnotations}
           onSelection={handleSelection}
           onInternalLink={onPageJump}
           onDrawingComplete={onDrawingComplete}

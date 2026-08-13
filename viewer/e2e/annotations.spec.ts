@@ -1,4 +1,4 @@
-import { test, expect, openFirstContent } from './fixtures'
+import { test, expect, openFirstContent, API_BASE, LEARNER_TOKEN } from './fixtures'
 
 test.describe('注釈機能', () => {
   test.beforeEach(async ({ page }) => {
@@ -136,6 +136,41 @@ test.describe('注釈機能', () => {
     await expect(page.getByTestId('viewer-page')).toBeVisible()
     await expect(page.getByTestId('shared-annotations-banner')).toBeVisible()
     await expect(page.getByTestId('desktop-sidebar').getByTestId('sidebar-tab-annotations')).toBeVisible()
+  })
+})
+
+test.describe('注釈の表示切替', () => {
+  test('PDF上の注釈を表示・非表示にできる', async ({ page, request }) => {
+    await request.put(`${API_BASE}/contents/content-001/progress`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: { currentPage: 1, progressPercent: 0.4, zoom: 1.2, viewMode: 'single' },
+    })
+    await request.post(`${API_BASE}/contents/content-001/annotations`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        type: 'highlight',
+        page: 1,
+        color: '#FFEB3B',
+        rects: [{ x: 80, y: 120, width: 240, height: 20 }],
+        selectedText: 'visibility test',
+      },
+    })
+
+    await openFirstContent(page)
+    await expect(page.getByTestId('page-input')).toHaveValue('1')
+    await expect(page.getByTestId('markup-annotation').first()).toBeVisible()
+
+    await page.getByTestId('annotation-visibility-toggle').click()
+    await expect(page.getByTestId('markup-annotation')).toHaveCount(0)
+
+    await page.getByTestId('annotation-visibility-toggle').click()
+    await expect(page.getByTestId('markup-annotation').first()).toBeVisible()
   })
 })
 

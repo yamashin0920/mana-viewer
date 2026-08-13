@@ -27,6 +27,7 @@ interface PdfPageProps {
   onDrawingComplete?: (points: DrawingPoint[]) => void
   onStickyPlace?: (position: { x: number; y: number }) => void
   onRender?: (width: number, height: number) => void
+  showAnnotations?: boolean
   className?: string
 }
 
@@ -44,6 +45,7 @@ export function PdfPage({
   onDrawingComplete,
   onStickyPlace,
   onRender,
+  showAnnotations = true,
   className = '',
 }: PdfPageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -185,7 +187,8 @@ export function PdfPage({
             }}
           />
         ))}
-        {drawingAnnotations.map((ann) => {
+        {showAnnotations &&
+          drawingAnnotations.map((ann) => {
           const pathData = parseDrawingPath(ann.note)
           if (!pathData) return null
           return (
@@ -206,10 +209,12 @@ export function PdfPage({
             </svg>
           )
         })}
-        {markupAnnotations.map((ann) =>
+        {showAnnotations &&
+          markupAnnotations.map((ann) =>
           ann.rects?.map((rect, idx) => (
             <div
               key={`${ann.id}-${idx}`}
+              data-testid="markup-annotation"
               className="absolute rounded-sm"
               style={{
                 left: rect.x,
@@ -225,13 +230,15 @@ export function PdfPage({
             />
           ))
         )}
-        {noteAnnotations
+        {showAnnotations &&
+          noteAnnotations
           .filter((a) => a.rects?.[0])
           .map((ann) => {
             const rect = ann.rects![0]
             return (
               <div
                 key={ann.id}
+                data-testid="note-annotation"
                 className="absolute flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-sm text-white shadow-md ring-2 ring-white dark:ring-slate-800"
                 style={{ left: rect.x, top: rect.y }}
                 title={ann.note ?? ''}
@@ -240,7 +247,8 @@ export function PdfPage({
               </div>
             )
           })}
-        {stickyAnnotations
+        {showAnnotations &&
+          stickyAnnotations
           .filter((a) => a.rects?.[0])
           .map((ann) => {
             const rect = ann.rects![0]
@@ -257,7 +265,7 @@ export function PdfPage({
             )
           })}
       </div>
-      {onDrawingComplete && (
+      {onDrawingComplete && (showAnnotations || annotationTool === 'pen') && (
         <DrawingLayer
           active={annotationTool === 'pen'}
           color={penColor}

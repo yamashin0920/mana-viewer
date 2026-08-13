@@ -3,6 +3,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Columns2,
+  Eye,
+  EyeOff,
   List,
   Minus,
   PanelLeft,
@@ -39,6 +41,8 @@ interface ViewerToolbarProps {
   onAnnotationToolChange: (tool: AnnotationTool) => void
   onPenColorChange: (color: string) => void
   onMarkerColorChange: (color: string) => void
+  showAnnotations: boolean
+  onShowAnnotationsChange: (show: boolean) => void
   onPageChange: (page: number) => void
   onZoomChange: (zoom: number) => void
   onViewModeChange: (mode: ViewMode) => void
@@ -72,6 +76,8 @@ export function ViewerToolbar({
   onAnnotationToolChange,
   onPenColorChange,
   onMarkerColorChange,
+  showAnnotations,
+  onShowAnnotationsChange,
   onPageChange,
   onZoomChange,
   onViewModeChange,
@@ -130,6 +136,18 @@ export function ViewerToolbar({
           onPenColorChange={onPenColorChange}
           onMarkerColorChange={onMarkerColorChange}
         />
+
+        <Button
+          variant="ghost"
+          size="icon"
+          data-testid="annotation-visibility-toggle"
+          onClick={() => onShowAnnotationsChange(!showAnnotations)}
+          aria-label={showAnnotations ? '注釈を非表示' : '注釈を表示'}
+          title={showAnnotations ? '注釈を非表示' : '注釈を表示'}
+          className={showAnnotations ? '' : 'text-slate-400'}
+        >
+          {showAnnotations ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+        </Button>
 
         {/* View mode toggle */}
         <div className="hidden items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-600 dark:bg-slate-800 sm:flex">

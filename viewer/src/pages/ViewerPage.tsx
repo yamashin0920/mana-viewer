@@ -45,6 +45,15 @@ import { getDrawingBoundingBox, serializeDrawingPath, type DrawingPoint } from '
 import { exportAnnotations } from '../utils/annotationExport'
 
 const USE_DEMO_PDF = import.meta.env.VITE_USE_DEMO_PDF !== 'false'
+const SHOW_ANNOTATIONS_KEY = 'viewer-show-annotations'
+
+function loadShowAnnotations() {
+  try {
+    return localStorage.getItem(SHOW_ANNOTATIONS_KEY) !== 'false'
+  } catch {
+    return true
+  }
+}
 
 export function ViewerPage() {
   const { contentId = '' } = useParams()
@@ -82,6 +91,7 @@ export function ViewerPage() {
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [shareExpiresAt, setShareExpiresAt] = useState<string | null>(null)
   const [shareAnnotationCount, setShareAnnotationCount] = useState(0)
+  const [showAnnotations, setShowAnnotations] = useState(loadShowAnnotations)
 
   const totalPages = pageCount
 
@@ -482,6 +492,15 @@ export function ViewerPage() {
     shareAnnotationsMutation.mutate()
   }, [shareAnnotationsMutation])
 
+  const handleShowAnnotationsChange = useCallback((show: boolean) => {
+    setShowAnnotations(show)
+    try {
+      localStorage.setItem(SHOW_ANNOTATIONS_KEY, String(show))
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
   const pdfUrl = useMemo(() => {
     if (USE_DEMO_PDF) return getDemoPdfUrl(contentId)
     if (!sessionToken) return ''
@@ -650,6 +669,8 @@ export function ViewerPage() {
         onAnnotationToolChange={setAnnotationTool}
         onPenColorChange={setPenColor}
         onMarkerColorChange={setHighlightColor}
+        showAnnotations={showAnnotations}
+        onShowAnnotationsChange={handleShowAnnotationsChange}
         onPageChange={setPage}
         onZoomChange={setZoom}
         onViewModeChange={handleViewModeChange}
@@ -699,6 +720,7 @@ export function ViewerPage() {
                 annotationTool={annotationTool}
                 penColor={penColor}
                 watermark={policy?.watermark}
+                showAnnotations={showAnnotations}
                 policy={policy ?? null}
                 onPageCount={handlePageCount}
                 onPageJump={setPage}
