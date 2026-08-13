@@ -19,7 +19,7 @@ interface AnnotationSidebarProps {
   annotations: Annotation[]
   sharedAnnotationIds?: Set<string>
   hiddenAnnotationIds?: Set<string>
-  onJump: (page: number) => void
+  onJump: (annotation: Annotation) => void
   onEdit: (annotation: Annotation) => void
   onDelete: (id: string) => void
   onToggleVisibility: (id: string) => void
@@ -178,7 +178,7 @@ export function AnnotationSidebar({
               <div className="mb-1.5 flex items-start justify-between gap-2">
                 <button
                   type="button"
-                  onClick={() => onJump(ann.page)}
+                  onClick={() => onJump(ann)}
                   className={`flex items-center gap-1.5 font-medium hover:underline ${
                     isHidden
                       ? 'text-slate-500 dark:text-slate-400'

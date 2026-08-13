@@ -5,6 +5,7 @@ import type { Annotation, ContentPolicyResponse } from '../../types'
 import type { AnnotationTool } from '../../types/annotationTools'
 import type { AnnotationVisibility } from '../../types/annotationVisibility'
 import type { DrawingPoint } from '../../utils/drawingPath'
+import type { PageCoordContext } from '../../utils/annotationCoords'
 import { Skeleton } from '../ui/Skeleton'
 import { PdfPage, type SearchHighlight } from './PdfPage'
 import type { PdfSearchMatch } from '../../hooks/usePdfTextSearch'
@@ -17,6 +18,8 @@ export interface TextSelection {
   rects: Array<{ x: number; y: number; width: number; height: number }>
   position: { x: number; y: number }
   page: number
+  viewportWidth: number
+  viewportHeight: number
 }
 
 interface PdfViewerProps {
@@ -36,11 +39,12 @@ interface PdfViewerProps {
   showAnnotations?: boolean
   annotationVisibility?: AnnotationVisibility
   hiddenAnnotationIds?: Set<string>
+  focusedAnnotationId?: string | null
   policy?: ContentPolicyResponse | null
   onPageCount: (count: number) => void
   onPageJump?: (page: number) => void
-  onDrawingComplete?: (points: DrawingPoint[]) => void
-  onStickyPlace?: (position: { x: number; y: number }) => void
+  onDrawingComplete?: (points: DrawingPoint[], context: PageCoordContext) => void
+  onStickyPlace?: (position: { x: number; y: number }, context: PageCoordContext) => void
   onSelection?: (selection: TextSelection) => void
   onClearSelection?: () => void
 }
@@ -62,6 +66,7 @@ export function PdfViewer({
   showAnnotations = true,
   annotationVisibility,
   hiddenAnnotationIds,
+  focusedAnnotationId,
   policy,
   onPageCount,
   onPageJump,
@@ -150,6 +155,7 @@ export function PdfViewer({
             showAnnotations={showAnnotations}
             annotationVisibility={annotationVisibility}
             hiddenAnnotationIds={hiddenAnnotationIds}
+            focusedAnnotationId={focusedAnnotationId}
             onSelection={handleSelection}
             onInternalLink={onPageJump}
             onDrawingComplete={onDrawingComplete}
@@ -169,6 +175,7 @@ export function PdfViewer({
               showAnnotations={showAnnotations}
               annotationVisibility={annotationVisibility}
               hiddenAnnotationIds={hiddenAnnotationIds}
+              focusedAnnotationId={focusedAnnotationId}
               onSelection={handleSelection}
               onInternalLink={onPageJump}
               onDrawingComplete={onDrawingComplete}
@@ -201,6 +208,7 @@ export function PdfViewer({
           showAnnotations={showAnnotations}
           annotationVisibility={annotationVisibility}
           hiddenAnnotationIds={hiddenAnnotationIds}
+          focusedAnnotationId={focusedAnnotationId}
           onSelection={handleSelection}
           onInternalLink={onPageJump}
           onDrawingComplete={onDrawingComplete}

@@ -22,6 +22,7 @@ interface ViewerSidebarProps {
   onJump: (page: number) => void
   onEditAnnotation: (annotation: Annotation) => void
   onDeleteAnnotation: (id: string) => void
+  onJumpToAnnotation: (annotation: Annotation) => void
   onToggleAnnotationVisibility: (id: string) => void
   onExportAnnotations: (format: 'json' | 'markdown') => void
   onShareAnnotations: () => void
@@ -44,6 +45,7 @@ export function ViewerSidebar({
   onJump,
   onEditAnnotation,
   onDeleteAnnotation,
+  onJumpToAnnotation,
   onToggleAnnotationVisibility,
   onExportAnnotations,
   onShareAnnotations,
@@ -106,7 +108,7 @@ export function ViewerSidebar({
             annotations={annotations}
             sharedAnnotationIds={sharedAnnotationIds}
             hiddenAnnotationIds={hiddenAnnotationIds}
-            onJump={onJump}
+            onJump={onJumpToAnnotation}
             onEdit={onEditAnnotation}
             onDelete={onDeleteAnnotation}
             onToggleVisibility={onToggleAnnotationVisibility}

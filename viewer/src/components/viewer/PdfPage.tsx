@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { TextLayer } from 'pdfjs-dist'
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist'
 import type { Annotation, AnnotationRect } from '../../types'
@@ -12,6 +12,12 @@ import type { TextSelection } from './PdfViewer'
 import { PdfLinkLayer } from './PdfLinkLayer'
 import { DrawingLayer } from './DrawingLayer'
 import { parseDrawingPath, pointsToSvgPath, type DrawingPoint } from '../../utils/drawingPath'
+import {
+  annotationPageNumber,
+  toDisplayDrawingPoints,
+  toDisplayRects,
+  type PageCoordContext,
+} from '../../utils/annotationCoords'
 
 export interface SearchHighlight {
   rect: AnnotationRect
@@ -29,12 +35,13 @@ interface PdfPageProps {
   watermark?: string | null
   onSelection?: (selection: TextSelection) => void
   onInternalLink?: (page: number) => void
-  onDrawingComplete?: (points: DrawingPoint[]) => void
-  onStickyPlace?: (position: { x: number; y: number }) => void
+  onDrawingComplete?: (points: DrawingPoint[], context: PageCoordContext) => void
+  onStickyPlace?: (position: { x: number; y: number }, context: PageCoordContext) => void
   onRender?: (width: number, height: number) => void
   showAnnotations?: boolean
   annotationVisibility?: AnnotationVisibility
   hiddenAnnotationIds?: Set<string>
+  focusedAnnotationId?: string | null
   className?: string
 }
 
@@ -55,11 +62,18 @@ export function PdfPage({
   showAnnotations = true,
   annotationVisibility = DEFAULT_ANNOTATION_VISIBILITY,
   hiddenAnnotationIds = new Set<string>(),
+  focusedAnnotationId = null,
   className = '',
 }: PdfPageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const textLayerRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
+
+  const handleRender = useCallback((width: number, height: number) => {
+    setViewportSize({ width, height })
+    onRender?.(width, height)
+  }, [onRender])
 
   useEffect(() => {
     let cancelled = false
@@ -72,7 +86,7 @@ export function PdfPage({
       const ctx = canvas.getContext('2d')!
       canvas.width = viewport.width
       canvas.height = viewport.height
-      onRender?.(viewport.width, viewport.height)
+      handleRender(viewport.width, viewport.height)
 
       pdfPage
         .render({ canvasContext: ctx, viewport, canvas })
@@ -98,7 +112,7 @@ export function PdfPage({
     return () => {
       cancelled = true
     }
-  }, [pdfDoc, pageNumber, zoom, onRender])
+  }, [pdfDoc, pageNumber, zoom, handleRender])
 
   const textSelectable = annotationTool === 'select' || annotationTool === 'marker'
 
@@ -124,12 +138,16 @@ export function PdfPage({
 
     if (rects.length === 0) return
 
+    const viewportWidth = canvasRef.current?.width ?? containerRef.current.clientWidth
+    const viewportHeight = canvasRef.current?.height ?? containerRef.current.clientHeight
     const lastRect = range.getBoundingClientRect()
     onSelection?.({
       text,
       rects,
       position: { x: lastRect.left + lastRect.width / 2, y: lastRect.top },
       page: pageNumber,
+      viewportWidth,
+      viewportHeight,
     })
     selection.removeAllRanges()
   }, [textSelectable, onSelection, pageNumber])
@@ -138,18 +156,48 @@ export function PdfPage({
     (event: React.MouseEvent<HTMLDivElement>) => {
       if (annotationTool !== 'sticky' || !containerRef.current) return
       const rect = containerRef.current.getBoundingClientRect()
-      onStickyPlace?.({
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
+      const context: PageCoordContext = {
+        page: pageNumber,
+        viewportWidth: viewportSize.width || rect.width,
+        viewportHeight: viewportSize.height || rect.height,
+      }
+      onStickyPlace?.(
+        {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top,
+        },
+        context
+      )
+    },
+    [annotationTool, onStickyPlace, pageNumber, viewportSize.height, viewportSize.width]
+  )
+
+  const handleDrawingComplete = useCallback(
+    (points: DrawingPoint[]) => {
+      if (!onDrawingComplete) return
+      onDrawingComplete(points, {
+        page: pageNumber,
+        viewportWidth: viewportSize.width,
+        viewportHeight: viewportSize.height,
       })
     },
-    [annotationTool, onStickyPlace]
+    [onDrawingComplete, pageNumber, viewportSize.height, viewportSize.width]
   )
+
+  useEffect(() => {
+    if (!focusedAnnotationId || viewportSize.width <= 0) return
+    const target = containerRef.current?.querySelector(
+      `[data-annotation-id="${focusedAnnotationId}"]`
+    )
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [focusedAnnotationId, pageNumber, viewportSize.width, viewportSize.height])
 
   const isVisible = (annotation: (typeof annotations)[number]) =>
     isAnnotationVisible(annotation, showAnnotations, annotationVisibility, hiddenAnnotationIds)
 
-  const pageAnnotations = annotations.filter((a) => a.page === pageNumber && a.type !== 'bookmark')
+  const pageAnnotations = annotations.filter(
+    (a) => annotationPageNumber(a.page) === pageNumber && a.type !== 'bookmark'
+  )
   const drawingAnnotations = pageAnnotations.filter((a) => a.type === 'drawing' && isVisible(a))
   const stickyAnnotations = pageAnnotations.filter((a) => a.type === 'sticky' && isVisible(a))
   const markupAnnotations = pageAnnotations.filter(
@@ -204,6 +252,12 @@ export function PdfPage({
         {drawingAnnotations.map((ann) => {
           const pathData = parseDrawingPath(ann.note)
           if (!pathData) return null
+          const displayPoints = toDisplayDrawingPoints(
+            pathData.points,
+            viewportSize.width,
+            viewportSize.height,
+            zoom
+          )
           return (
             <svg
               key={ann.id}
@@ -213,7 +267,7 @@ export function PdfPage({
               aria-hidden
             >
               <path
-                d={pointsToSvgPath(pathData.points)}
+                d={pointsToSvgPath(displayPoints)}
                 stroke={ann.color ?? '#E53935'}
                 fill="none"
                 strokeWidth={2.5}
@@ -223,13 +277,21 @@ export function PdfPage({
             </svg>
           )
         })}
-        {markupAnnotations.map((ann) =>
-          ann.rects?.map((rect, idx) => (
+        {markupAnnotations.map((ann) => {
+          const displayRects = toDisplayRects(
+            ann.rects ?? [],
+            viewportSize.width,
+            viewportSize.height,
+            zoom
+          )
+          return displayRects.map((rect, idx) => (
             <div
               key={`${ann.id}-${idx}`}
               data-testid="markup-annotation"
               data-annotation-id={ann.id}
-              className="absolute rounded-sm"
+              className={`absolute rounded-sm ${
+                focusedAnnotationId === ann.id ? 'ring-2 ring-brand-500' : ''
+              }`}
               style={{
                 left: rect.x,
                 top: rect.y,
@@ -243,17 +305,26 @@ export function PdfPage({
               title={ann.note ?? ann.selectedText ?? undefined}
             />
           ))
-        )}
+        })}
         {noteAnnotations
           .filter((a) => a.rects?.[0])
           .map((ann) => {
-            const rect = ann.rects![0]
+            const displayRects = toDisplayRects(
+              ann.rects ?? [],
+              viewportSize.width,
+              viewportSize.height,
+              zoom
+            )
+            const rect = displayRects[0]
+            if (!rect) return null
             return (
               <div
                 key={ann.id}
                 data-testid="note-annotation"
                 data-annotation-id={ann.id}
-                className="absolute flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-sm text-white shadow-md ring-2 ring-white dark:ring-slate-800"
+                className={`absolute flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-sm text-white shadow-md ring-2 ring-white dark:ring-slate-800 ${
+                  focusedAnnotationId === ann.id ? 'ring-brand-500 ring-offset-2' : ''
+                }`}
                 style={{ left: rect.x, top: rect.y }}
                 title={ann.note ?? ''}
               >
@@ -264,13 +335,22 @@ export function PdfPage({
         {stickyAnnotations
           .filter((a) => a.rects?.[0])
           .map((ann) => {
-            const rect = ann.rects![0]
+            const displayRects = toDisplayRects(
+              ann.rects ?? [],
+              viewportSize.width,
+              viewportSize.height,
+              zoom
+            )
+            const rect = displayRects[0]
+            if (!rect) return null
             return (
               <div
                 key={ann.id}
                 data-testid="sticky-note"
                 data-annotation-id={ann.id}
-                className="absolute w-28 rounded-md border border-yellow-300 bg-yellow-100 p-2 text-xs text-slate-800 shadow-md dark:border-yellow-700 dark:bg-yellow-200/90"
+                className={`absolute w-28 rounded-md border border-yellow-300 bg-yellow-100 p-2 text-xs text-slate-800 shadow-md dark:border-yellow-700 dark:bg-yellow-200/90 ${
+                  focusedAnnotationId === ann.id ? 'ring-2 ring-brand-500' : ''
+                }`}
                 style={{ left: rect.x, top: rect.y }}
                 title={ann.note ?? ''}
               >
@@ -283,7 +363,7 @@ export function PdfPage({
         <DrawingLayer
           active={annotationTool === 'pen'}
           color={penColor}
-          onComplete={onDrawingComplete}
+          onComplete={handleDrawingComplete}
         />
       )}
       {watermark && (

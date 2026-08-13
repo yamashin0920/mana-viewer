@@ -49,6 +49,12 @@ import {
   type AnnotationVisibility,
 } from '../types/annotationVisibility'
 import { getDrawingBoundingBox, serializeDrawingPath, type DrawingPoint } from '../utils/drawingPath'
+import {
+  annotationPageNumber,
+  normalizeDrawingPoints,
+  normalizeRects,
+  type PageCoordContext,
+} from '../utils/annotationCoords'
 import { exportAnnotations } from '../utils/annotationExport'
 
 const USE_DEMO_PDF = import.meta.env.VITE_USE_DEMO_PDF !== 'false'
@@ -91,9 +97,13 @@ export function ViewerPage() {
   const [penColor, setPenColor] = useState<string>(DEFAULT_PEN_COLOR)
   const [stickyDialogOpen, setStickyDialogOpen] = useState(false)
   const [stickyText, setStickyText] = useState('')
-  const [stickyPosition, setStickyPosition] = useState<{ page: number; x: number; y: number } | null>(
-    null
-  )
+  const [stickyPosition, setStickyPosition] = useState<{
+    page: number
+    x: number
+    y: number
+    viewportWidth: number
+    viewportHeight: number
+  } | null>(null)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [shareExpiresAt, setShareExpiresAt] = useState<string | null>(null)
@@ -101,6 +111,7 @@ export function ViewerPage() {
   const [showAnnotations, setShowAnnotations] = useState(loadShowAnnotations)
   const [annotationVisibility, setAnnotationVisibility] = useState(loadAnnotationVisibility)
   const [hiddenAnnotationIds, setHiddenAnnotationIds] = useState<Set<string>>(() => new Set())
+  const [focusedAnnotationId, setFocusedAnnotationId] = useState<string | null>(null)
 
   const totalPages = pageCount
 
@@ -344,7 +355,7 @@ export function ViewerPage() {
           page: selection.page,
           color: highlightColor,
           selectedText: selection.text,
-          rects: selection.rects,
+          rects: normalizeRects(selection.rects, selection.viewportWidth, selection.viewportHeight),
         })
         return
       }
@@ -364,7 +375,11 @@ export function ViewerPage() {
       page: pendingSelection.page,
       color: highlightColor,
       selectedText: pendingSelection.text,
-      rects: pendingSelection.rects,
+      rects: normalizeRects(
+        pendingSelection.rects,
+        pendingSelection.viewportWidth,
+        pendingSelection.viewportHeight
+      ),
     })
   }, [addAnnotationMutation, pendingSelection, highlightColor])
 
@@ -387,7 +402,11 @@ export function ViewerPage() {
         page: pendingSelection.page,
         color: '#FF9800',
         selectedText: pendingSelection.text,
-        rects: pendingSelection.rects,
+        rects: normalizeRects(
+          pendingSelection.rects,
+          pendingSelection.viewportWidth,
+          pendingSelection.viewportHeight
+        ),
         note: noteText.trim(),
       })
     } else {
@@ -430,27 +449,39 @@ export function ViewerPage() {
   }, [updateAnnotationMutation, editingAnnotation, editNote, editColor])
 
   const handleDrawingComplete = useCallback(
-    (points: DrawingPoint[]) => {
+    (points: DrawingPoint[], context: PageCoordContext) => {
       if (points.length < 2) return
+      const normalizedPoints = normalizeDrawingPoints(
+        points,
+        context.viewportWidth,
+        context.viewportHeight
+      )
       addAnnotationMutation.mutate({
         type: 'drawing',
-        page,
+        page: context.page,
         color: penColor,
-        rects: [getDrawingBoundingBox(points)],
-        note: serializeDrawingPath(points),
+        rects: normalizeRects(
+          [getDrawingBoundingBox(points)],
+          context.viewportWidth,
+          context.viewportHeight
+        ),
+        note: serializeDrawingPath(normalizedPoints),
       })
     },
-    [addAnnotationMutation, page, penColor]
+    [addAnnotationMutation, penColor]
   )
 
-  const handleStickyPlace = useCallback(
-    (position: { x: number; y: number }) => {
-      setStickyPosition({ page, ...position })
-      setStickyText('')
-      setStickyDialogOpen(true)
-    },
-    [page]
-  )
+  const handleStickyPlace = useCallback((position: { x: number; y: number }, context: PageCoordContext) => {
+    setStickyPosition({
+      page: context.page,
+      x: position.x,
+      y: position.y,
+      viewportWidth: context.viewportWidth,
+      viewportHeight: context.viewportHeight,
+    })
+    setStickyText('')
+    setStickyDialogOpen(true)
+  }, [])
 
   const handleSaveSticky = useCallback(() => {
     if (!stickyPosition || !stickyText.trim()) return
@@ -458,7 +489,11 @@ export function ViewerPage() {
       type: 'sticky',
       page: stickyPosition.page,
       color: '#FFEB3B',
-      rects: [{ x: stickyPosition.x, y: stickyPosition.y, width: 112, height: 96 }],
+      rects: normalizeRects(
+        [{ x: stickyPosition.x, y: stickyPosition.y, width: 112, height: 96 }],
+        stickyPosition.viewportWidth,
+        stickyPosition.viewportHeight
+      ),
       note: stickyText.trim(),
     })
     setStickyDialogOpen(false)
@@ -534,6 +569,18 @@ export function ViewerPage() {
     },
     [contentId]
   )
+
+  const handleJumpToAnnotation = useCallback((annotation: Annotation) => {
+    setPage(annotationPageNumber(annotation.page))
+    setFocusedAnnotationId(annotation.id)
+    setHiddenAnnotationIds((prev) => {
+      if (!prev.has(annotation.id)) return prev
+      const next = new Set(prev)
+      next.delete(annotation.id)
+      saveHiddenAnnotationIds(contentId, next)
+      return next
+    })
+  }, [contentId])
 
   const handleDeleteAnnotation = useCallback(
     (id: string) => {
@@ -748,6 +795,7 @@ export function ViewerPage() {
             onJump={setPage}
             onEditAnnotation={handleEditAnnotation}
             onDeleteAnnotation={handleDeleteAnnotation}
+            onJumpToAnnotation={handleJumpToAnnotation}
             onToggleAnnotationVisibility={handleToggleAnnotationVisibility}
             onExportAnnotations={handleExportAnnotations}
             onShareAnnotations={handleShareAnnotations}
@@ -775,6 +823,7 @@ export function ViewerPage() {
                 showAnnotations={showAnnotations}
                 annotationVisibility={annotationVisibility}
                 hiddenAnnotationIds={hiddenAnnotationIds}
+                focusedAnnotationId={focusedAnnotationId}
                 policy={policy ?? null}
                 onPageCount={handlePageCount}
                 onPageJump={setPage}
@@ -805,12 +854,13 @@ export function ViewerPage() {
           sharedAnnotationIds={sharedAnnotationIds}
           hiddenAnnotationIds={hiddenAnnotationIds}
           currentPage={page}
-          onJump={(p) => {
-            setPage(p)
-            setMobileSidebarOpen(false)
-          }}
+          onJump={setPage}
           onEditAnnotation={handleEditAnnotation}
           onDeleteAnnotation={handleDeleteAnnotation}
+          onJumpToAnnotation={(annotation) => {
+            handleJumpToAnnotation(annotation)
+            setMobileSidebarOpen(false)
+          }}
           onToggleAnnotationVisibility={handleToggleAnnotationVisibility}
           onExportAnnotations={handleExportAnnotations}
           onShareAnnotations={handleShareAnnotations}

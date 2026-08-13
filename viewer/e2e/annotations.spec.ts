@@ -265,6 +265,58 @@ test.describe('注釈の表示切替', () => {
     await expect(page.locator(`[data-annotation-id="${created.id}"]`)).toBeVisible()
     await expect(item).toHaveAttribute('data-annotation-hidden', 'false')
   })
+
+  test('注釈リンクから別ページのマーカー位置に正しく移動できる', async ({ page, request }) => {
+    await request.put(`${API_BASE}/contents/content-001/progress`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: { currentPage: 1, progressPercent: 0.1, zoom: 1.2, viewMode: 'single' },
+    })
+
+    const page1Res = await request.post(`${API_BASE}/contents/content-001/annotations`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        type: 'highlight',
+        page: 1,
+        color: '#FFEB3B',
+        rects: [{ x: 0.1, y: 0.15, width: 0.4, height: 0.02 }],
+        selectedText: 'page one marker',
+      },
+    })
+    const page2Res = await request.post(`${API_BASE}/contents/content-001/annotations`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        type: 'highlight',
+        page: 2,
+        color: '#FFEB3B',
+        rects: [{ x: 0.1, y: 0.55, width: 0.4, height: 0.02 }],
+        selectedText: 'page two marker',
+      },
+    })
+    const page1Ann = await page1Res.json()
+    const page2Ann = await page2Res.json()
+
+    await openFirstContent(page)
+    await page.getByTestId('desktop-sidebar').getByTestId('sidebar-tab-annotations').click()
+
+    await page.getByTestId('annotation-item').filter({ hasText: 'page two marker' }).getByRole('button', { name: /p\.2 · マーカー/ }).click()
+    await expect(page.getByTestId('page-input')).toHaveValue('2')
+    await expect(page.locator(`[data-annotation-id="${page2Ann.id}"]`)).toBeVisible()
+    await expect(page.locator(`[data-annotation-id="${page1Ann.id}"]`)).toHaveCount(0)
+
+    await page.getByTestId('annotation-item').filter({ hasText: 'page one marker' }).getByRole('button', { name: /p\.1 · マーカー/ }).click()
+    await expect(page.getByTestId('page-input')).toHaveValue('1')
+    await expect(page.locator(`[data-annotation-id="${page1Ann.id}"]`)).toBeVisible()
+    await expect(page.locator(`[data-annotation-id="${page2Ann.id}"]`)).toHaveCount(0)
+  })
 })
 
 test.describe('テキストマーカー', () => {
