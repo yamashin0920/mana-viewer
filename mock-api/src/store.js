@@ -93,6 +93,11 @@ function watermarkText(policy, user) {
     .replace('{date}', now);
 }
 
+function generateCoverUrl(title) {
+  const label = (title || 'Content').trim().slice(0, 10) || 'Content';
+  return `https://placehold.co/200x280/png?text=${encodeURIComponent(label)}`;
+}
+
 function generateMockChunk(contentId, page) {
   const header = `--encrypted-chunk-${contentId}-page-${page}--`;
   const payload = Buffer.from(
@@ -119,6 +124,7 @@ module.exports = {
   isLicenseValid,
   canAccessContent,
   watermarkText,
+  generateCoverUrl,
   generateMockChunk,
   uuidv4,
 };

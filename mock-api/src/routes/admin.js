@@ -1,6 +1,13 @@
 const express = require('express');
 const { adminMiddleware, orgAdminMiddleware } = require('../middleware/admin');
-const { saveSeed, uuidv4, userLicenses, userLicenseAssignments, isLicenseValid } = require('../store');
+const {
+  saveSeed,
+  uuidv4,
+  userLicenses,
+  userLicenseAssignments,
+  isLicenseValid,
+  generateCoverUrl,
+} = require('../store');
 
 const router = express.Router();
 
@@ -276,7 +283,7 @@ router.post('/contents', adminMiddleware, (req, res) => {
     author: author.trim(),
     isbn,
     description,
-    coverUrl: coverUrl || `https://placehold.co/200x280/png?text=${encodeURIComponent(title.slice(0, 10))}`,
+    coverUrl: coverUrl || generateCoverUrl(title),
     pageCount: Number(pageCount) || 1,
     fileSizeBytes: 0,
     category,
@@ -312,6 +319,9 @@ router.put('/contents/:contentId', adminMiddleware, (req, res) => {
   ];
   for (const field of fields) {
     if (req.body?.[field] !== undefined) content[field] = req.body[field];
+  }
+  if (req.body?.title !== undefined && req.body.coverUrl === undefined) {
+    content.coverUrl = generateCoverUrl(content.title);
   }
   if (req.body?.policy) {
     content.policy = { ...content.policy, ...req.body.policy };
