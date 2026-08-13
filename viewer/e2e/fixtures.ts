@@ -1,6 +1,7 @@
 import { test as base, expect } from '@playwright/test'
 
 export const LEARNER_TOKEN = 'mock-token-learner'
+export const API_BASE = 'http://localhost:3001'
 
 export const test = base.extend({
   page: async ({ page }, use) => {

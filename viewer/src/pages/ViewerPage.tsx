@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BookX, Loader2 } from 'lucide-react'
@@ -103,11 +103,20 @@ export function ViewerPage() {
     enabled: !!contentId,
   })
 
-  const { data: progressData } = useQuery({
+  const { data: progressData, isSuccess: progressLoaded } = useQuery({
     queryKey: ['progress', contentId],
     queryFn: () => fetchProgress(contentId),
     enabled: !!contentId,
   })
+
+  const [progressHydrated, setProgressHydrated] = useState(false)
+  const restoredContentIdRef = useRef<string | null>(null)
+  const pageRef = useRef(page)
+  const zoomRef = useRef(zoom)
+  const viewModeRef = useRef(viewMode)
+  pageRef.current = page
+  zoomRef.current = zoom
+  viewModeRef.current = viewMode
 
   const { data: annotationsData } = useQuery({
     queryKey: ['annotations', contentId],
@@ -130,16 +139,26 @@ export function ViewerPage() {
   }, [contentId, license?.allowed])
 
   useEffect(() => {
-    if (progressData?.currentPage) {
-      setPage(Math.min(progressData.currentPage, pageCount))
+    setProgressHydrated(false)
+    restoredContentIdRef.current = null
+  }, [contentId])
+
+  useEffect(() => {
+    if (!contentId || !progressLoaded || !progressData) return
+    if (restoredContentIdRef.current === contentId) return
+
+    if (progressData.currentPage > 0) {
+      setPage(progressData.currentPage)
     }
-    if (progressData?.viewMode === 'spread' || progressData?.viewMode === 'single') {
+    if (progressData.viewMode === 'spread' || progressData.viewMode === 'single') {
       setViewMode(progressData.viewMode as ViewMode)
     }
-    if (progressData?.zoom) {
+    if (progressData.zoom) {
       setZoom(progressData.zoom)
     }
-  }, [progressData?.currentPage, progressData?.viewMode, progressData?.zoom, pageCount])
+    restoredContentIdRef.current = contentId
+    setProgressHydrated(true)
+  }, [contentId, progressLoaded, progressData])
 
   useEffect(() => {
     if (content) {
@@ -168,7 +187,7 @@ export function ViewerPage() {
   })
 
   useEffect(() => {
-    if (!contentId || !content) return
+    if (!contentId || !content || !progressHydrated) return
     const timer = setTimeout(() => {
       const total = content.pageCount || pageCount
       progressMutation.mutate({
@@ -179,7 +198,38 @@ export function ViewerPage() {
       })
     }, 800)
     return () => clearTimeout(timer)
-  }, [page, pageCount, zoom, viewMode, contentId, content])
+  }, [page, pageCount, zoom, viewMode, contentId, content, progressHydrated])
+
+  useEffect(() => {
+    if (!contentId || !content) return
+
+    const flushProgress = () => {
+      if (!progressHydrated) return
+      const total = content.pageCount || pageCount
+      const payload = {
+        currentPage: pageRef.current,
+        progressPercent: Math.min(
+          100,
+          Math.round((pageRef.current / total) * 1000) / 10
+        ),
+        zoom: zoomRef.current,
+        viewMode: viewModeRef.current,
+      }
+      saveProgress(contentId, { ...payload, scrollOffset: 0 }).catch(() => undefined)
+    }
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flushProgress()
+    }
+
+    window.addEventListener('beforeunload', flushProgress)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => {
+      window.removeEventListener('beforeunload', flushProgress)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      flushProgress()
+    }
+  }, [contentId, content, pageCount, progressHydrated])
 
   const addAnnotationMutation = useMutation({
     mutationFn: (payload: Parameters<typeof createAnnotation>[1]) =>
@@ -453,6 +503,7 @@ export function ViewerPage() {
   useEffect(() => {
     if (pdfNumPages > 0) {
       setPageCount(pdfNumPages)
+      setPage((current) => Math.min(Math.max(1, current), pdfNumPages))
     }
   }, [pdfNumPages])
 

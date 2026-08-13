@@ -1,7 +1,19 @@
-import { test, expect, openFirstContent, waitForPdfRender } from './fixtures'
+import { test, expect, openFirstContent, waitForPdfRender, API_BASE, LEARNER_TOKEN } from './fixtures'
 
 test.describe('PDF ビューア', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
+    await request.put(`${API_BASE}/contents/content-001/progress`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        currentPage: 1,
+        progressPercent: 0.4,
+        zoom: 1.2,
+        viewMode: 'single',
+      },
+    })
     await openFirstContent(page)
   })
 
@@ -39,11 +51,14 @@ test.describe('PDF ビューア', () => {
   })
 
   test('ズームが変更できる', async ({ page }) => {
+    const zoomDisplay = page.getByLabel('拡大').locator('xpath=preceding-sibling::span[1]')
+    const before = Number((await zoomDisplay.textContent())?.replace('%', '') ?? 0)
+
     await page.getByLabel('拡大').click()
-    await expect(page.getByText('130%')).toBeVisible()
+    await expect(zoomDisplay).toHaveText(`${before + 10}%`)
 
     await page.getByLabel('縮小').click()
-    await expect(page.getByText('120%')).toBeVisible()
+    await expect(zoomDisplay).toHaveText(`${before}%`)
   })
 
   test('見開き表示に切り替えられる', async ({ page }) => {
