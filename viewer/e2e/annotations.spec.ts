@@ -172,6 +172,60 @@ test.describe('注釈の表示切替', () => {
     await page.getByTestId('annotation-visibility-toggle').click()
     await expect(page.getByTestId('markup-annotation').first()).toBeVisible()
   })
+
+  test('注釈の種類ごとに表示・非表示にできる', async ({ page, request }) => {
+    await request.put(`${API_BASE}/contents/content-001/progress`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: { currentPage: 1, progressPercent: 0.4, zoom: 1.2, viewMode: 'single' },
+    })
+    await request.post(`${API_BASE}/contents/content-001/annotations`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        type: 'highlight',
+        page: 1,
+        color: '#FFEB3B',
+        rects: [{ x: 80, y: 120, width: 240, height: 20 }],
+        selectedText: 'marker visibility test',
+      },
+    })
+    await request.post(`${API_BASE}/contents/content-001/annotations`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        type: 'sticky',
+        page: 1,
+        color: '#FFEB3B',
+        rects: [{ x: 120, y: 200, width: 0, height: 0 }],
+        note: 'sticky visibility test',
+      },
+    })
+
+    await openFirstContent(page)
+    await expect(page.getByTestId('page-input')).toHaveValue('1')
+    await expect(page.getByTestId('markup-annotation').first()).toBeVisible()
+    await expect(page.getByTestId('sticky-note').first()).toBeVisible()
+
+    await page.getByTestId('annotation-visibility-menu-trigger').click()
+    await expect(page.getByTestId('annotation-visibility-menu')).toBeVisible()
+    await page.getByTestId('annotation-visibility-marker').uncheck()
+    await expect(page.getByTestId('markup-annotation')).toHaveCount(0)
+    await expect(page.getByTestId('sticky-note').first()).toBeVisible()
+
+    await page.getByTestId('annotation-visibility-sticky').uncheck()
+    await expect(page.getByTestId('sticky-note')).toHaveCount(0)
+
+    await page.getByTestId('annotation-visibility-marker').check()
+    await expect(page.getByTestId('markup-annotation').first()).toBeVisible()
+    await expect(page.getByTestId('sticky-note')).toHaveCount(0)
+  })
 })
 
 test.describe('テキストマーカー', () => {

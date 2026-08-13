@@ -3,6 +3,7 @@ import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { Loader2 } from 'lucide-react'
 import type { Annotation, ContentPolicyResponse } from '../../types'
 import type { AnnotationTool } from '../../types/annotationTools'
+import type { AnnotationVisibility } from '../../types/annotationVisibility'
 import type { DrawingPoint } from '../../utils/drawingPath'
 import { Skeleton } from '../ui/Skeleton'
 import { PdfPage, type SearchHighlight } from './PdfPage'
@@ -33,6 +34,7 @@ interface PdfViewerProps {
   penColor?: string
   watermark?: string | null
   showAnnotations?: boolean
+  annotationVisibility?: AnnotationVisibility
   policy?: ContentPolicyResponse | null
   onPageCount: (count: number) => void
   onPageJump?: (page: number) => void
@@ -57,6 +59,7 @@ export function PdfViewer({
   penColor = '#E53935',
   watermark,
   showAnnotations = true,
+  annotationVisibility,
   policy,
   onPageCount,
   onPageJump,
@@ -143,6 +146,7 @@ export function PdfViewer({
             penColor={penColor}
             watermark={watermark}
             showAnnotations={showAnnotations}
+            annotationVisibility={annotationVisibility}
             onSelection={handleSelection}
             onInternalLink={onPageJump}
             onDrawingComplete={onDrawingComplete}
@@ -160,6 +164,7 @@ export function PdfViewer({
               penColor={penColor}
               watermark={watermark}
               showAnnotations={showAnnotations}
+              annotationVisibility={annotationVisibility}
               onSelection={handleSelection}
               onInternalLink={onPageJump}
               onDrawingComplete={onDrawingComplete}
@@ -190,6 +195,7 @@ export function PdfViewer({
           penColor={penColor}
           watermark={watermark}
           showAnnotations={showAnnotations}
+          annotationVisibility={annotationVisibility}
           onSelection={handleSelection}
           onInternalLink={onPageJump}
           onDrawingComplete={onDrawingComplete}

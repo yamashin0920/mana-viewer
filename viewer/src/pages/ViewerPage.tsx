@@ -41,6 +41,11 @@ import { usePdfOutline } from '../hooks/usePdfOutline'
 import { DEFAULT_PEN_COLOR } from '../constants/penColors'
 import type { Annotation } from '../types'
 import type { AnnotationTool } from '../types/annotationTools'
+import {
+  loadAnnotationVisibility,
+  saveAnnotationVisibility,
+  type AnnotationVisibility,
+} from '../types/annotationVisibility'
 import { getDrawingBoundingBox, serializeDrawingPath, type DrawingPoint } from '../utils/drawingPath'
 import { exportAnnotations } from '../utils/annotationExport'
 
@@ -92,6 +97,7 @@ export function ViewerPage() {
   const [shareExpiresAt, setShareExpiresAt] = useState<string | null>(null)
   const [shareAnnotationCount, setShareAnnotationCount] = useState(0)
   const [showAnnotations, setShowAnnotations] = useState(loadShowAnnotations)
+  const [annotationVisibility, setAnnotationVisibility] = useState(loadAnnotationVisibility)
 
   const totalPages = pageCount
 
@@ -501,6 +507,11 @@ export function ViewerPage() {
     }
   }, [])
 
+  const handleAnnotationVisibilityChange = useCallback((visibility: AnnotationVisibility) => {
+    setAnnotationVisibility(visibility)
+    saveAnnotationVisibility(visibility)
+  }, [])
+
   const pdfUrl = useMemo(() => {
     if (USE_DEMO_PDF) return getDemoPdfUrl(contentId)
     if (!sessionToken) return ''
@@ -670,7 +681,9 @@ export function ViewerPage() {
         onPenColorChange={setPenColor}
         onMarkerColorChange={setHighlightColor}
         showAnnotations={showAnnotations}
+        annotationVisibility={annotationVisibility}
         onShowAnnotationsChange={handleShowAnnotationsChange}
+        onAnnotationVisibilityChange={handleAnnotationVisibilityChange}
         onPageChange={setPage}
         onZoomChange={setZoom}
         onViewModeChange={handleViewModeChange}
@@ -721,6 +734,7 @@ export function ViewerPage() {
                 penColor={penColor}
                 watermark={policy?.watermark}
                 showAnnotations={showAnnotations}
+                annotationVisibility={annotationVisibility}
                 policy={policy ?? null}
                 onPageCount={handlePageCount}
                 onPageJump={setPage}

@@ -3,6 +3,11 @@ import { TextLayer } from 'pdfjs-dist'
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist'
 import type { Annotation, AnnotationRect } from '../../types'
 import type { AnnotationTool } from '../../types/annotationTools'
+import {
+  DEFAULT_ANNOTATION_VISIBILITY,
+  isAnnotationTypeVisible,
+  type AnnotationVisibility,
+} from '../../types/annotationVisibility'
 import type { TextSelection } from './PdfViewer'
 import { PdfLinkLayer } from './PdfLinkLayer'
 import { DrawingLayer } from './DrawingLayer'
@@ -28,6 +33,7 @@ interface PdfPageProps {
   onStickyPlace?: (position: { x: number; y: number }) => void
   onRender?: (width: number, height: number) => void
   showAnnotations?: boolean
+  annotationVisibility?: AnnotationVisibility
   className?: string
 }
 
@@ -46,6 +52,7 @@ export function PdfPage({
   onStickyPlace,
   onRender,
   showAnnotations = true,
+  annotationVisibility = DEFAULT_ANNOTATION_VISIBILITY,
   className = '',
 }: PdfPageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -138,12 +145,24 @@ export function PdfPage({
   )
 
   const pageAnnotations = annotations.filter((a) => a.page === pageNumber && a.type !== 'bookmark')
-  const drawingAnnotations = pageAnnotations.filter((a) => a.type === 'drawing')
-  const stickyAnnotations = pageAnnotations.filter((a) => a.type === 'sticky')
-  const markupAnnotations = pageAnnotations.filter(
-    (a) => a.type !== 'drawing' && a.type !== 'sticky' && a.type !== 'note'
+  const drawingAnnotations = pageAnnotations.filter(
+    (a) => a.type === 'drawing' && isAnnotationTypeVisible(a.type, showAnnotations, annotationVisibility)
   )
-  const noteAnnotations = pageAnnotations.filter((a) => a.type === 'note')
+  const stickyAnnotations = pageAnnotations.filter(
+    (a) => a.type === 'sticky' && isAnnotationTypeVisible(a.type, showAnnotations, annotationVisibility)
+  )
+  const markupAnnotations = pageAnnotations.filter(
+    (a) =>
+      a.type !== 'drawing' &&
+      a.type !== 'sticky' &&
+      a.type !== 'note' &&
+      isAnnotationTypeVisible(a.type, showAnnotations, annotationVisibility)
+  )
+  const noteAnnotations = pageAnnotations.filter(
+    (a) => a.type === 'note' && isAnnotationTypeVisible(a.type, showAnnotations, annotationVisibility)
+  )
+  const showDrawingLayer =
+    (showAnnotations && annotationVisibility.drawing) || annotationTool === 'pen'
 
   return (
     <div
@@ -187,8 +206,7 @@ export function PdfPage({
             }}
           />
         ))}
-        {showAnnotations &&
-          drawingAnnotations.map((ann) => {
+        {drawingAnnotations.map((ann) => {
           const pathData = parseDrawingPath(ann.note)
           if (!pathData) return null
           return (
@@ -209,8 +227,7 @@ export function PdfPage({
             </svg>
           )
         })}
-        {showAnnotations &&
-          markupAnnotations.map((ann) =>
+        {markupAnnotations.map((ann) =>
           ann.rects?.map((rect, idx) => (
             <div
               key={`${ann.id}-${idx}`}
@@ -230,8 +247,7 @@ export function PdfPage({
             />
           ))
         )}
-        {showAnnotations &&
-          noteAnnotations
+        {noteAnnotations
           .filter((a) => a.rects?.[0])
           .map((ann) => {
             const rect = ann.rects![0]
@@ -247,8 +263,7 @@ export function PdfPage({
               </div>
             )
           })}
-        {showAnnotations &&
-          stickyAnnotations
+        {stickyAnnotations
           .filter((a) => a.rects?.[0])
           .map((ann) => {
             const rect = ann.rects![0]
@@ -265,7 +280,7 @@ export function PdfPage({
             )
           })}
       </div>
-      {onDrawingComplete && (showAnnotations || annotationTool === 'pen') && (
+      {onDrawingComplete && showDrawingLayer && (
         <DrawingLayer
           active={annotationTool === 'pen'}
           color={penColor}

@@ -3,8 +3,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Columns2,
-  Eye,
-  EyeOff,
   List,
   Minus,
   PanelLeft,
@@ -16,8 +14,10 @@ import { Button } from '../ui/Button'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { SearchBar } from './SearchBar'
 import { AnnotationTools } from './AnnotationTools'
+import { AnnotationVisibilityMenu } from './AnnotationVisibilityMenu'
 import type { ViewMode } from './PdfViewer'
 import type { AnnotationTool } from '../../types/annotationTools'
+import type { AnnotationVisibility } from '../../types/annotationVisibility'
 
 interface ViewerToolbarProps {
   title: string
@@ -42,7 +42,9 @@ interface ViewerToolbarProps {
   onPenColorChange: (color: string) => void
   onMarkerColorChange: (color: string) => void
   showAnnotations: boolean
+  annotationVisibility: AnnotationVisibility
   onShowAnnotationsChange: (show: boolean) => void
+  onAnnotationVisibilityChange: (visibility: AnnotationVisibility) => void
   onPageChange: (page: number) => void
   onZoomChange: (zoom: number) => void
   onViewModeChange: (mode: ViewMode) => void
@@ -77,7 +79,9 @@ export function ViewerToolbar({
   onPenColorChange,
   onMarkerColorChange,
   showAnnotations,
+  annotationVisibility,
   onShowAnnotationsChange,
+  onAnnotationVisibilityChange,
   onPageChange,
   onZoomChange,
   onViewModeChange,
@@ -137,17 +141,12 @@ export function ViewerToolbar({
           onMarkerColorChange={onMarkerColorChange}
         />
 
-        <Button
-          variant="ghost"
-          size="icon"
-          data-testid="annotation-visibility-toggle"
-          onClick={() => onShowAnnotationsChange(!showAnnotations)}
-          aria-label={showAnnotations ? '注釈を非表示' : '注釈を表示'}
-          title={showAnnotations ? '注釈を非表示' : '注釈を表示'}
-          className={showAnnotations ? '' : 'text-slate-400'}
-        >
-          {showAnnotations ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-        </Button>
+        <AnnotationVisibilityMenu
+          showAnnotations={showAnnotations}
+          annotationVisibility={annotationVisibility}
+          onShowAnnotationsChange={onShowAnnotationsChange}
+          onAnnotationVisibilityChange={onAnnotationVisibilityChange}
+        />
 
         {/* View mode toggle */}
         <div className="hidden items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-600 dark:bg-slate-800 sm:flex">
