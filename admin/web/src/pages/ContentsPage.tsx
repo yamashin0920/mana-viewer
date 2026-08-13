@@ -10,6 +10,7 @@ const inputClass =
 
 const defaultForm = {
   title: '',
+  coverTitle: '',
   author: '',
   category: '',
   pageCount: 1,
@@ -50,6 +51,7 @@ export function ContentsPage() {
   const handleCreate = async () => {
     await createContent({
       title: form.title,
+      coverTitle: form.coverTitle,
       author: form.author,
       category: form.category,
       pageCount: form.pageCount,
@@ -71,6 +73,7 @@ export function ContentsPage() {
     if (!editing) return
     await updateContent(editing.id, {
       title: form.title,
+      coverTitle: form.coverTitle,
       author: form.author,
       category: form.category,
       pageCount: form.pageCount,
@@ -97,6 +100,7 @@ export function ContentsPage() {
     setEditing(content)
     setForm({
       title: content.title,
+      coverTitle: content.coverTitle ?? '',
       author: content.author,
       category: content.category ?? '',
       pageCount: content.pageCount,
@@ -143,12 +147,29 @@ export function ContentsPage() {
           <h3 className="mb-3 text-sm font-medium">{editing ? 'コンテンツ編集' : '新規コンテンツ'}</h3>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <label className="mb-1 block text-xs text-slate-500">タイトル *</label>
-              <input className={inputClass} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+              <label className="mb-1 block text-xs text-slate-500" htmlFor="content-title">タイトル *</label>
+              <input
+                id="content-title"
+                className={inputClass}
+                data-testid="content-title-input"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+              />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-slate-500">著者</label>
-              <input className={inputClass} value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} />
+              <label className="mb-1 block text-xs text-slate-500">表紙用タイトル</label>
+              <input
+                className={inputClass}
+                data-testid="cover-title-input"
+                value={form.coverTitle}
+                onChange={(e) => setForm({ ...form, coverTitle: e.target.value })}
+                placeholder="例: Math I（空欄ならタイトルを使用）"
+              />
+              <p className="mt-1 text-xs text-slate-400">サムネイル画像に表示する短い文字列。英数字推奨（最大10文字）。</p>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-slate-500" htmlFor="content-author">著者</label>
+              <input id="content-author" className={inputClass} value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-500">カテゴリ</label>
@@ -159,8 +180,8 @@ export function ContentsPage() {
               <input className={inputClass} type="number" min={1} value={form.pageCount} onChange={(e) => setForm({ ...form, pageCount: Number(e.target.value) })} />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-slate-500">ステータス</label>
-              <select className={inputClass} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+              <label className="mb-1 block text-xs text-slate-500" htmlFor="content-status">ステータス</label>
+              <select id="content-status" className={inputClass} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
                 {Object.entries(STATUS_LABELS).filter(([k]) => ['published', 'draft', 'archived'].includes(k)).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}

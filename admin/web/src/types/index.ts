@@ -40,6 +40,7 @@ export interface Content {
   id: string
   orgId: string
   title: string
+  coverTitle?: string
   author: string
   isbn?: string
   description?: string

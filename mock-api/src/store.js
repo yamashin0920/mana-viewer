@@ -93,8 +93,8 @@ function watermarkText(policy, user) {
     .replace('{date}', now);
 }
 
-function generateCoverUrl(title) {
-  const label = (title || 'Content').trim().slice(0, 10) || 'Content';
+function generateCoverUrl(title, coverTitle) {
+  const label = (coverTitle || title || 'Content').trim().slice(0, 10) || 'Content';
   return `https://placehold.co/200x280/png?text=${encodeURIComponent(label)}`;
 }
 

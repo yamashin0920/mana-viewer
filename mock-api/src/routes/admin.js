@@ -264,6 +264,7 @@ router.post('/contents', adminMiddleware, (req, res) => {
     isbn = '',
     description = '',
     coverUrl = '',
+    coverTitle = '',
     pageCount = 1,
     category = '',
     tags = [],
@@ -276,14 +277,18 @@ router.post('/contents', adminMiddleware, (req, res) => {
     return res.status(400).json({ error: 'validation_error', message: 'タイトルは必須です' });
   }
 
+  const trimmedTitle = title.trim();
+  const trimmedCoverTitle = coverTitle.trim();
+
   const content = {
     id: `content-${uuidv4().slice(0, 8)}`,
     orgId: req.user.orgId,
-    title: title.trim(),
+    title: trimmedTitle,
+    coverTitle: trimmedCoverTitle,
     author: author.trim(),
     isbn,
     description,
-    coverUrl: coverUrl || generateCoverUrl(title),
+    coverUrl: coverUrl || generateCoverUrl(trimmedTitle, trimmedCoverTitle),
     pageCount: Number(pageCount) || 1,
     fileSizeBytes: 0,
     category,
@@ -314,14 +319,19 @@ router.put('/contents/:contentId', adminMiddleware, (req, res) => {
   }
 
   const fields = [
-    'title', 'author', 'isbn', 'description', 'coverUrl', 'pageCount',
+    'title', 'coverTitle', 'author', 'isbn', 'description', 'coverUrl', 'pageCount',
     'category', 'tags', 'version', 'status',
   ];
   for (const field of fields) {
-    if (req.body?.[field] !== undefined) content[field] = req.body[field];
+    if (req.body?.[field] !== undefined) {
+      content[field] = typeof req.body[field] === 'string' ? req.body[field].trim() : req.body[field];
+    }
   }
-  if (req.body?.title !== undefined && req.body.coverUrl === undefined) {
-    content.coverUrl = generateCoverUrl(content.title);
+  if (
+    req.body.coverUrl === undefined &&
+    (req.body.title !== undefined || req.body.coverTitle !== undefined)
+  ) {
+    content.coverUrl = generateCoverUrl(content.title, content.coverTitle);
   }
   if (req.body?.policy) {
     content.policy = { ...content.policy, ...req.body.policy };

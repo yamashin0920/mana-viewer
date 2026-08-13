@@ -113,6 +113,31 @@ test.describe('Admin API', () => {
     })
   })
 
+  test('POST /admin/contents uses coverTitle for thumbnail when provided', async ({ request }) => {
+    const create = await request.post(`${MOCK_API}/admin/contents`, {
+      headers: {
+        Authorization: `Bearer ${ADMIN_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        title: '物理基礎 実験マニュアル',
+        coverTitle: 'PhysLab',
+        author: 'E2E',
+        status: 'published',
+        pageCount: 10,
+      },
+    })
+    expect(create.status()).toBe(201)
+    const created = await create.json()
+    expect(created.coverTitle).toBe('PhysLab')
+    expect(created.coverUrl).toContain(encodeURIComponent('PhysLab'))
+    expect(created.coverUrl).not.toContain(encodeURIComponent('物理'))
+
+    await request.delete(`${MOCK_API}/admin/contents/${created.id}`, {
+      headers: { Authorization: `Bearer ${ADMIN_TOKEN}` },
+    })
+  })
+
   test('learner cannot access admin endpoints', async ({ request }) => {
     const res = await request.get(`${MOCK_API}/admin/contents`, {
       headers: { Authorization: `Bearer ${LEARNER_TOKEN}` },

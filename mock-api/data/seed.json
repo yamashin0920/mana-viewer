@@ -55,7 +55,9 @@
       "orgId": "org-001",
       "name": "2026年度 1年A組",
       "externalCourseId": "lms-course-501",
-      "memberIds": ["user-001"],
+      "memberIds": [
+        "user-001"
+      ],
       "createdAt": "2025-04-01T00:00:00Z"
     }
   ],
@@ -64,6 +66,7 @@
       "id": "content-001",
       "orgId": "org-001",
       "title": "数学I 基礎テキスト",
+      "coverTitle": "Math I",
       "author": "教科書編集委員会",
       "isbn": "978-4-00-000001-1",
       "description": "高校数学Iの基礎を学ぶテキストブック",
@@ -71,7 +74,10 @@
       "pageCount": 248,
       "fileSizeBytes": 15728640,
       "category": "数学",
-      "tags": ["数学I", "基礎"],
+      "tags": [
+        "数学I",
+        "基礎"
+      ],
       "version": "2.1.0",
       "status": "published",
       "policy": {
@@ -88,6 +94,7 @@
       "id": "content-002",
       "orgId": "org-001",
       "title": "英語コミュニケーションI",
+      "coverTitle": "English I",
       "author": "English Editorial Board",
       "isbn": "978-4-00-000002-8",
       "description": "英語コミュニケーションIの教科書",
@@ -95,7 +102,10 @@
       "pageCount": 192,
       "fileSizeBytes": 12582912,
       "category": "英語",
-      "tags": ["英語", "コミュニケーション"],
+      "tags": [
+        "英語",
+        "コミュニケーション"
+      ],
       "version": "1.3.0",
       "status": "published",
       "policy": {
@@ -112,6 +122,7 @@
       "id": "content-003",
       "orgId": "org-001",
       "title": "物理基礎 実験マニュアル",
+      "coverTitle": "Physics",
       "author": "理科編集部",
       "isbn": "978-4-00-000003-5",
       "description": "物理基礎の実験に関するマニュアル",
@@ -119,7 +130,10 @@
       "pageCount": 96,
       "fileSizeBytes": 8388608,
       "category": "理科",
-      "tags": ["物理基礎", "実験"],
+      "tags": [
+        "物理基礎",
+        "実験"
+      ],
       "version": "1.0.0",
       "status": "published",
       "policy": {
@@ -131,28 +145,107 @@
       },
       "createdAt": "2025-04-15T00:00:00Z",
       "updatedAt": "2025-04-15T00:00:00Z"
+    },
+    {
+      "id": "content-711216d9",
+      "orgId": "org-001",
+      "title": "E2E 表紙テスト 1786584949887",
+      "coverTitle": "CoverTest",
+      "author": "E2E",
+      "isbn": "",
+      "description": "",
+      "coverUrl": "https://placehold.co/200x280/png?text=CoverTest",
+      "pageCount": 1,
+      "fileSizeBytes": 0,
+      "category": "",
+      "tags": [],
+      "version": "1.0.0",
+      "status": "published",
+      "policy": {
+        "allowPrint": false,
+        "allowOffline": true,
+        "offlineDays": 30,
+        "maxDevices": 2,
+        "watermarkText": "{userName} - {date}"
+      },
+      "createdAt": "2026-08-13T01:35:49.988Z",
+      "updatedAt": "2026-08-13T01:35:49.988Z"
     }
   ],
   "contentToc": {
     "content-001": [
-      { "title": "参考資料（外部リンク）", "page": 1, "level": 1, "url": "https://example.com/math-reference" },
-      { "title": "第1章 数と式", "page": 1, "level": 1 },
-      { "title": "1.1 実数", "page": 2, "level": 2 },
-      { "title": "1.2 平方根", "page": 8, "level": 2 },
-      { "title": "第2章 集合と命題", "page": 24, "level": 1 },
-      { "title": "2.1 集合", "page": 25, "level": 2 },
-      { "title": "第3章 2次関数", "page": 48, "level": 1 }
+      {
+        "title": "参考資料（外部リンク）",
+        "page": 1,
+        "level": 1,
+        "url": "https://example.com/math-reference"
+      },
+      {
+        "title": "第1章 数と式",
+        "page": 1,
+        "level": 1
+      },
+      {
+        "title": "1.1 実数",
+        "page": 2,
+        "level": 2
+      },
+      {
+        "title": "1.2 平方根",
+        "page": 8,
+        "level": 2
+      },
+      {
+        "title": "第2章 集合と命題",
+        "page": 24,
+        "level": 1
+      },
+      {
+        "title": "2.1 集合",
+        "page": 25,
+        "level": 2
+      },
+      {
+        "title": "第3章 2次関数",
+        "page": 48,
+        "level": 1
+      }
     ],
     "content-002": [
-      { "title": "Unit 1 Greetings", "page": 1, "level": 1 },
-      { "title": "Unit 2 Daily Life", "page": 20, "level": 1 },
-      { "title": "Unit 3 School Life", "page": 45, "level": 1 }
+      {
+        "title": "Unit 1 Greetings",
+        "page": 1,
+        "level": 1
+      },
+      {
+        "title": "Unit 2 Daily Life",
+        "page": 20,
+        "level": 1
+      },
+      {
+        "title": "Unit 3 School Life",
+        "page": 45,
+        "level": 1
+      }
     ],
     "content-003": [
-      { "title": "実験1 自由落下", "page": 1, "level": 1 },
-      { "title": "実験2 振り子", "page": 25, "level": 1 },
-      { "title": "実験3 摩擦", "page": 55, "level": 1 }
-    ]
+      {
+        "title": "実験1 自由落下",
+        "page": 1,
+        "level": 1
+      },
+      {
+        "title": "実験2 振り子",
+        "page": 25,
+        "level": 1
+      },
+      {
+        "title": "実験3 摩擦",
+        "page": 55,
+        "level": 1
+      }
+    ],
+    "content-711216d9": []
   },
   "licenses": [
     {
@@ -160,7 +253,10 @@
       "orgId": "org-001",
       "contentId": "content-001",
       "seatCount": 200,
-      "assignedUserIds": ["user-001", "user-002"],
+      "assignedUserIds": [
+        "user-001",
+        "user-002"
+      ],
       "startsAt": "2025-04-01T00:00:00Z",
       "expiresAt": "2027-03-31T23:59:59Z",
       "allowOffline": true,
@@ -171,7 +267,9 @@
       "orgId": "org-001",
       "contentId": "content-002",
       "seatCount": 200,
-      "assignedUserIds": ["user-001"],
+      "assignedUserIds": [
+        "user-001"
+      ],
       "startsAt": "2025-04-01T00:00:00Z",
       "expiresAt": "2027-03-31T23:59:59Z",
       "allowOffline": true,
@@ -182,7 +280,9 @@
       "orgId": "org-001",
       "contentId": "content-003",
       "seatCount": 50,
-      "assignedUserIds": ["user-001"],
+      "assignedUserIds": [
+        "user-001"
+      ],
       "startsAt": "2025-04-01T00:00:00Z",
       "expiresAt": "2027-03-31T23:59:59Z",
       "allowOffline": true,
@@ -219,11 +319,31 @@
     }
   ],
   "bookshelfItems": [
-    { "shelfId": "shelf-distributed", "contentId": "content-001", "sortOrder": 0 },
-    { "shelfId": "shelf-distributed", "contentId": "content-002", "sortOrder": 1 },
-    { "shelfId": "shelf-distributed", "contentId": "content-003", "sortOrder": 2 },
-    { "shelfId": "shelf-recent", "contentId": "content-001", "sortOrder": 0 },
-    { "shelfId": "shelf-favorites", "contentId": "content-001", "sortOrder": 0 }
+    {
+      "shelfId": "shelf-distributed",
+      "contentId": "content-001",
+      "sortOrder": 0
+    },
+    {
+      "shelfId": "shelf-distributed",
+      "contentId": "content-002",
+      "sortOrder": 1
+    },
+    {
+      "shelfId": "shelf-distributed",
+      "contentId": "content-003",
+      "sortOrder": 2
+    },
+    {
+      "shelfId": "shelf-recent",
+      "contentId": "content-001",
+      "sortOrder": 0
+    },
+    {
+      "shelfId": "shelf-favorites",
+      "contentId": "content-001",
+      "sortOrder": 0
+    }
   ],
   "progress": [
     {
@@ -232,7 +352,7 @@
       "currentPage": 42,
       "progressPercent": 16.9,
       "scrollOffset": 120,
-      "zoom": 1.0,
+      "zoom": 1,
       "viewMode": "single",
       "lastReadAt": "2026-08-10T14:30:00Z",
       "totalReadSeconds": 3600
@@ -243,7 +363,7 @@
       "currentPage": 15,
       "progressPercent": 7.8,
       "scrollOffset": 0,
-      "zoom": 1.0,
+      "zoom": 1,
       "viewMode": "single",
       "lastReadAt": "2026-08-09T10:00:00Z",
       "totalReadSeconds": 900
@@ -257,7 +377,14 @@
       "type": "highlight",
       "page": 42,
       "color": "#FFEB3B",
-      "rects": [{ "x": 72, "y": 400, "width": 300, "height": 18 }],
+      "rects": [
+        {
+          "x": 72,
+          "y": 400,
+          "width": 300,
+          "height": 18
+        }
+      ],
       "selectedText": "2次関数のグラフは放物線となる",
       "note": null,
       "createdAt": "2026-08-10T14:25:00Z",
@@ -283,7 +410,14 @@
       "type": "note",
       "page": 42,
       "color": "#FF9800",
-      "rects": [{ "x": 400, "y": 380, "width": 24, "height": 24 }],
+      "rects": [
+        {
+          "x": 400,
+          "y": 380,
+          "width": 24,
+          "height": 24
+        }
+      ],
       "selectedText": null,
       "note": "テスト範囲。公式を暗記する。",
       "createdAt": "2026-08-10T14:30:00Z",
