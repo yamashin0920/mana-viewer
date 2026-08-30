@@ -11,7 +11,9 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | ❌ | 未実装 |
 | ➖ | 対象外（今回スコープに含めない） |
 
-**テスト**: Playwright E2E の有無（`viewer/e2e/`、現状 **36 テスト**）
+**テスト**: Playwright E2E の有無（`viewer/e2e/`、現状 **57 テスト**）
+
+実装済み機能の詳細は [features.md](features.md)、未実装・要改善の項目は [improvements.md](improvements.md) を参照してください。
 
 ---
 
@@ -157,7 +159,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | 要件 | 状態 | 実装内容 |
 |------|------|----------|
 | Mock API | ✅ | Express、seed データ、全主要エンドポイント |
-| Playwright E2E | ✅ | viewer 50 + auth/web 3 テスト |
+| Playwright E2E | ✅ | viewer 57 + admin/web 24 + auth/web 6 = 87 テスト |
 | 機能追加時のテスト必須 | ✅ | `.cursor/rules/playwright-tests.mdc` |
 
 ---
@@ -175,6 +177,8 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 
 ## 関連ドキュメント
 
+- [features.md](features.md) — 現存する機能の一覧
+- [improvements.md](improvements.md) — ほしい修正（未実装・要改善）の一覧
 - [viewer/README.md](../viewer/README.md) — 起動・機能サマリ
 - [viewer/e2e/README.md](../viewer/e2e/README.md) — E2E テスト
 - [mock-api/README.md](../mock-api/README.md) — API 仕様

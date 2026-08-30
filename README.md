@@ -2,9 +2,13 @@
 
 B2B 向け PDF 学習プラットフォーム。
 
-## 要件と実装状況
+## ドキュメント
 
-[docs/requirements.md](docs/requirements.md) — 学習用ビューアの要件一覧と現状の実装マトリクス
+| ドキュメント | 内容 |
+|---|---|
+| [docs/features.md](docs/features.md) | **現存する機能** — 実装済み機能の一覧 |
+| [docs/improvements.md](docs/improvements.md) | **ほしい修正** — 未実装・要改善の項目と優先度 |
+| [docs/requirements.md](docs/requirements.md) | 要件一覧と実装マトリクス |
 
 ## 開発ルール
 
