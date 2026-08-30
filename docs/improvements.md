@@ -191,7 +191,6 @@ Tailwind のトークンが 3 つの `index.css` に複製され、すでに乖�
 - 「最近読んだもの」の件数リンクが `to="#"` + `preventDefault()` の死んだリンク（`RecentlyReadSection.tsx:33`）
 - 注釈編集ダイアログが種別を `highlight` / `drawing` と英語の生値で表示（`EditAnnotationDialog.tsx:65`）
 - アイコンボタンが約 32px で、タッチ推奨の 44px を下回る
-- ビューアのツールバーが単一行 flex で `overflow-x-auto` がなく、狭い画面で溢れるリスクがある
 
 ---
 

@@ -1,5 +1,5 @@
 import { Highlighter, MousePointer2, PenLine, StickyNote } from 'lucide-react'
-import { Button } from '@mana/ui'
+import { Button, ToolbarCluster } from '@mana/ui'
 import { HIGHLIGHT_COLORS } from '../../constants/highlightColors'
 import { PEN_COLORS } from '../../constants/penColors'
 import type { AnnotationTool } from '../../types/annotationTools'
@@ -26,7 +26,7 @@ export function AnnotationTools({
 }: AnnotationToolsProps) {
   return (
     <div className="flex items-center gap-1" data-testid="annotation-tools">
-      <div className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-600 dark:bg-slate-800">
+      <ToolbarCluster>
         <Button
           variant="ghost"
           size="icon"
@@ -71,7 +71,7 @@ export function AnnotationTools({
         >
           <StickyNote className="h-4 w-4" />
         </Button>
-      </div>
+      </ToolbarCluster>
 
       {tool === 'marker' && (
         <div className="flex items-center gap-1" data-testid="marker-color-picker">

@@ -24,6 +24,7 @@ mock-api は `AUTH_API_URL` 経由で auth-api にトークン検証を委譲し
 | `e2e/a11y.spec.ts` | ダイアログ・トースト・スキップリンクのアクセシビリティ |
 | `e2e/access.spec.ts` | ライセンス拒否・教材なし・透かし |
 | `e2e/drm.spec.ts` | チャンク配信・DRM のコピー/印刷 |
+| `e2e/toolbar.spec.ts` | ツールバー部品の配置と展開トレイ |
 | `e2e/dark-mode.spec.ts` | ダークモード切替 |
 | `e2e/mobile.spec.ts` | モバイル UI（FAB・ズーム・色・ピンチ） |
 | `e2e/progress.spec.ts` | 読書進捗の保存と復元 |

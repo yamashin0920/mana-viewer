@@ -1,4 +1,4 @@
-import { test, expect, openFirstContent, setPage } from './fixtures'
+import { test, expect, openFirstContent, setPage, expandViewerTools } from './fixtures'
 
 test.describe('モバイル表示', () => {
   test.use({ viewport: { width: 390, height: 844 } })
@@ -21,7 +21,13 @@ test.describe('モバイル表示', () => {
     await expect(page.getByTestId('page-input')).toHaveValue('3')
   })
 
-  test('本棚がモバイルで表示される', async ({ page }) => {
+  test('二次ツールはトレイを開くまで隠れている', async ({ page }) => {
+    await openFirstContent(page)
+    await expect(page.getByTestId('viewer-secondary-controls-toggle')).toBeVisible()
+    await expect(page.getByTestId('annotation-tools')).toBeHidden()
+    await page.getByTestId('viewer-secondary-controls-toggle').click()
+    await expect(page.getByTestId('annotation-tools')).toBeVisible()
+  })
     await page.goto('/')
     await expect(page.getByTestId('bookshelf-page')).toBeVisible()
     await expect(page.getByTestId('content-grid').getByTestId('content-card').first()).toBeVisible()
@@ -34,6 +40,7 @@ test.describe('モバイルでも使える操作', () => {
 
   test.beforeEach(async ({ page }) => {
     await openFirstContent(page)
+    await expandViewerTools(page)
   })
 
   test('ズームコントロールが表示され操作できる', async ({ page }) => {

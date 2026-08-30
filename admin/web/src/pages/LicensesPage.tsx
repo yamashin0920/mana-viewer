@@ -7,7 +7,7 @@ import {
   updateLicense,
 } from '../api/client'
 import { Alert } from '../components/Alert'
-import { Button, EmptyState, Field } from '@mana/ui'
+import { Button, EmptyState, Field, PageHeader } from '@mana/ui'
 import { useAdminAction } from '../hooks/useAdminAction'
 import { useConfirm } from '../hooks/useConfirm'
 import { usePermissions } from '../hooks/usePermissions'
@@ -195,29 +195,27 @@ export function LicensesPage() {
         <Alert tone={feedback.tone} message={feedback.message} onDismiss={() => setFeedback(null)} />
       )}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">ライセンス管理</h2>
-          <p className="text-sm text-slate-500">
-            コンテンツへの閲覧権限と席数を管理します。割当変更はビューアの本棚に即時反映されます。
-          </p>
-        </div>
-        {canWrite && (
-          <Button
-            variant="primary"
-            size="sm"
-            data-testid="license-add-button"
-            onClick={() => {
-              setShowForm(true)
-              setEditing(null)
-              resetForm()
-            }}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            ライセンス追加
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        title="ライセンス管理"
+        description="コンテンツへの閲覧権限と席数を管理します。割当変更はビューアの本棚に即時反映されます。"
+        actions={
+          canWrite ? (
+            <Button
+              variant="primary"
+              size="sm"
+              data-testid="license-add-button"
+              onClick={() => {
+                setShowForm(true)
+                setEditing(null)
+                resetForm()
+              }}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              ライセンス追加
+            </Button>
+          ) : undefined
+        }
+      />
 
       {!canWrite && (
         <Alert tone="info" message={`ライセンスは閲覧のみ可能です。${permissionHint('licenses:write')}`} />

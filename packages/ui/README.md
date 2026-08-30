@@ -18,6 +18,10 @@ viewer / admin / auth の 3 アプリで共有する UI プリミティブとデ
 | `src/Modal.tsx` | `role="dialog"` / フォーカストラップ / Escape / 背後スクロール抑止 |
 | `src/ConfirmDialog.tsx` | 破壊的操作の確認ダイアログ |
 | `src/EmptyState.tsx` | 0 件時の表示 |
+| `src/ChromeBar.tsx` | 名前付き部品を leading / trailing に並べる配置枠 |
+| `src/ExpandablePanel.tsx` | 狭い画面で押して展開するトレイ（lg 以上は常時表示） |
+| `src/ToolbarCluster.tsx` | ページ送り・ズームなどの操作グループ |
+| `src/PageHeader.tsx` | ページタイトルと右アクションスロット |
 | `src/useFocusTrap.ts` | フォーカスの閉じ込めと復帰 |
 
 ## 使い方
@@ -45,7 +49,7 @@ resolve: {
 ```
 
 ```tsx
-import { Button, ThemeToggle } from '@mana/ui'
+import { Button, ChromeBar, ExpandablePanel, PageHeader, ThemeToggle } from '@mana/ui'
 ```
 
 ## 注意
