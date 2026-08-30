@@ -12,9 +12,13 @@ import {
   updateUser,
   updateUserLicenses,
 } from '../api/client'
+import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
+import { useAdminAction } from '../hooks/useAdminAction'
+import { usePermissions } from '../hooks/usePermissions'
 import type { AdminUser, CredentialAccount, License, UserRole } from '../types'
 import { ROLE_LABELS } from '../types'
+import { permissionHint } from '../utils/authorization'
 
 const inputClass =
   'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100'
@@ -24,14 +28,17 @@ export function AccountsPage() {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [allLicenses, setAllLicenses] = useState<License[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+
+  const allows = usePermissions()
+  const canWriteCredentials = allows('credentials:write')
+  const canWriteUsers = allows('users:write')
+  const { submitting, feedback, setFeedback, run } = useAdminAction()
 
   const [showUserForm, setShowUserForm] = useState(false)
   const [showCredForm, setShowCredForm] = useState(false)
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null)
   const [editingLicensesUser, setEditingLicensesUser] = useState<AdminUser | null>(null)
   const [selectedLicenseIds, setSelectedLicenseIds] = useState<string[]>([])
-  const [savingLicenses, setSavingLicenses] = useState(false)
   const [editingCred, setEditingCred] = useState<CredentialAccount | null>(null)
 
   const [userForm, setUserForm] = useState({ name: '', email: '', role: 'learner' as UserRole })
@@ -39,7 +46,6 @@ export function AccountsPage() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    setError(null)
     try {
       const [credRes, userRes, licenseRes] = await Promise.all([
         fetchCredentials(),
@@ -50,11 +56,14 @@ export function AccountsPage() {
       setUsers(userRes.data)
       setAllLicenses(licenseRes.data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '読み込みに失敗しました')
+      setFeedback({
+        tone: 'error',
+        message: err instanceof Error ? err.message : '読み込みに失敗しました',
+      })
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [setFeedback])
 
   useEffect(() => {
     load()
@@ -64,48 +73,94 @@ export function AccountsPage() {
     (u) => !credentials.some((c) => c.linkedUserId === u.id),
   )
 
+  const validateUserForm = () => {
+    if (!userForm.name.trim()) {
+      setFeedback({ tone: 'error', message: '名前を入力してください' })
+      return false
+    }
+    if (!userForm.email.trim()) {
+      setFeedback({ tone: 'error', message: 'メールアドレスを入力してください' })
+      return false
+    }
+    return true
+  }
+
   const handleCreateUser = async () => {
-    await createUser(userForm)
+    if (!validateUserForm()) return
+    const ok = await run(async () => {
+      await createUser(userForm)
+    }, `「${userForm.name}」を作成しました`)
+    if (!ok) return
     setShowUserForm(false)
     setUserForm({ name: '', email: '', role: 'learner' })
     await load()
   }
 
   const handleUpdateUser = async () => {
-    if (!editingUser) return
-    await updateUser(editingUser.id, userForm)
+    if (!editingUser || !validateUserForm()) return
+    const ok = await run(async () => {
+      await updateUser(editingUser.id, userForm)
+    }, `「${userForm.name}」を更新しました`)
+    if (!ok) return
     setEditingUser(null)
     await load()
   }
 
   const handleDeleteUser = async (user: AdminUser) => {
     if (!confirm(`「${user.name}」を削除しますか？`)) return
-    await deleteUser(user.id)
-    await load()
+    const ok = await run(async () => {
+      await deleteUser(user.id)
+    }, `「${user.name}」を削除しました`)
+    if (ok) await load()
+  }
+
+  const validateCredForm = (isEdit: boolean) => {
+    if (!credForm.loginId.trim()) {
+      setFeedback({ tone: 'error', message: 'ログインIDを入力してください' })
+      return false
+    }
+    if (!isEdit && !credForm.password) {
+      setFeedback({ tone: 'error', message: 'パスワードを入力してください' })
+      return false
+    }
+    if (!isEdit && !credForm.linkedUserId) {
+      setFeedback({ tone: 'error', message: '紐付けるユーザーを選択してください' })
+      return false
+    }
+    return true
   }
 
   const handleCreateCredential = async () => {
-    await createCredential(credForm)
+    if (!validateCredForm(false)) return
+    const ok = await run(async () => {
+      await createCredential(credForm)
+    }, `ログインID「${credForm.loginId}」を作成しました`)
+    if (!ok) return
     setShowCredForm(false)
     setCredForm({ loginId: '', password: '', linkedUserId: '' })
     await load()
   }
 
   const handleUpdateCredential = async () => {
-    if (!editingCred) return
-    await updateCredential(editingCred.loginId, {
-      password: credForm.password || undefined,
-      linkedUserId: credForm.linkedUserId || undefined,
-      newLoginId: credForm.loginId !== editingCred.loginId ? credForm.loginId : undefined,
-    })
+    if (!editingCred || !validateCredForm(true)) return
+    const ok = await run(async () => {
+      await updateCredential(editingCred.loginId, {
+        password: credForm.password || undefined,
+        linkedUserId: credForm.linkedUserId || undefined,
+        newLoginId: credForm.loginId !== editingCred.loginId ? credForm.loginId : undefined,
+      })
+    }, `ログインID「${credForm.loginId}」を更新しました`)
+    if (!ok) return
     setEditingCred(null)
     await load()
   }
 
   const handleDeleteCredential = async (cred: CredentialAccount) => {
     if (!confirm(`ログインID「${cred.loginId}」を削除しますか？`)) return
-    await deleteCredential(cred.loginId)
-    await load()
+    const ok = await run(async () => {
+      await deleteCredential(cred.loginId)
+    }, `ログインID「${cred.loginId}」を削除しました`)
+    if (ok) await load()
   }
 
   const startEditLicenses = (user: AdminUser) => {
@@ -123,17 +178,16 @@ export function AccountsPage() {
 
   const handleSaveLicenses = async () => {
     if (!editingLicensesUser) return
-    setSavingLicenses(true)
-    setError(null)
-    try {
-      await updateUserLicenses(editingLicensesUser.id, selectedLicenseIds)
-      setEditingLicensesUser(null)
-      await load()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'ライセンス更新に失敗しました')
-    } finally {
-      setSavingLicenses(false)
-    }
+    const ok = await run(
+      async () => {
+        await updateUserLicenses(editingLicensesUser.id, selectedLicenseIds)
+      },
+      `「${editingLicensesUser.name}」のライセンス割当を更新しました`,
+      'ライセンス更新に失敗しました'
+    )
+    if (!ok) return
+    setEditingLicensesUser(null)
+    await load()
   }
 
   const startEditUser = (user: AdminUser) => {
@@ -159,10 +213,15 @@ export function AccountsPage() {
 
   return (
     <div className="space-y-8" data-testid="accounts-page">
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
-          {error}
-        </div>
+      {feedback && (
+        <Alert tone={feedback.tone} message={feedback.message} onDismiss={() => setFeedback(null)} />
+      )}
+
+      {!canWriteUsers && !canWriteCredentials && (
+        <Alert
+          tone="info"
+          message={`アカウントは閲覧のみ可能です。${permissionHint('users:write')}`}
+        />
       )}
 
       {/* Login accounts */}
@@ -172,10 +231,17 @@ export function AccountsPage() {
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">ログインアカウント</h2>
             <p className="text-sm text-slate-500">ログインIDとパスワード、紐付けユーザーを管理します</p>
           </div>
-          <Button variant="primary" size="sm" onClick={() => { setShowCredForm(true); setEditingCred(null); setCredForm({ loginId: '', password: '', linkedUserId: '' }) }}>
-            <Plus className="h-3.5 w-3.5" />
-            追加
-          </Button>
+          {canWriteCredentials && (
+            <Button
+              variant="primary"
+              size="sm"
+              data-testid="credential-add-button"
+              onClick={() => { setShowCredForm(true); setEditingCred(null); setCredForm({ loginId: '', password: '', linkedUserId: '' }) }}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              追加
+            </Button>
+          )}
         </div>
 
         {(showCredForm || editingCred) && (
@@ -192,10 +258,18 @@ export function AccountsPage() {
               </select>
             </div>
             <div className="mt-3 flex gap-2">
-              <Button variant="primary" size="sm" onClick={editingCred ? handleUpdateCredential : handleCreateCredential}>
-                {editingCred ? '更新' : '作成'}
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={submitting}
+                data-testid="credential-submit"
+                onClick={editingCred ? handleUpdateCredential : handleCreateCredential}
+              >
+                {submitting ? '保存中...' : editingCred ? '更新' : '作成'}
               </Button>
-              <Button size="sm" onClick={() => { setShowCredForm(false); setEditingCred(null) }}>キャンセル</Button>
+              <Button size="sm" disabled={submitting} onClick={() => { setShowCredForm(false); setEditingCred(null) }}>
+                キャンセル
+              </Button>
             </div>
           </div>
         )}
@@ -208,7 +282,7 @@ export function AccountsPage() {
                 <th className="px-4 py-3 font-medium">紐付けユーザー</th>
                 <th className="px-4 py-3 font-medium">ロール</th>
                 <th className="px-4 py-3 font-medium">ライセンス数</th>
-                <th className="px-4 py-3 font-medium">操作</th>
+                {canWriteCredentials && <th className="px-4 py-3 font-medium">操作</th>}
               </tr>
             </thead>
             <tbody>
@@ -220,12 +294,14 @@ export function AccountsPage() {
                     <td className="px-4 py-3">{linkedUser?.name ?? '—'}</td>
                     <td className="px-4 py-3">{linkedUser ? ROLE_LABELS[linkedUser.role] : '—'}</td>
                     <td className="px-4 py-3">{linkedUser?.licenses?.length ?? 0}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => startEditCred(cred)}><Pencil className="h-3.5 w-3.5" /></Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleDeleteCredential(cred)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
-                      </div>
-                    </td>
+                    {canWriteCredentials && (
+                      <td className="px-4 py-3">
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" onClick={() => startEditCred(cred)}><Pencil className="h-3.5 w-3.5" /></Button>
+                          <Button size="sm" variant="ghost" disabled={submitting} onClick={() => handleDeleteCredential(cred)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 )
               })}
@@ -241,10 +317,17 @@ export function AccountsPage() {
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">ユーザー</h2>
             <p className="text-sm text-slate-500">組織内のユーザーとライセンス割当状況（ビューアの閲覧可否に反映されます）</p>
           </div>
-          <Button variant="primary" size="sm" onClick={() => { setShowUserForm(true); setEditingUser(null); setUserForm({ name: '', email: '', role: 'learner' }) }}>
-            <UserPlus className="h-3.5 w-3.5" />
-            ユーザー追加
-          </Button>
+          {canWriteUsers && (
+            <Button
+              variant="primary"
+              size="sm"
+              data-testid="user-add-button"
+              onClick={() => { setShowUserForm(true); setEditingUser(null); setUserForm({ name: '', email: '', role: 'learner' }) }}
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              ユーザー追加
+            </Button>
+          )}
         </div>
 
         {(showUserForm || editingUser) && (
@@ -260,10 +343,18 @@ export function AccountsPage() {
               </select>
             </div>
             <div className="mt-3 flex gap-2">
-              <Button variant="primary" size="sm" onClick={editingUser ? handleUpdateUser : handleCreateUser}>
-                {editingUser ? '更新' : '作成'}
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={submitting}
+                data-testid="user-submit"
+                onClick={editingUser ? handleUpdateUser : handleCreateUser}
+              >
+                {submitting ? '保存中...' : editingUser ? '更新' : '作成'}
               </Button>
-              <Button size="sm" onClick={() => { setShowUserForm(false); setEditingUser(null) }}>キャンセル</Button>
+              <Button size="sm" disabled={submitting} onClick={() => { setShowUserForm(false); setEditingUser(null) }}>
+                キャンセル
+              </Button>
             </div>
           </div>
         )}
@@ -276,7 +367,7 @@ export function AccountsPage() {
                 <th className="px-4 py-3 font-medium">メール</th>
                 <th className="px-4 py-3 font-medium">ロール</th>
                 <th className="px-4 py-3 font-medium">割当ライセンス</th>
-                <th className="px-4 py-3 font-medium">操作</th>
+                {canWriteUsers && <th className="px-4 py-3 font-medium">操作</th>}
               </tr>
             </thead>
             <tbody>
@@ -301,21 +392,23 @@ export function AccountsPage() {
                       <span className="text-xs text-slate-400">なし</span>
                     )}
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        data-testid={`user-licenses-${user.id}`}
-                        onClick={() => startEditLicenses(user)}
-                        title="ライセンス割当"
-                      >
-                        <KeyRound className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => startEditUser(user)}><Pencil className="h-3.5 w-3.5" /></Button>
-                      <Button size="sm" variant="ghost" onClick={() => handleDeleteUser(user)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
-                    </div>
-                  </td>
+                  {canWriteUsers && (
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          data-testid={`user-licenses-${user.id}`}
+                          onClick={() => startEditLicenses(user)}
+                          title="ライセンス割当"
+                        >
+                          <KeyRound className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => startEditUser(user)}><Pencil className="h-3.5 w-3.5" /></Button>
+                        <Button size="sm" variant="ghost" disabled={submitting} onClick={() => handleDeleteUser(user)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -367,10 +460,12 @@ export function AccountsPage() {
               })}
             </div>
             <div className="mt-4 flex gap-2">
-              <Button variant="primary" size="sm" disabled={savingLicenses} onClick={handleSaveLicenses}>
-                {savingLicenses ? '保存中...' : '保存'}
+              <Button variant="primary" size="sm" disabled={submitting} onClick={handleSaveLicenses}>
+                {submitting ? '保存中...' : '保存'}
               </Button>
-              <Button size="sm" onClick={() => setEditingLicensesUser(null)}>キャンセル</Button>
+              <Button size="sm" disabled={submitting} onClick={() => setEditingLicensesUser(null)}>
+                キャンセル
+              </Button>
             </div>
           </div>
         )}

@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
+import { BookOpen, Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { createContent, deleteContent, fetchContents, updateContent } from '../api/client'
+import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
+import { EmptyState } from '../components/EmptyState'
+import { useAdminAction } from '../hooks/useAdminAction'
+import { usePermissions } from '../hooks/usePermissions'
 import type { Content } from '../types'
 import { STATUS_LABELS } from '../types'
+import { permissionHint } from '../utils/authorization'
 
 const inputClass =
   'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100'
@@ -25,75 +30,90 @@ const defaultForm = {
 export function ContentsPage() {
   const [contents, setContents] = useState<Content[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Content | null>(null)
   const [form, setForm] = useState(defaultForm)
 
+  const allows = usePermissions()
+  const canWrite = allows('contents:write')
+  const canDelete = allows('contents:delete')
+  const { submitting, feedback, setFeedback, run } = useAdminAction()
+
   const load = useCallback(async () => {
     setLoading(true)
-    setError(null)
     try {
       const res = await fetchContents()
       setContents(res.data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '読み込みに失敗しました')
+      setFeedback({
+        tone: 'error',
+        message: err instanceof Error ? err.message : '読み込みに失敗しました',
+      })
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [setFeedback])
 
   useEffect(() => {
     load()
   }, [load])
 
+  const formPayload = () => ({
+    title: form.title.trim(),
+    coverTitle: form.coverTitle.trim(),
+    author: form.author.trim(),
+    category: form.category.trim(),
+    pageCount: form.pageCount,
+    status: form.status,
+    description: form.description,
+    policy: {
+      allowPrint: form.allowPrint,
+      allowOffline: form.allowOffline,
+      offlineDays: form.offlineDays,
+      maxDevices: form.maxDevices,
+    },
+  })
+
+  const validate = () => {
+    if (!form.title.trim()) {
+      setFeedback({ tone: 'error', message: 'タイトルを入力してください' })
+      return false
+    }
+    if (form.pageCount < 1) {
+      setFeedback({ tone: 'error', message: 'ページ数は 1 以上を指定してください' })
+      return false
+    }
+    return true
+  }
+
   const handleCreate = async () => {
-    await createContent({
-      title: form.title,
-      coverTitle: form.coverTitle,
-      author: form.author,
-      category: form.category,
-      pageCount: form.pageCount,
-      status: form.status,
-      description: form.description,
-      policy: {
-        allowPrint: form.allowPrint,
-        allowOffline: form.allowOffline,
-        offlineDays: form.offlineDays,
-        maxDevices: form.maxDevices,
-      },
-    })
+    if (!validate()) return
+    const ok = await run(async () => {
+      await createContent(formPayload())
+    }, `「${form.title.trim()}」を作成しました`)
+    if (!ok) return
     setShowForm(false)
     setForm(defaultForm)
     await load()
   }
 
   const handleUpdate = async () => {
-    if (!editing) return
-    await updateContent(editing.id, {
-      title: form.title,
-      coverTitle: form.coverTitle,
-      author: form.author,
-      category: form.category,
-      pageCount: form.pageCount,
-      status: form.status,
-      description: form.description,
-      policy: {
-        allowPrint: form.allowPrint,
-        allowOffline: form.allowOffline,
-        offlineDays: form.offlineDays,
-        maxDevices: form.maxDevices,
-      },
-    })
+    if (!editing || !validate()) return
+    const ok = await run(async () => {
+      await updateContent(editing.id, formPayload())
+    }, `「${form.title.trim()}」を更新しました`)
+    if (!ok) return
     setEditing(null)
     await load()
   }
 
   const handleDelete = async (content: Content) => {
     if (!confirm(`「${content.title}」を削除しますか？関連ライセンスも削除されます。`)) return
-    await deleteContent(content.id)
-    await load()
+    const ok = await run(async () => {
+      await deleteContent(content.id)
+    }, `「${content.title}」を削除しました`)
+    if (ok) await load()
   }
 
   const startEdit = (content: Content) => {
@@ -125,10 +145,8 @@ export function ContentsPage() {
 
   return (
     <div className="space-y-6" data-testid="contents-page">
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
-          {error}
-        </div>
+      {feedback && (
+        <Alert tone={feedback.tone} message={feedback.message} onDismiss={() => setFeedback(null)} />
       )}
 
       <div className="flex items-center justify-between">
@@ -136,10 +154,17 @@ export function ContentsPage() {
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">コンテンツ管理</h2>
           <p className="text-sm text-slate-500">教材のメタデータと公開設定を管理します</p>
         </div>
-        <Button variant="primary" size="sm" onClick={() => { setShowForm(true); setEditing(null); setForm(defaultForm) }}>
-          <Plus className="h-3.5 w-3.5" />
-          コンテンツ追加
-        </Button>
+        {canWrite && (
+          <Button
+            variant="primary"
+            size="sm"
+            data-testid="content-add-button"
+            onClick={() => { setShowForm(true); setEditing(null); setForm(defaultForm) }}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            コンテンツ追加
+          </Button>
+        )}
       </div>
 
       {(showForm || editing) && (
@@ -213,14 +238,33 @@ export function ContentsPage() {
           </div>
 
           <div className="mt-4 flex gap-2">
-            <Button variant="primary" size="sm" onClick={editing ? handleUpdate : handleCreate}>
-              {editing ? '更新' : '作成'}
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={submitting}
+              data-testid="content-submit"
+              onClick={editing ? handleUpdate : handleCreate}
+            >
+              {submitting ? '保存中...' : editing ? '更新' : '作成'}
             </Button>
-            <Button size="sm" onClick={() => { setShowForm(false); setEditing(null) }}>キャンセル</Button>
+            <Button size="sm" disabled={submitting} onClick={() => { setShowForm(false); setEditing(null) }}>
+              キャンセル
+            </Button>
           </div>
         </div>
       )}
 
+      {contents.length === 0 ? (
+        <EmptyState
+          icon={BookOpen}
+          title="コンテンツがありません"
+          description={
+            canWrite
+              ? '「コンテンツ追加」から最初の教材を登録してください'
+              : '登録済みの教材がまだありません'
+          }
+        />
+      ) : (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="contents-grid">
         {contents.map((content) => (
           <div
@@ -250,19 +294,41 @@ export function ContentsPage() {
                 <p className="mt-1 text-xs text-slate-400">{content.pageCount} ページ</p>
               </div>
             </div>
-            <div className="flex border-t border-slate-100 dark:border-slate-800">
-              <Button size="sm" variant="ghost" className="flex-1 rounded-none py-2" onClick={() => startEdit(content)}>
-                <Pencil className="h-3.5 w-3.5" />
-                編集
-              </Button>
-              <Button size="sm" variant="ghost" className="flex-1 rounded-none border-l border-slate-100 py-2 dark:border-slate-800" onClick={() => handleDelete(content)}>
-                <Trash2 className="h-3.5 w-3.5 text-red-500" />
-                削除
-              </Button>
-            </div>
+            {(canWrite || canDelete) && (
+              <div className="flex border-t border-slate-100 dark:border-slate-800">
+                {canWrite && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="flex-1 rounded-none py-2"
+                    onClick={() => startEdit(content)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    編集
+                  </Button>
+                )}
+                {canDelete && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="flex-1 rounded-none border-l border-slate-100 py-2 dark:border-slate-800"
+                    disabled={submitting}
+                    onClick={() => handleDelete(content)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                    削除
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>
+      )}
+
+      {!canDelete && contents.length > 0 && (
+        <p className="text-xs text-slate-400">コンテンツの削除: {permissionHint('contents:delete')}</p>
+      )}
     </div>
   )
 }
