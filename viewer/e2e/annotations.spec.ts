@@ -88,14 +88,48 @@ test.describe('注釈機能', () => {
     await expect(page.getByTestId('sticky-note').first()).toContainText('Playwright 付箋テスト')
   })
 
-  test('注釈を削除できる', async ({ page }) => {
+  test('注釈を削除できる（確認ダイアログ経由）', async ({ page }) => {
     await page.getByRole('banner').getByRole('button', { name: 'ブックマーク' }).click()
     await expect(page.getByText('ブックマークを追加しました')).toBeVisible()
 
     const sidebar = page.getByTestId('desktop-sidebar')
     await sidebar.getByTestId('sidebar-tab-annotations').click()
     await sidebar.getByTestId('annotation-delete').last().click()
-    await expect(page.getByText('注釈を削除しました')).toBeVisible()
+
+    await expect(page.getByTestId('confirm-dialog')).toBeVisible()
+    await page.getByTestId('confirm-dialog-confirm').click()
+
+    await expect(page.getByTestId('confirm-dialog')).toBeHidden()
+    await expect(page.getByText(/を削除しました/)).toBeVisible()
+  })
+
+  test('確認ダイアログをキャンセルすると削除されない', async ({ page }) => {
+    const sidebar = page.getByTestId('desktop-sidebar')
+    const before = await sidebar.getByTestId('annotation-item').count()
+
+    await sidebar.getByTestId('annotation-delete').first().click()
+    await expect(page.getByTestId('confirm-dialog')).toBeVisible()
+    await page.getByTestId('confirm-dialog-cancel').click()
+
+    await expect(page.getByTestId('confirm-dialog')).toBeHidden()
+    await expect(sidebar.getByTestId('annotation-item')).toHaveCount(before)
+  })
+
+  test('削除した注釈をトーストから元に戻せる', async ({ page }) => {
+    await page.getByRole('banner').getByRole('button', { name: 'ブックマーク' }).click()
+    await expect(page.getByText('ブックマークを追加しました')).toBeVisible()
+
+    const sidebar = page.getByTestId('desktop-sidebar')
+    await sidebar.getByTestId('sidebar-tab-annotations').click()
+    const before = await sidebar.getByTestId('annotation-item').count()
+
+    await sidebar.getByTestId('annotation-delete').last().click()
+    await page.getByTestId('confirm-dialog-confirm').click()
+    await expect(sidebar.getByTestId('annotation-item')).toHaveCount(before - 1)
+
+    await page.getByTestId('toast-action').click()
+    await expect(page.getByText('削除を取り消しました')).toBeVisible()
+    await expect(sidebar.getByTestId('annotation-item')).toHaveCount(before)
   })
 
   test('注釈を JSON でエクスポートできる', async ({ page }) => {

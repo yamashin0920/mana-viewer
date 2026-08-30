@@ -5,13 +5,32 @@ import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 
 GlobalWorkerOptions.workerSrc = pdfjsWorker
 
-export function usePdfDocument(pdfUrl: string | null) {
+export type PdfSource =
+  | { kind: 'url'; url: string }
+  | { kind: 'data'; data: ArrayBuffer }
+  | null
+
+function normalizeSource(source: PdfSource | string | null): PdfSource {
+  if (!source) return null
+  if (typeof source === 'string') return { kind: 'url', url: source }
+  return source
+}
+
+function sourceKey(source: PdfSource): string {
+  if (!source) return ''
+  if (source.kind === 'url') return `url:${source.url}`
+  return `data:${source.data.byteLength}`
+}
+
+export function usePdfDocument(source: PdfSource | string | null) {
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const normalized = normalizeSource(source)
+  const key = sourceKey(normalized)
 
   useEffect(() => {
-    if (!pdfUrl) {
+    if (!normalized) {
       setPdfDoc(null)
       setLoading(false)
       setError(null)
@@ -22,7 +41,12 @@ export function usePdfDocument(pdfUrl: string | null) {
     setLoading(true)
     setError(null)
 
-    getDocument({ url: pdfUrl })
+    const params =
+      normalized.kind === 'url'
+        ? { url: normalized.url }
+        : { data: new Uint8Array(normalized.data.slice(0)) }
+
+    getDocument(params)
       .promise.then((doc) => {
         if (cancelled) return
         setPdfDoc(doc)
@@ -38,7 +62,7 @@ export function usePdfDocument(pdfUrl: string | null) {
     return () => {
       cancelled = true
     }
-  }, [pdfUrl])
+  }, [key])
 
   return {
     pdfDoc,

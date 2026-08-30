@@ -1,27 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-
-const SEED_PATH = path.join(__dirname, '../../../mock-api/data/seed.json');
-const CREDENTIALS_PATH = path.join(__dirname, '../data/credentials.json');
-
-function loadUsers() {
-  const raw = fs.readFileSync(SEED_PATH, 'utf-8');
-  const seed = JSON.parse(raw);
-  return seed.users;
-}
-
-function loadCredentials() {
-  const raw = fs.readFileSync(CREDENTIALS_PATH, 'utf-8');
-  return JSON.parse(raw);
-}
-
-function saveCredentials(credentials) {
-  fs.writeFileSync(CREDENTIALS_PATH, `${JSON.stringify(credentials, null, 2)}\n`, 'utf-8');
-}
-
-function getLoginId(entry) {
-  return entry.loginId || entry.userId;
-}
+const {
+  loadUsers,
+  loadCredentials,
+  saveCredentials,
+  getLoginId,
+} = require('@mana/dev-data');
+const { isAdminRole } = require('@mana/contracts/node');
 
 function findCredential(userId, password) {
   const loginId = String(userId).trim();
@@ -56,7 +39,7 @@ function findUserById(userId) {
 }
 
 function isAdminUser(user) {
-  return user && ['org_admin', 'content_admin'].includes(user.role);
+  return !!(user && isAdminRole(user.role));
 }
 
 function generateToken() {

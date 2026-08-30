@@ -97,6 +97,7 @@ router.get('/tokens', (_req, res) => {
       { token: 'mock-token-learner', role: 'learner', email: 'tanaka@tokyo-gakuen.example.jp' },
       { token: 'mock-token-instructor', role: 'instructor', email: 'suzuki@tokyo-gakuen.example.jp' },
       { token: 'mock-token-admin', role: 'org_admin', email: 'admin@tokyo-gakuen.example.jp' },
+      { token: 'mock-token-content-admin', role: 'content_admin', email: 'content@tokyo-gakuen.example.jp' },
     ],
   });
 });

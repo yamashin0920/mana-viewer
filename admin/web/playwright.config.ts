@@ -28,7 +28,10 @@ export default defineConfig({
       url: `http://localhost:${MOCK_API_PORT}/health`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
-      env: { PORT: String(MOCK_API_PORT) },
+      env: {
+        PORT: String(MOCK_API_PORT),
+        AUTH_API_URL: `http://127.0.0.1:${AUTH_API_PORT}`,
+      },
     },
     {
       command: 'npm run dev',

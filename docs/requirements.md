@@ -11,7 +11,9 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | ❌ | 未実装 |
 | ➖ | 対象外（今回スコープに含めない） |
 
-**テスト**: Playwright E2E の有無（`viewer/e2e/`、現状 **36 テスト**）
+**テスト**: Playwright E2E の有無（viewer / admin / auth、現状 **139 テスト**）
+
+実装済み機能の詳細は [features.md](features.md)、未実装・要改善の項目は [improvements.md](improvements.md) を参照してください。
 
 ---
 
@@ -77,7 +79,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | PDF 内テキスト検索 | ✅ | ツールバー検索、ハイライト、前後ナビ | `viewer.spec.ts` |
 | リンク（目次内・PDF内） | ✅ | 目次の外部 URL / ページジャンプ、PDF Link アノテーション | `viewer.spec.ts` |
 | 閲覧セッション | ✅ | `createViewSession`、sessionToken 保持 | `mock-api.spec.ts` |
-| 暗号化チャンク取得・復号 | 🔶 | Mock API エンドポイントあり。ビューアはデモ PDF 固定 | — |
+| 暗号化チャンク取得・復号 | 🔶 | セッション付きでチャンク取得。モック時は sample.pdf フォールバック。AES 復号は未 | `drm.spec.ts` / `mock-api.spec.ts` |
 | 読書進捗の自動保存 | ✅ | ページ・ズーム・表示モードを API 保存 | `mock-api.spec.ts` |
 | 本棚へ戻る | ✅ | ツールバーリンク | `viewer.spec.ts` |
 
@@ -123,9 +125,9 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 |------|------|----------|--------|
 | ウォーターマーク表示 | ✅ | セッション / policy から PDF 上にオーバーレイ | — |
 | DRM ポリシー取得 | ✅ | `/contents/:id/policy` | — |
-| 印刷制御 (`allowPrint`) | ❌ | 型・seed のみ。UI 未反映 | — |
-| コピー制御 (`allowCopy`) | ❌ | 型・seed のみ。選択禁止未 | — |
-| スクリーンショット防止 | ❌ | policy フィールドのみ | — |
+| 印刷制御 (`allowPrint`) | 🔶 | Ctrl/Cmd+P と印刷 CSS をブロック。暗号的な強制は不可 | `drm.spec.ts` |
+| コピー制御 (`allowCopy`) | 🔶 | copy/cut を防止。アプリ内ハイライト用の選択は残す | `drm.spec.ts` |
+| スクリーンショット防止 | ❌ | policy フィールドのみ。ブラウザでは強制できない | — |
 
 ---
 
@@ -157,24 +159,25 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | 要件 | 状態 | 実装内容 |
 |------|------|----------|
 | Mock API | ✅ | Express、seed データ、全主要エンドポイント |
-| Playwright E2E | ✅ | viewer 50 + auth/web 3 テスト |
+| Playwright E2E | ✅ | viewer 87 + admin/web 55 + auth/web 6 = 148 テスト |
 | 機能追加時のテスト必須 | ✅ | `.cursor/rules/playwright-tests.mdc` |
 
 ---
 
 ## 次の実装優先度（viewer/README と同期）
 
-1. 暗号化チャンク → PDF 復号パイプライン
+1. 本番相当の AES-GCM チャンク復号とページ単位ストリーミング
 2. オフラインパッケージの Dexie 保存と完全オフライン閲覧
-3. 注釈・進捗同期キューのフラッシュ（オンライン復帰時）
-4. LTI / Deep Link 起動（`/viewer/:id?page=`）
-5. 印刷・コピー制御（`policy.drm` 反映）
-6. 各項目に Playwright テスト追加（[ルール](../.cursor/rules/playwright-tests.mdc) 参照）
+3. LTI / Deep Link 起動（`/viewer/:id?page=`）
+4. 管理画面の組織・グループと学習進捗ダッシュボード
+5. 各項目に Playwright テスト追加（[ルール](../.cursor/rules/playwright-tests.mdc) 参照）
 
 ---
 
 ## 関連ドキュメント
 
+- [features.md](features.md) — 現存する機能の一覧
+- [improvements.md](improvements.md) — ほしい修正（未実装・要改善）の一覧
 - [viewer/README.md](../viewer/README.md) — 起動・機能サマリ
 - [viewer/e2e/README.md](../viewer/e2e/README.md) — E2E テスト
 - [mock-api/README.md](../mock-api/README.md) — API 仕様

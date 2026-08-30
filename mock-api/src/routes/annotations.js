@@ -1,6 +1,7 @@
 const express = require('express');
 const { authMiddleware } = require('../middleware/auth');
 const { canAccessContent, uuidv4 } = require('../store');
+const { persist } = require('../persistence');
 
 const router = express.Router();
 
@@ -41,6 +42,7 @@ router.post('/:contentId/annotations', authMiddleware, (req, res) => {
     updatedAt: now,
   };
   req.store.annotations.push(annotation);
+  persist(req.store, 'learner');
   res.status(201).json(annotation);
 });
 
@@ -81,6 +83,7 @@ router.post('/:contentId/annotations/sync', authMiddleware, (req, res) => {
     (a) => a.contentId === contentId && a.userId === userId
   );
 
+  persist(req.store, 'learner');
   res.json({
     synced,
     serverAnnotations,

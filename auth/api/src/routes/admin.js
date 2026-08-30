@@ -8,6 +8,8 @@ const {
   findUserById,
 } = require('../store');
 const { adminAuthMiddleware, orgAdminAuthMiddleware } = require('../middleware/admin');
+const { createCredentialSchema, updateCredentialSchema } = require('@mana/contracts/node/schemas');
+const { validateBody } = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -27,14 +29,8 @@ router.get('/credentials', adminAuthMiddleware, (_req, res) => {
   res.json({ data, users: users.map((u) => ({ id: u.id, name: u.name, email: u.email, role: u.role })) });
 });
 
-router.post('/credentials', orgAdminAuthMiddleware, (req, res) => {
-  const { loginId, password, linkedUserId } = req.body || {};
-  if (!loginId?.trim() || !password?.trim() || !linkedUserId) {
-    return res.status(400).json({
-      error: 'validation_error',
-      message: 'ログインID、パスワード、紐付けユーザーは必須です',
-    });
-  }
+router.post('/credentials', orgAdminAuthMiddleware, validateBody(createCredentialSchema), (req, res) => {
+  const { loginId, password, linkedUserId } = req.body;
 
   const user = findUserById(linkedUserId);
   if (!user) {
@@ -67,7 +63,7 @@ router.post('/credentials', orgAdminAuthMiddleware, (req, res) => {
   });
 });
 
-router.put('/credentials/:loginId', orgAdminAuthMiddleware, (req, res) => {
+router.put('/credentials/:loginId', orgAdminAuthMiddleware, validateBody(updateCredentialSchema), (req, res) => {
   const credentials = loadCredentials();
   const idx = credentials.findIndex((c) => getLoginId(c) === req.params.loginId);
   if (idx === -1) {

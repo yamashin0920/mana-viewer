@@ -47,6 +47,16 @@
       "externalId": null,
       "avatarUrl": null,
       "createdAt": "2025-04-01T00:00:00Z"
+    },
+    {
+      "id": "user-content-admin",
+      "orgId": "org-001",
+      "email": "content@tokyo-gakuen.example.jp",
+      "name": "コンテンツ管理者",
+      "role": "content_admin",
+      "externalId": null,
+      "avatarUrl": null,
+      "createdAt": "2025-04-01T00:00:00Z"
     }
   ],
   "groups": [
@@ -145,31 +155,6 @@
       },
       "createdAt": "2025-04-15T00:00:00Z",
       "updatedAt": "2025-04-15T00:00:00Z"
-    },
-    {
-      "id": "content-711216d9",
-      "orgId": "org-001",
-      "title": "E2E 表紙テスト 1786584949887",
-      "coverTitle": "CoverTest",
-      "author": "E2E",
-      "isbn": "",
-      "description": "",
-      "coverUrl": "https://placehold.co/200x280/png?text=CoverTest",
-      "pageCount": 1,
-      "fileSizeBytes": 0,
-      "category": "",
-      "tags": [],
-      "version": "1.0.0",
-      "status": "published",
-      "policy": {
-        "allowPrint": false,
-        "allowOffline": true,
-        "offlineDays": 30,
-        "maxDevices": 2,
-        "watermarkText": "{userName} - {date}"
-      },
-      "createdAt": "2026-08-13T01:35:49.988Z",
-      "updatedAt": "2026-08-13T01:35:49.988Z"
     }
   ],
   "contentToc": {
@@ -244,8 +229,7 @@
         "page": 55,
         "level": 1
       }
-    ],
-    "content-711216d9": []
+    ]
   },
   "licenses": [
     {

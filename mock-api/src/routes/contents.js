@@ -1,6 +1,7 @@
 const express = require('express');
 const { authMiddleware } = require('../middleware/auth');
 const { canAccessContent, paginate, watermarkText, generateMockChunk, uuidv4 } = require('../store');
+const { persist } = require('../persistence');
 
 const router = express.Router();
 
@@ -113,6 +114,22 @@ router.get('/:contentId/chunks/:page', authMiddleware, (req, res) => {
     });
   }
 
+  const session = req.store.viewSessions.find(
+    (s) => s.sessionToken === sessionToken && s.contentId === content.id && s.userId === req.user.id,
+  );
+  if (!session) {
+    return res.status(401).json({
+      error: 'invalid_session',
+      message: '閲覧セッションが無効です。view-sessions を再取得してください',
+    });
+  }
+  if (new Date(session.expiresAt) < new Date()) {
+    return res.status(401).json({
+      error: 'session_expired',
+      message: '閲覧セッションの有効期限が切れています',
+    });
+  }
+
   const page = Number(req.params.page);
   if (page < 1 || page > content.pageCount) {
     return res.status(400).json({ error: 'invalid_page', message: `ページは 1〜${content.pageCount} の範囲です` });
@@ -207,6 +224,7 @@ router.put('/:contentId/progress', authMiddleware, (req, res) => {
     req.store.progress.push(prog);
   }
 
+  persist(req.store, 'learner');
   res.json(prog);
 });
 

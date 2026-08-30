@@ -1,0 +1,10 @@
+{
+  "name": "@mana/dev-data",
+  "version": "0.1.0",
+  "private": true,
+  "description": "auth-api と mock-api が共有する開発用データへのアクセス層",
+  "main": "./index.cjs",
+  "exports": {
+    ".": "./index.cjs"
+  }
+}

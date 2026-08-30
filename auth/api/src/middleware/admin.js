@@ -1,4 +1,5 @@
 const { userIdForToken, findUserById, isAdminUser } = require('../store');
+const { isOrgAdminRole } = require('@mana/contracts/node');
 
 function adminAuthMiddleware(req, res, next) {
   const header = req.headers.authorization;
@@ -31,7 +32,7 @@ function adminAuthMiddleware(req, res, next) {
 
 function orgAdminAuthMiddleware(req, res, next) {
   adminAuthMiddleware(req, res, () => {
-    if (req.user.role !== 'org_admin') {
+    if (!isOrgAdminRole(req.user.role)) {
       return res.status(403).json({ error: 'forbidden', message: '組織管理者権限が必要です' });
     }
     next();
