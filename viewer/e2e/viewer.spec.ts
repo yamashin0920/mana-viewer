@@ -1,4 +1,4 @@
-import { test, expect, openFirstContent, waitForPdfRender, API_BASE, LEARNER_TOKEN } from './fixtures'
+import { test, expect, openFirstContent, setPage, waitForPdfRender, API_BASE, LEARNER_TOKEN } from './fixtures'
 
 test.describe('PDF ビューア', () => {
   test.beforeEach(async ({ page, request }) => {
@@ -23,24 +23,25 @@ test.describe('PDF ビューア', () => {
   })
 
   test('ページ送りができる', async ({ page }) => {
+    await setPage(page, 2)
     const pageInput = page.getByTestId('page-input')
-    const initial = Number(await pageInput.inputValue())
+
     await page.getByLabel('次のページ').click()
-    await expect(pageInput).toHaveValue(String(initial + 1))
+    await expect(pageInput).toHaveValue('3')
 
     await page.getByLabel('前のページ').click()
-    await expect(pageInput).toHaveValue(String(initial))
+    await expect(pageInput).toHaveValue('2')
   })
 
   test('キーボードでページ移動できる', async ({ page }) => {
+    await setPage(page, 2)
     const pageInput = page.getByTestId('page-input')
-    const initial = Number(await pageInput.inputValue())
 
     await page.keyboard.press('ArrowRight')
-    await expect(pageInput).toHaveValue(String(initial + 1))
+    await expect(pageInput).toHaveValue('3')
 
     await page.keyboard.press('ArrowLeft')
-    await expect(pageInput).toHaveValue(String(initial))
+    await expect(pageInput).toHaveValue('2')
   })
 
   test('ページ番号を直接入力できる', async ({ page }) => {

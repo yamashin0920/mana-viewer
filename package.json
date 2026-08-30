@@ -1,0 +1,18 @@
+{
+  "name": "mana-viewer-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "マナビューア (mana-viewer) のワークスペースルート",
+  "workspaces": [
+    "packages/*",
+    "viewer",
+    "admin/web",
+    "auth/api",
+    "auth/web",
+    "mock-api"
+  ],
+  "scripts": {
+    "dev": "./start-dev.sh",
+    "test:e2e": "npm run test:e2e --workspace=mana-viewer && npm run test:e2e --workspace=mana-viewer-admin-web && npm run test:e2e --workspace=mana-viewer-auth-web"
+  }
+}

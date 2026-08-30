@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, Search, X } from 'lucide-react'
-import { Button } from '../ui/Button'
+import { Button } from '@mana/ui'
 
 interface SearchBarProps {
   open: boolean

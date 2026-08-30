@@ -1,10 +1,12 @@
+import { useEffect, useState } from 'react'
 import { Bookmark, Highlighter, LayoutGrid, List, X } from 'lucide-react'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
+import { useFocusTrap } from '@mana/ui'
 import type { Annotation, TocEntry } from '../../types'
 import { TocSidebar } from './TocSidebar'
 import { ThumbnailSidebar } from './ThumbnailSidebar'
 import { AnnotationSidebar } from './AnnotationSidebar'
-import { Button } from '../ui/Button'
+import { Button } from '@mana/ui'
 
 type SidebarTab = 'thumbnails' | 'toc' | 'annotations'
 
@@ -138,17 +140,42 @@ export function MobileSidebarDrawer({
   onClose: () => void
   children: React.ReactNode
 }) {
+  const [panel, setPanel] = useState<HTMLDivElement | null>(null)
+
+  useFocusTrap(panel, open)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [open, onClose])
+
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-40 lg:hidden">
-      <button
-        type="button"
+      <div
         className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
         onClick={onClose}
-        aria-label="閉じる"
+        aria-hidden="true"
       />
-      <div className="animate-slide-up absolute bottom-0 left-0 right-0 top-16 rounded-t-2xl bg-white shadow-[var(--shadow-float)] dark:bg-slate-900" data-testid="mobile-sidebar-drawer">
+      <div
+        ref={setPanel}
+        role="dialog"
+        aria-modal="true"
+        aria-label="目次・注釈"
+        tabIndex={-1}
+        className="animate-slide-up absolute bottom-0 left-0 right-0 top-16 rounded-t-2xl bg-white shadow-[var(--shadow-float)] outline-none dark:bg-slate-900"
+        data-testid="mobile-sidebar-drawer"
+      >
+        <div className="flex justify-end px-3 pt-3">
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label="サイドバーを閉じる">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
         {children}
       </div>
     </div>

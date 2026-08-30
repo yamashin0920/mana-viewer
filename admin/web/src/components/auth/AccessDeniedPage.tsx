@@ -1,5 +1,5 @@
 import { ShieldX } from 'lucide-react'
-import { Button } from '../Button'
+import { Button } from '@mana/ui'
 import { useAuthStore } from '../../store/authStore'
 import { ROLE_LABELS } from '../../types'
 

@@ -119,6 +119,7 @@ export async function createLicense(data: {
   startsAt?: string
   expiresAt?: string
   allowOffline?: boolean
+  status?: string
   assignedUserIds?: string[]
 }) {
   return apiFetch<License>(MOCK_BASE, '/admin/licenses', {

@@ -1,6 +1,6 @@
 import { Highlighter, StickyNote, X } from 'lucide-react'
 import { HIGHLIGHT_COLORS } from '../../constants/highlightColors'
-import { Button } from '../ui/Button'
+import { Button } from '@mana/ui'
 
 interface SelectionToolbarProps {
   position: { x: number; y: number }

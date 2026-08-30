@@ -7,8 +7,7 @@ import {
   loginReturnUrl,
   loginWithCredentials,
 } from '../api/client'
-import { Button } from '../components/Button'
-import { ThemeToggle } from '../components/ThemeToggle'
+import { Button, ThemeToggle } from '@mana/ui'
 import { clearStoredAccessToken, getStoredAccessToken, persistAccessToken } from '../session'
 
 export function LoginPage() {
@@ -147,7 +146,11 @@ export function LoginPage() {
               </div>
 
               {formError && (
-                <p className="text-sm text-red-600 dark:text-red-400" data-testid="login-error">
+                <p
+                  className="text-sm text-red-600 dark:text-red-400"
+                  data-testid="login-error"
+                  role="alert"
+                >
                   {formError}
                 </p>
               )}

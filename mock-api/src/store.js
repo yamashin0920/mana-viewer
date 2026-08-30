@@ -36,6 +36,7 @@ function loadTokenMap() {
     'mock-token-learner': 'user-001',
     'mock-token-instructor': 'user-002',
     'mock-token-admin': 'user-admin',
+    'mock-token-content-admin': 'user-content-admin',
   };
 }
 

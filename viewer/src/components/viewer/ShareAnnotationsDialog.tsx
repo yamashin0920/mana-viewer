@@ -1,7 +1,6 @@
 import { Check, Copy, Link2 } from 'lucide-react'
 import { useState } from 'react'
-import { Modal } from '../ui/Modal'
-import { Button } from '../ui/Button'
+import { Button, Modal } from '@mana/ui'
 
 interface ShareAnnotationsDialogProps {
   open: boolean
@@ -58,8 +57,12 @@ export function ShareAnnotationsDialog({
             {annotationCount} 件の注釈を共有するリンクを作成しました。リンクを知っているユーザーは、同じ教材のライセンスを持っていれば注釈を閲覧できます。
           </p>
           <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-600 dark:bg-slate-800">
-            <Link2 className="h-4 w-4 shrink-0 text-brand-600" />
+            <Link2 className="h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
+            <label htmlFor="share-url-input" className="sr-only">
+              共有リンクの URL
+            </label>
             <input
+              id="share-url-input"
               type="text"
               readOnly
               value={shareUrl}

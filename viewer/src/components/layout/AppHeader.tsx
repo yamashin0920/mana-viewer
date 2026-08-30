@@ -1,8 +1,7 @@
 import { BookOpen, GraduationCap, LogOut } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { Badge } from '../ui/Badge'
-import { Button } from '../ui/Button'
-import { ThemeToggle } from '../ui/ThemeToggle'
+import { Button, ThemeToggle } from '@mana/ui'
 
 const AUTH_APP_URL = import.meta.env.VITE_AUTH_APP_URL || 'http://localhost:5180'
 

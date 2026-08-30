@@ -13,7 +13,8 @@ import {
   Underline,
 } from 'lucide-react'
 import type { Annotation } from '../../types'
-import { Button } from '../ui/Button'
+import { ANNOTATION_TYPE_LABELS } from '../../constants/annotationLabels'
+import { Button } from '@mana/ui'
 
 interface AnnotationSidebarProps {
   annotations: Annotation[]
@@ -33,32 +34,32 @@ const typeConfig: Record<
   { label: string; icon: React.ReactNode; accent: string }
 > = {
   highlight: {
-    label: 'マーカー',
+    label: ANNOTATION_TYPE_LABELS.highlight,
     icon: <Highlighter className="h-3.5 w-3.5" />,
     accent: 'border-l-yellow-400',
   },
   bookmark: {
-    label: 'ブックマーク',
+    label: ANNOTATION_TYPE_LABELS.bookmark,
     icon: <Bookmark className="h-3.5 w-3.5" />,
     accent: 'border-l-brand-400',
   },
   note: {
-    label: 'メモ',
+    label: ANNOTATION_TYPE_LABELS.note,
     icon: <StickyNote className="h-3.5 w-3.5" />,
     accent: 'border-l-orange-400',
   },
   underline: {
-    label: '下線',
+    label: ANNOTATION_TYPE_LABELS.underline,
     icon: <Underline className="h-3.5 w-3.5" />,
     accent: 'border-l-amber-400',
   },
   drawing: {
-    label: '描画',
+    label: ANNOTATION_TYPE_LABELS.drawing,
     icon: <PenLine className="h-3.5 w-3.5" />,
     accent: 'border-l-red-400',
   },
   sticky: {
-    label: '付箋',
+    label: ANNOTATION_TYPE_LABELS.sticky,
     icon: <StickyNote className="h-3.5 w-3.5" />,
     accent: 'border-l-yellow-500',
   },

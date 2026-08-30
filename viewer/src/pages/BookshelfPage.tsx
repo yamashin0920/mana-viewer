@@ -7,7 +7,7 @@ import { AppHeader } from '../components/layout/AppHeader'
 import { ContentCard } from '../components/bookshelf/ContentCard'
 import { RecentlyReadSection } from '../components/bookshelf/RecentlyReadSection'
 import { ContentCardSkeleton } from '../components/ui/Skeleton'
-import { EmptyState } from '../components/ui/EmptyState'
+import { EmptyState, SkipLink } from '@mana/ui'
 import { useAuthStore } from '../store/authStore'
 import type { Content } from '../types'
 
@@ -67,8 +67,9 @@ export function BookshelfPage() {
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950" data-testid="bookshelf-page">
+      <SkipLink />
       <AppHeader />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl px-4 py-8 outline-none sm:px-6">
         <div className="mb-8 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 p-6 text-white shadow-lg sm:p-8">
           <p className="text-sm font-medium text-indigo-200">{distributed?.name ?? '配布教材'}</p>
           <h2 className="mt-1 text-2xl font-bold sm:text-3xl">本棚</h2>
@@ -93,8 +94,15 @@ export function BookshelfPage() {
 
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <label htmlFor="bookshelf-search" className="sr-only">
+              教材を検索
+            </label>
+            <Search
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+              aria-hidden="true"
+            />
             <input
+              id="bookshelf-search"
               type="search"
               data-testid="search-input"
               placeholder="教材名・著者・タグで検索..."
@@ -103,14 +111,15 @@ export function BookshelfPage() {
               className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-900"
             />
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="カテゴリで絞り込み">
             {categories.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 data-testid={`category-filter-${cat}`}
+                aria-pressed={category === cat}
                 onClick={() => setCategory(cat)}
-                className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                className={`min-h-11 shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${
                   category === cat
                     ? 'bg-brand-600 text-white shadow-sm'
                     : 'bg-white text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'

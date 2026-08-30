@@ -28,5 +28,27 @@ export async function loginAsLearnerToAdmin(page: Page) {
   await page.waitForURL(/\/accounts/)
 }
 
+/** 共通ログイン画面経由でコンテンツ管理者として管理画面に入る（権限が限定されるロール） */
+export async function loginAsContentAdmin(page: Page) {
+  const returnUrl = encodeURIComponent(`${ADMIN_URL}/accounts`)
+  await page.goto(`${AUTH_WEB_URL}/login?redirect=${returnUrl}`)
+  await page.getByTestId('login-user-id').fill('content')
+  await page.getByTestId('login-password').fill('content')
+  await page.getByTestId('login-submit').click()
+  await page.waitForURL(/\/accounts/)
+  await expect(page.getByTestId('admin-layout')).toBeVisible()
+}
+
+export async function confirmDelete(page: Page) {
+  await expect(page.getByTestId('confirm-dialog')).toBeVisible()
+  await page.getByTestId('confirm-dialog-confirm').click()
+}
+
+export async function cancelDelete(page: Page) {
+  await expect(page.getByTestId('confirm-dialog')).toBeVisible()
+  await page.getByTestId('confirm-dialog-cancel').click()
+  await expect(page.getByTestId('confirm-dialog')).toBeHidden()
+}
+
 export const test = base
 export { expect }
