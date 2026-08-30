@@ -2,9 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { BookOpen, Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { createContent, deleteContent, fetchContents, updateContent } from '../api/client'
 import { Alert } from '../components/Alert'
-import { Button } from '../components/Button'
-import { EmptyState } from '../components/EmptyState'
+import { Button, EmptyState } from '@mana/ui'
 import { useAdminAction } from '../hooks/useAdminAction'
+import { useConfirm } from '../hooks/useConfirm'
 import { usePermissions } from '../hooks/usePermissions'
 import type { Content } from '../types'
 import { STATUS_LABELS } from '../types'
@@ -39,6 +39,7 @@ export function ContentsPage() {
   const canWrite = allows('contents:write')
   const canDelete = allows('contents:delete')
   const { submitting, feedback, setFeedback, run } = useAdminAction()
+  const { confirm, dialog: confirmDialog } = useConfirm()
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -108,12 +109,18 @@ export function ContentsPage() {
     await load()
   }
 
-  const handleDelete = async (content: Content) => {
-    if (!confirm(`「${content.title}」を削除しますか？関連ライセンスも削除されます。`)) return
-    const ok = await run(async () => {
-      await deleteContent(content.id)
-    }, `「${content.title}」を削除しました`)
-    if (ok) await load()
+  const handleDelete = (content: Content) => {
+    confirm({
+      title: 'コンテンツを削除',
+      message: `「${content.title}」を削除します。よろしいですか？`,
+      detail: '関連するライセンスもあわせて削除されます。',
+      onConfirm: async () => {
+        const ok = await run(async () => {
+          await deleteContent(content.id)
+        }, `「${content.title}」を削除しました`)
+        if (ok) await load()
+      },
+    })
   }
 
   const startEdit = (content: Content) => {
@@ -256,7 +263,7 @@ export function ContentsPage() {
 
       {contents.length === 0 ? (
         <EmptyState
-          icon={BookOpen}
+          icon={<BookOpen className="h-8 w-8" />}
           title="コンテンツがありません"
           description={
             canWrite
@@ -329,6 +336,8 @@ export function ContentsPage() {
       {!canDelete && contents.length > 0 && (
         <p className="text-xs text-slate-400">コンテンツの削除: {permissionHint('contents:delete')}</p>
       )}
+
+      {confirmDialog}
     </div>
   )
 }

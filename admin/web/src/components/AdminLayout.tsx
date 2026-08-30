@@ -1,7 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { BookOpen, KeyRound, LayoutDashboard, LogOut, Shield } from 'lucide-react'
-import { Button } from './Button'
-import { ThemeToggle } from './ThemeToggle'
+import { Button, ThemeToggle } from '@mana/ui'
 import type { User } from '../types'
 
 const navItems = [

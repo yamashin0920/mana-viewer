@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import type { Annotation } from '../../types'
 import { ANNOTATION_TYPE_LABELS } from '../../constants/annotationLabels'
-import { Button } from '../ui/Button'
+import { Button } from '@mana/ui'
 
 interface AnnotationSidebarProps {
   annotations: Annotation[]

@@ -1,5 +1,5 @@
 import { Highlighter, MousePointer2, PenLine, StickyNote } from 'lucide-react'
-import { Button } from '../ui/Button'
+import { Button } from '@mana/ui'
 import { HIGHLIGHT_COLORS } from '../../constants/highlightColors'
 import { PEN_COLORS } from '../../constants/penColors'
 import type { AnnotationTool } from '../../types/annotationTools'

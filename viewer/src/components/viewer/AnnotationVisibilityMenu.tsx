@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Eye, EyeOff } from 'lucide-react'
-import { Button } from '../ui/Button'
+import { Button } from '@mana/ui'
 import {
   ANNOTATION_VISIBILITY_LABELS,
   ANNOTATION_VISIBILITY_TYPES,

@@ -1,5 +1,4 @@
-import { Modal } from '../ui/Modal'
-import { Button } from '../ui/Button'
+import { Button, Modal } from '@mana/ui'
 import { HIGHLIGHT_COLORS } from '../../constants/highlightColors'
 import { PEN_COLORS } from '../../constants/penColors'
 import type { Annotation } from '../../types'

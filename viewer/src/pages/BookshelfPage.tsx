@@ -7,7 +7,7 @@ import { AppHeader } from '../components/layout/AppHeader'
 import { ContentCard } from '../components/bookshelf/ContentCard'
 import { RecentlyReadSection } from '../components/bookshelf/RecentlyReadSection'
 import { ContentCardSkeleton } from '../components/ui/Skeleton'
-import { EmptyState } from '../components/ui/EmptyState'
+import { EmptyState } from '@mana/ui'
 import { useAuthStore } from '../store/authStore'
 import type { Content } from '../types'
 

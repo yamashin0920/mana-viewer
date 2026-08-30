@@ -9,9 +9,9 @@ import {
   updateLicense,
 } from '../api/client'
 import { Alert } from '../components/Alert'
-import { Button } from '../components/Button'
-import { EmptyState } from '../components/EmptyState'
+import { Button, EmptyState } from '@mana/ui'
 import { useAdminAction } from '../hooks/useAdminAction'
+import { useConfirm } from '../hooks/useConfirm'
 import { usePermissions } from '../hooks/usePermissions'
 import type { AdminUser, Content, License } from '../types'
 import { STATUS_LABELS } from '../types'
@@ -33,6 +33,7 @@ export function LicensesPage() {
   const allows = usePermissions()
   const canWrite = allows('licenses:write')
   const { submitting, feedback, setFeedback, run } = useAdminAction()
+  const { confirm, dialog: confirmDialog } = useConfirm()
 
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<License | null>(null)
@@ -138,13 +139,19 @@ export function LicensesPage() {
     await load()
   }
 
-  const handleDelete = async (license: License) => {
+  const handleDelete = (license: License) => {
     const title = license.content?.title ?? license.contentId
-    if (!confirm(`「${title}」のライセンスを削除しますか？`)) return
-    const ok = await run(async () => {
-      await deleteLicense(license.id)
-    }, `「${title}」のライセンスを削除しました`)
-    if (ok) await load()
+    confirm({
+      title: 'ライセンスを削除',
+      message: `「${title}」のライセンスを削除します。よろしいですか？`,
+      detail: '割り当て済みのユーザーはこの教材を閲覧できなくなります。',
+      onConfirm: async () => {
+        const ok = await run(async () => {
+          await deleteLicense(license.id)
+        }, `「${title}」のライセンスを削除しました`)
+        if (ok) await load()
+      },
+    })
   }
 
   const startEdit = (license: License) => {
@@ -311,7 +318,7 @@ export function LicensesPage() {
 
       {licenses.length === 0 ? (
         <EmptyState
-          icon={Shield}
+          icon={<Shield className="h-8 w-8" />}
           title="ライセンスがありません"
           description={
             canWrite
@@ -375,6 +382,8 @@ export function LicensesPage() {
         </table>
       </div>
       )}
+
+      {confirmDialog}
     </div>
   )
 }

@@ -26,8 +26,9 @@
 | `viewer` | 5173 | 学習者向け PDF ビューア |
 | `admin/web` | 5190 | 管理画面 |
 | `mock-api` | 3001 | 業務 API のモック（Express + seed.json） |
+| `packages/ui` | — | 3 つのフロントエンドで共有する UI プリミティブとデザイントークン |
 
-`./start-dev.sh` で一括起動します。
+npm workspaces による単一リポジトリです。依存関係はルートで一度インストールし、`./start-dev.sh` で一括起動します。
 
 **技術スタック**: React 18 + Vite + TypeScript / PDF.js / TanStack Query / Zustand / Dexie / Tailwind CSS v4 / Express（モック） / Playwright
 

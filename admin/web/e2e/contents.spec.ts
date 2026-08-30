@@ -37,8 +37,9 @@ test.describe('コンテンツ管理', () => {
     await expect(card.locator(`img[src*="${coverTitle}"]`)).toBeVisible()
 
     // 後続の実行で seed に残らないよう後片付けする
-    page.once('dialog', (dialog) => dialog.accept())
     await card.getByRole('button', { name: '削除' }).click()
+    await expect(page.getByTestId('confirm-dialog')).toBeVisible()
+    await page.getByTestId('confirm-dialog-confirm').click()
     await expect(page.getByTestId('alert-success')).toContainText(`「${title}」を削除しました`)
   })
 })

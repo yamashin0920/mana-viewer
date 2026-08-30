@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Bookmark, Highlighter, LayoutGrid, List, X } from 'lucide-react'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
-import { useFocusTrap } from '../../hooks/useFocusTrap'
+import { useFocusTrap } from '@mana/ui'
 import type { Annotation, TocEntry } from '../../types'
 import { TocSidebar } from './TocSidebar'
 import { ThumbnailSidebar } from './ThumbnailSidebar'
 import { AnnotationSidebar } from './AnnotationSidebar'
-import { Button } from '../ui/Button'
+import { Button } from '@mana/ui'
 
 type SidebarTab = 'thumbnails' | 'toc' | 'annotations'
 

@@ -10,8 +10,7 @@ import {
   Square,
   StickyNote,
 } from 'lucide-react'
-import { Button } from '../ui/Button'
-import { ThemeToggle } from '../ui/ThemeToggle'
+import { Button, ThemeToggle } from '@mana/ui'
 import { SearchBar } from './SearchBar'
 import { AnnotationTools } from './AnnotationTools'
 import { AnnotationVisibilityMenu } from './AnnotationVisibilityMenu'

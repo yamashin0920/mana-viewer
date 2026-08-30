@@ -13,6 +13,7 @@
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
+    "@mana/ui": "*",
     "@tanstack/react-query": "^5.101.4",
     "dexie": "^4.4.4",
     "lucide-react": "^1.31.0",

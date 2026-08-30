@@ -1,15 +1,15 @@
 import { Moon, Sun } from 'lucide-react'
-import { useThemeStore } from '../../store/themeStore'
 import { Button } from './Button'
+import { toggleTheme, useTheme } from './theme'
 
 export function ThemeToggle() {
-  const { theme, toggle } = useThemeStore()
+  const theme = useTheme()
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={toggle}
+      onClick={toggleTheme}
       data-testid="theme-toggle"
       aria-label={theme === 'light' ? 'ダークモードに切替' : 'ライトモードに切替'}
       title={theme === 'light' ? 'ダークモード' : 'ライトモード'}

@@ -87,9 +87,10 @@ test.describe('管理画面のエラー表示', () => {
     await expect(page.getByTestId('users-table')).toContainText(name)
 
     // 後続の実行で seed に残らないよう後片付けする
-    page.once('dialog', (dialog) => dialog.accept())
     await page.getByTestId('users-table').locator('tr').filter({ hasText: name })
       .getByRole('button').last().click()
+    await expect(page.getByTestId('confirm-dialog')).toBeVisible()
+    await page.getByTestId('confirm-dialog-confirm').click()
     await expect(page.getByTestId('alert-success')).toContainText(`「${name}」を削除しました`)
   })
 })

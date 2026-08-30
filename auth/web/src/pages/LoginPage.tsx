@@ -7,8 +7,7 @@ import {
   loginReturnUrl,
   loginWithCredentials,
 } from '../api/client'
-import { Button } from '../components/Button'
-import { ThemeToggle } from '../components/ThemeToggle'
+import { Button, ThemeToggle } from '@mana/ui'
 import { clearStoredAccessToken, getStoredAccessToken, persistAccessToken } from '../session'
 
 export function LoginPage() {

@@ -14,30 +14,38 @@ B2B 向け PDF 学習プラットフォーム。
 
 - **機能を実装したら Playwright テストを追加する** — [.cursor/rules/playwright-tests.mdc](.cursor/rules/playwright-tests.mdc)
 
-## Mock API
+## 構成
 
-ビューア開発用のモック API は [`mock-api/`](mock-api/README.md) にあります。
+npm workspaces による単一リポジトリです。依存関係はリポジトリルートで一度インストールします。
+
+| パッケージ | ポート | 役割 |
+|---|---|---|
+| [`auth/api`](auth/README.md) | 3002 | 認証 API |
+| [`auth/web`](auth/README.md) | 5180 | 共通ログイン画面 |
+| [`viewer`](viewer/README.md) | 5173 | 学習者向け PDF ビューア |
+| [`admin/web`](admin/web) | 5190 | 管理画面 |
+| [`mock-api`](mock-api/README.md) | 3001 | 業務 API のモック |
+| [`packages/ui`](packages/ui/README.md) | — | 3 つのフロントエンドで共有する UI プリミティブとデザイントークン |
+
+## 起動
 
 ```bash
-cd mock-api && npm install && npm start
-# → http://localhost:3001
+npm install     # ルートで一度だけ（全ワークスペース分）
+./start-dev.sh  # 全サービスを起動
 ```
 
-## Viewer（React + PDF.js）
-
-PDF ビューアアプリは [`viewer/`](viewer/README.md) にあります。
+個別に起動する場合:
 
 ```bash
-# 1. mock-api を起動
-cd mock-api && npm start
-
-# 2. 別ターミナルで viewer を起動
-cd viewer && npm install && npm run dev
-# → http://localhost:5173
+cd mock-api && npm start     # → http://localhost:3001
+cd viewer && npm run dev     # → http://localhost:5173
 ```
 
 ## テスト
 
 ```bash
-cd viewer && npm run test:e2e
+npm run test:e2e                  # 全アプリ
+npm run test:e2e -w mana-viewer   # ビューアのみ
 ```
+
+各アプリの Playwright 設定が必要なサーバーを自動起動します。

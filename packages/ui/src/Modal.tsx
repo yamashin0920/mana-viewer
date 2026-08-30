@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from 'react'
 import { X } from 'lucide-react'
 import { Button } from './Button'
-import { useFocusTrap } from '../../hooks/useFocusTrap'
+import { useFocusTrap } from './useFocusTrap'
 
 interface ModalProps {
   open: boolean

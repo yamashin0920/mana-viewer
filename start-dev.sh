@@ -106,12 +106,11 @@ wait_for_auth_api() {
   exit 1
 }
 
+# npm workspaces のためインストールはリポジトリルートで一度だけ行う
 ensure_deps() {
-  local dir="$1"
-  local name="$2"
-  if [[ ! -d "$dir/node_modules" ]]; then
-    echo "[$name] npm install を実行中..."
-    (cd "$dir" && npm install)
+  if [[ ! -d "$ROOT/node_modules" ]]; then
+    echo "npm install を実行中（ワークスペース全体）..."
+    (cd "$ROOT" && npm install)
   fi
 }
 
@@ -140,11 +139,7 @@ kill_port "$AUTH_WEB_PORT" "Auth Web"
 kill_port "$ADMIN_WEB_PORT" "Admin Web"
 kill_port "$VIEWER_PORT" "Viewer"
 
-ensure_deps "$ROOT/auth/api" "auth-api"
-ensure_deps "$ROOT/auth/web" "auth-web"
-ensure_deps "$ROOT/admin/web" "admin-web"
-ensure_deps "$ROOT/mock-api" "mock-api"
-ensure_deps "$ROOT/viewer" "viewer"
+ensure_deps
 
 echo "Auth API を起動中... (http://localhost:${AUTH_API_PORT})"
 (

@@ -13,8 +13,9 @@ import {
   updateUserLicenses,
 } from '../api/client'
 import { Alert } from '../components/Alert'
-import { Button } from '../components/Button'
+import { Button } from '@mana/ui'
 import { useAdminAction } from '../hooks/useAdminAction'
+import { useConfirm } from '../hooks/useConfirm'
 import { usePermissions } from '../hooks/usePermissions'
 import type { AdminUser, CredentialAccount, License, UserRole } from '../types'
 import { ROLE_LABELS } from '../types'
@@ -33,6 +34,7 @@ export function AccountsPage() {
   const canWriteCredentials = allows('credentials:write')
   const canWriteUsers = allows('users:write')
   const { submitting, feedback, setFeedback, run } = useAdminAction()
+  const { confirm, dialog: confirmDialog } = useConfirm()
 
   const [showUserForm, setShowUserForm] = useState(false)
   const [showCredForm, setShowCredForm] = useState(false)
@@ -106,12 +108,18 @@ export function AccountsPage() {
     await load()
   }
 
-  const handleDeleteUser = async (user: AdminUser) => {
-    if (!confirm(`「${user.name}」を削除しますか？`)) return
-    const ok = await run(async () => {
-      await deleteUser(user.id)
-    }, `「${user.name}」を削除しました`)
-    if (ok) await load()
+  const handleDeleteUser = (user: AdminUser) => {
+    confirm({
+      title: 'ユーザーを削除',
+      message: `「${user.name}」を削除します。よろしいですか？`,
+      detail: 'ライセンスの割当も解除されます。',
+      onConfirm: async () => {
+        const ok = await run(async () => {
+          await deleteUser(user.id)
+        }, `「${user.name}」を削除しました`)
+        if (ok) await load()
+      },
+    })
   }
 
   const validateCredForm = (isEdit: boolean) => {
@@ -155,12 +163,18 @@ export function AccountsPage() {
     await load()
   }
 
-  const handleDeleteCredential = async (cred: CredentialAccount) => {
-    if (!confirm(`ログインID「${cred.loginId}」を削除しますか？`)) return
-    const ok = await run(async () => {
-      await deleteCredential(cred.loginId)
-    }, `ログインID「${cred.loginId}」を削除しました`)
-    if (ok) await load()
+  const handleDeleteCredential = (cred: CredentialAccount) => {
+    confirm({
+      title: 'ログインアカウントを削除',
+      message: `ログインID「${cred.loginId}」を削除します。よろしいですか？`,
+      detail: 'このIDではログインできなくなります。ユーザー自体は残ります。',
+      onConfirm: async () => {
+        const ok = await run(async () => {
+          await deleteCredential(cred.loginId)
+        }, `ログインID「${cred.loginId}」を削除しました`)
+        if (ok) await load()
+      },
+    })
   }
 
   const startEditLicenses = (user: AdminUser) => {
@@ -470,6 +484,8 @@ export function AccountsPage() {
           </div>
         )}
       </section>
+
+      {confirmDialog}
     </div>
   )
 }
