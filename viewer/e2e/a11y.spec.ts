@@ -93,6 +93,54 @@ test.describe('トーストのアクセシビリティ', () => {
   })
 })
 
+test.describe('操作要素のアクセシブルな名前', () => {
+  test('本棚の検索欄とカテゴリ絞り込みに名前がある', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByTestId('bookshelf-page')).toBeVisible()
+
+    await expect(page.getByLabel('教材を検索')).toBeVisible()
+    await expect(page.getByRole('group', { name: 'カテゴリで絞り込み' })).toBeVisible()
+    await expect(page.getByTestId('category-filter-all')).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  test('サムネイルボタンにページ番号の名前がある', async ({ page }) => {
+    await openFirstContent(page)
+    await page.getByTestId('desktop-sidebar').getByTestId('sidebar-tab-thumbnails').click()
+
+    await expect(page.getByRole('button', { name: '3 ページ目へ移動', exact: true })).toBeVisible()
+  })
+
+  test('ダイアログの入力欄にラベルがある', async ({ page }) => {
+    await openFirstContent(page)
+    await page.getByLabel('メモ追加').click()
+
+    await expect(page.getByTestId('modal').getByLabel('メモの内容')).toBeVisible()
+  })
+
+  test('共有 Button にフォーカスリングの指定がある', async ({ page }) => {
+    await openFirstContent(page)
+
+    // :focus-visible はキーボード操作でしか発火しないため、指定の有無で検証する
+    await expect(page.getByLabel('メモ追加')).toHaveClass(/focus-visible:ring-2/)
+    await expect(page.getByLabel('前のページ')).toHaveClass(/focus-visible:ring-2/)
+  })
+})
+
+test.describe('スキップリンク', () => {
+  test('Tab で本文へのスキップリンクが現れ、本文へ移動できる', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByTestId('bookshelf-page')).toBeVisible()
+
+    await page.keyboard.press('Tab')
+    const skip = page.getByTestId('skip-link')
+    await expect(skip).toBeFocused()
+
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#main-content')).toBeVisible()
+    expect(page.url()).toContain('#main-content')
+  })
+})
+
 test.describe('モバイルドロワーのアクセシビリティ', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 

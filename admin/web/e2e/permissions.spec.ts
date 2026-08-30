@@ -69,8 +69,8 @@ test.describe('管理画面のエラー表示', () => {
     })
 
     await page.getByTestId('user-add-button').click()
-    await page.locator('input[placeholder="名前"]').fill('E2E ユーザー')
-    await page.locator('input[placeholder="メールアドレス"]').fill('dup@example.com')
+    await page.getByTestId('user-name').fill('E2E ユーザー')
+    await page.getByTestId('user-email').fill('dup@example.com')
     await page.getByTestId('user-submit').click()
 
     await expect(page.getByTestId('alert-error')).toContainText('メールアドレスが重複しています')
@@ -79,8 +79,8 @@ test.describe('管理画面のエラー表示', () => {
   test('作成に成功したら成功メッセージを表示する', async ({ page }) => {
     const name = `E2E ユーザー ${Date.now()}`
     await page.getByTestId('user-add-button').click()
-    await page.locator('input[placeholder="名前"]').fill(name)
-    await page.locator('input[placeholder="メールアドレス"]').fill(`e2e-${Date.now()}@example.com`)
+    await page.getByTestId('user-name').fill(name)
+    await page.getByTestId('user-email').fill(`e2e-${Date.now()}@example.com`)
     await page.getByTestId('user-submit').click()
 
     await expect(page.getByTestId('alert-success')).toContainText(`「${name}」を作成しました`)

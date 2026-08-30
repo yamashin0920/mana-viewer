@@ -28,6 +28,25 @@ test.describe('共有 UI', () => {
     await expect(page.getByTestId('users-table')).toContainText(name)
   })
 
+  test('アイコンのみのボタンとフォームに名前がある', async ({ page }) => {
+    const row = page.getByTestId('users-table').locator('tbody tr').first()
+    const name = (await row.locator('td').first().innerText()).trim()
+
+    await expect(row.getByRole('button', { name: `${name} を編集` })).toBeVisible()
+    await expect(row.getByRole('button', { name: `${name} を削除` })).toBeVisible()
+    await expect(row.getByRole('button', { name: `${name} のライセンス割当` })).toBeVisible()
+
+    await page.getByTestId('user-add-button').click()
+    await expect(page.getByLabel('名前')).toBeVisible()
+    await expect(page.getByLabel('メールアドレス')).toBeVisible()
+    await expect(page.getByLabel('ロール')).toBeVisible()
+  })
+
+  test('Tab で本文へのスキップリンクが現れる', async ({ page }) => {
+    await page.keyboard.press('Tab')
+    await expect(page.getByTestId('skip-link')).toBeFocused()
+  })
+
   test('テーマ切替がリロード後も保持される', async ({ page }) => {
     const html = page.locator('html')
     await expect(html).not.toHaveClass(/dark/)

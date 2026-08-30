@@ -43,7 +43,9 @@ export function PdfThumbnail({ pdfDoc, pageNumber, isActive, onClick }: PdfThumb
       type="button"
       data-testid={`thumbnail-page-${pageNumber}`}
       onClick={onClick}
-      className={`group flex w-full flex-col items-stretch rounded-xl border-2 p-1.5 transition ${
+      aria-label={`${pageNumber} ページ目へ移動`}
+      aria-current={isActive ? 'page' : undefined}
+      className={`group flex w-full flex-col items-stretch rounded-xl border-2 p-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${
         isActive
           ? 'border-brand-500 bg-brand-50 shadow-sm dark:border-brand-400 dark:bg-brand-950/40'
           : 'border-transparent bg-slate-50 hover:border-slate-200 hover:bg-white dark:bg-slate-800/60 dark:hover:border-slate-600 dark:hover:bg-slate-800'

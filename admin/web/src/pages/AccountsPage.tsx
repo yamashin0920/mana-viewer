@@ -13,7 +13,7 @@ import {
   updateUserLicenses,
 } from '../api/client'
 import { Alert } from '../components/Alert'
-import { Button } from '@mana/ui'
+import { Button, Field } from '@mana/ui'
 import { useAdminAction } from '../hooks/useAdminAction'
 import { useConfirm } from '../hooks/useConfirm'
 import { usePermissions } from '../hooks/usePermissions'
@@ -262,14 +262,50 @@ export function AccountsPage() {
           <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
             <h3 className="mb-3 text-sm font-medium">{editingCred ? 'ログインアカウント編集' : '新規ログインアカウント'}</h3>
             <div className="grid gap-3 sm:grid-cols-3">
-              <input className={inputClass} placeholder="ログインID" value={credForm.loginId} onChange={(e) => setCredForm({ ...credForm, loginId: e.target.value })} />
-              <input className={inputClass} type="password" placeholder={editingCred ? 'パスワード（変更時のみ）' : 'パスワード'} value={credForm.password} onChange={(e) => setCredForm({ ...credForm, password: e.target.value })} />
-              <select className={inputClass} value={credForm.linkedUserId} onChange={(e) => setCredForm({ ...credForm, linkedUserId: e.target.value })}>
-                <option value="">紐付けユーザーを選択</option>
-                {(editingCred ? users : usersWithoutCredential).map((u) => (
-                  <option key={u.id} value={u.id}>{u.name} ({ROLE_LABELS[u.role]})</option>
-                ))}
-              </select>
+              <Field label="ログインID" required>
+                {(id) => (
+                  <input
+                    id={id}
+                    className={inputClass}
+                    data-testid="credential-login-id"
+                    value={credForm.loginId}
+                    onChange={(e) => setCredForm({ ...credForm, loginId: e.target.value })}
+                  />
+                )}
+              </Field>
+              <Field
+                label="パスワード"
+                required={!editingCred}
+                hint={editingCred ? '変更する場合のみ入力してください' : undefined}
+              >
+                {(id) => (
+                  <input
+                    id={id}
+                    className={inputClass}
+                    type="password"
+                    autoComplete="new-password"
+                    data-testid="credential-password"
+                    value={credForm.password}
+                    onChange={(e) => setCredForm({ ...credForm, password: e.target.value })}
+                  />
+                )}
+              </Field>
+              <Field label="紐付けユーザー" required={!editingCred}>
+                {(id) => (
+                  <select
+                    id={id}
+                    className={inputClass}
+                    data-testid="credential-linked-user"
+                    value={credForm.linkedUserId}
+                    onChange={(e) => setCredForm({ ...credForm, linkedUserId: e.target.value })}
+                  >
+                    <option value="">選択してください</option>
+                    {(editingCred ? users : usersWithoutCredential).map((u) => (
+                      <option key={u.id} value={u.id}>{u.name} ({ROLE_LABELS[u.role]})</option>
+                    ))}
+                  </select>
+                )}
+              </Field>
             </div>
             <div className="mt-3 flex gap-2">
               <Button
@@ -311,8 +347,8 @@ export function AccountsPage() {
                     {canWriteCredentials && (
                       <td className="px-4 py-3">
                         <div className="flex gap-1">
-                          <Button size="sm" variant="ghost" onClick={() => startEditCred(cred)}><Pencil className="h-3.5 w-3.5" /></Button>
-                          <Button size="sm" variant="ghost" disabled={submitting} onClick={() => handleDeleteCredential(cred)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
+                          <Button size="sm" variant="ghost" aria-label={`${cred.loginId} を編集`} onClick={() => startEditCred(cred)}><Pencil className="h-3.5 w-3.5" /></Button>
+                          <Button size="sm" variant="ghost" aria-label={`${cred.loginId} を削除`} disabled={submitting} onClick={() => handleDeleteCredential(cred)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
                         </div>
                       </td>
                     )}
@@ -348,13 +384,44 @@ export function AccountsPage() {
           <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
             <h3 className="mb-3 text-sm font-medium">{editingUser ? 'ユーザー編集' : '新規ユーザー'}</h3>
             <div className="grid gap-3 sm:grid-cols-3">
-              <input className={inputClass} placeholder="名前" value={userForm.name} onChange={(e) => setUserForm({ ...userForm, name: e.target.value })} />
-              <input className={inputClass} placeholder="メールアドレス" value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} />
-              <select className={inputClass} value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value as UserRole })}>
-                {Object.entries(ROLE_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
+              <Field label="名前" required>
+                {(id) => (
+                  <input
+                    id={id}
+                    className={inputClass}
+                    data-testid="user-name"
+                    value={userForm.name}
+                    onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                  />
+                )}
+              </Field>
+              <Field label="メールアドレス" required>
+                {(id) => (
+                  <input
+                    id={id}
+                    className={inputClass}
+                    type="email"
+                    data-testid="user-email"
+                    value={userForm.email}
+                    onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                  />
+                )}
+              </Field>
+              <Field label="ロール">
+                {(id) => (
+                  <select
+                    id={id}
+                    className={inputClass}
+                    data-testid="user-role"
+                    value={userForm.role}
+                    onChange={(e) => setUserForm({ ...userForm, role: e.target.value as UserRole })}
+                  >
+                    {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                )}
+              </Field>
             </div>
             <div className="mt-3 flex gap-2">
               <Button
@@ -414,12 +481,13 @@ export function AccountsPage() {
                           variant="ghost"
                           data-testid={`user-licenses-${user.id}`}
                           onClick={() => startEditLicenses(user)}
+                          aria-label={`${user.name} のライセンス割当`}
                           title="ライセンス割当"
                         >
                           <KeyRound className="h-3.5 w-3.5" />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => startEditUser(user)}><Pencil className="h-3.5 w-3.5" /></Button>
-                        <Button size="sm" variant="ghost" disabled={submitting} onClick={() => handleDeleteUser(user)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
+                        <Button size="sm" variant="ghost" aria-label={`${user.name} を編集`} onClick={() => startEditUser(user)}><Pencil className="h-3.5 w-3.5" /></Button>
+                        <Button size="sm" variant="ghost" aria-label={`${user.name} を削除`} disabled={submitting} onClick={() => handleDeleteUser(user)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
                       </div>
                     </td>
                   )}

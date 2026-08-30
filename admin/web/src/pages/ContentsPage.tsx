@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { BookOpen, Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { createContent, deleteContent, fetchContents, updateContent } from '../api/client'
 import { Alert } from '../components/Alert'
-import { Button, EmptyState } from '@mana/ui'
+import { Button, EmptyState, Field } from '@mana/ui'
 import { useAdminAction } from '../hooks/useAdminAction'
 import { useConfirm } from '../hooks/useConfirm'
 import { usePermissions } from '../hooks/usePermissions'
@@ -179,7 +179,9 @@ export function ContentsPage() {
           <h3 className="mb-3 text-sm font-medium">{editing ? 'コンテンツ編集' : '新規コンテンツ'}</h3>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <label className="mb-1 block text-xs text-slate-500" htmlFor="content-title">タイトル *</label>
+              <label className="mb-1 block text-xs text-slate-500 dark:text-slate-400" htmlFor="content-title">
+                タイトル<span className="ml-0.5 text-red-500" aria-hidden="true">*</span>
+              </label>
               <input
                 id="content-title"
                 className={inputClass}
@@ -188,44 +190,52 @@ export function ContentsPage() {
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
               />
             </div>
+            <Field
+              label="表紙用タイトル"
+              hint="サムネイル画像に表示する短い文字列。英数字推奨（最大10文字）。"
+            >
+              {(id) => (
+                <input
+                  id={id}
+                  className={inputClass}
+                  data-testid="cover-title-input"
+                  value={form.coverTitle}
+                  onChange={(e) => setForm({ ...form, coverTitle: e.target.value })}
+                  placeholder="例: Math I（空欄ならタイトルを使用）"
+                />
+              )}
+            </Field>
             <div>
-              <label className="mb-1 block text-xs text-slate-500">表紙用タイトル</label>
-              <input
-                className={inputClass}
-                data-testid="cover-title-input"
-                value={form.coverTitle}
-                onChange={(e) => setForm({ ...form, coverTitle: e.target.value })}
-                placeholder="例: Math I（空欄ならタイトルを使用）"
-              />
-              <p className="mt-1 text-xs text-slate-400">サムネイル画像に表示する短い文字列。英数字推奨（最大10文字）。</p>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-500" htmlFor="content-author">著者</label>
+              <label className="mb-1 block text-xs text-slate-500 dark:text-slate-400" htmlFor="content-author">著者</label>
               <input id="content-author" className={inputClass} value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} />
             </div>
+            <Field label="カテゴリ">
+              {(id) => (
+                <input id={id} className={inputClass} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+              )}
+            </Field>
+            <Field label="ページ数" required>
+              {(id) => (
+                <input id={id} className={inputClass} type="number" min={1} value={form.pageCount} onChange={(e) => setForm({ ...form, pageCount: Number(e.target.value) })} />
+              )}
+            </Field>
             <div>
-              <label className="mb-1 block text-xs text-slate-500">カテゴリ</label>
-              <input className={inputClass} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-500">ページ数</label>
-              <input className={inputClass} type="number" min={1} value={form.pageCount} onChange={(e) => setForm({ ...form, pageCount: Number(e.target.value) })} />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-500" htmlFor="content-status">ステータス</label>
+              <label className="mb-1 block text-xs text-slate-500 dark:text-slate-400" htmlFor="content-status">ステータス</label>
               <select id="content-status" className={inputClass} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
                 {Object.entries(STATUS_LABELS).filter(([k]) => ['published', 'draft', 'archived'].includes(k)).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
               </select>
             </div>
-            <div className="sm:col-span-2 lg:col-span-3">
-              <label className="mb-1 block text-xs text-slate-500">説明</label>
-              <textarea className={inputClass} rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-            </div>
+            <Field label="説明" className="sm:col-span-2 lg:col-span-3">
+              {(id) => (
+                <textarea id={id} className={inputClass} rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              )}
+            </Field>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-4">
+          <fieldset className="mt-4 flex flex-wrap gap-4">
+            <legend className="sr-only">DRM ポリシー</legend>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={form.allowPrint} onChange={(e) => setForm({ ...form, allowPrint: e.target.checked })} />
               印刷許可
@@ -242,7 +252,7 @@ export function ContentsPage() {
               最大端末数
               <input className="w-16 rounded border border-slate-200 px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800" type="number" min={1} value={form.maxDevices} onChange={(e) => setForm({ ...form, maxDevices: Number(e.target.value) })} />
             </label>
-          </div>
+          </fieldset>
 
           <div className="mt-4 flex gap-2">
             <Button
@@ -281,7 +291,11 @@ export function ContentsPage() {
           >
             <div className="flex gap-3 p-4">
               {content.coverUrl && (
-                <img src={content.coverUrl} alt="" className="h-20 w-14 shrink-0 rounded object-cover" />
+                <img
+                  src={content.coverUrl}
+                  alt={`${content.title} の表紙`}
+                  className="h-20 w-14 shrink-0 rounded object-cover"
+                />
               )}
               <div className="min-w-0 flex-1">
                 <h3 className="truncate font-medium text-slate-900 dark:text-slate-100">{content.title}</h3>

@@ -26,7 +26,7 @@ import { NoteDialog } from '../components/viewer/NoteDialog'
 import { EditAnnotationDialog } from '../components/viewer/EditAnnotationDialog'
 import { StickyNoteDialog } from '../components/viewer/StickyNoteDialog'
 import { ShareAnnotationsDialog } from '../components/viewer/ShareAnnotationsDialog'
-import { Button, ConfirmDialog, EmptyState } from '@mana/ui'
+import { Button, ConfirmDialog, EmptyState, SkipLink } from '@mana/ui'
 import { toast } from '../components/ui/Toast'
 import { annotationTypeLabel } from '../constants/annotationLabels'
 import { DEFAULT_HIGHLIGHT_COLOR } from '../constants/highlightColors'
@@ -91,7 +91,7 @@ export function ViewerPage() {
   const [noteMode, setNoteMode] = useState<'page' | 'selection'>('page')
   const [editingAnnotation, setEditingAnnotation] = useState<Annotation | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Annotation | null>(null)
-  const [pdfScrollEl, setPdfScrollEl] = useState<HTMLDivElement | null>(null)
+  const [pdfScrollEl, setPdfScrollEl] = useState<HTMLElement | null>(null)
   const [editNote, setEditNote] = useState('')
   const [editColor, setEditColor] = useState<string>(DEFAULT_HIGHLIGHT_COLOR)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -765,6 +765,7 @@ export function ViewerPage() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-slate-200/70 dark:bg-slate-950" data-testid="viewer-page">
+      <SkipLink />
       {sharedBundle && sharedBundle.annotations.length > 0 && (
         <div
           className="border-b border-sky-200 bg-sky-50 px-4 py-2 text-center text-sm text-sky-800 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-200"
@@ -835,12 +836,14 @@ export function ViewerPage() {
           />
         </aside>
 
-        <div
+        <main
+          id="main-content"
+          tabIndex={-1}
           ref={setPdfScrollEl}
           data-testid="pdf-scroll-area"
           // touch-action で標準のピンチズームを止め、usePinchZoom 側で拡大率を制御する
           style={{ touchAction: 'pan-x pan-y' }}
-          className="custom-scrollbar flex-1 overflow-auto p-4 sm:p-6"
+          className="custom-scrollbar flex-1 overflow-auto p-4 outline-none sm:p-6"
         >
           <div className={`mx-auto flex min-h-full justify-center ${viewMode === 'spread' ? 'max-w-6xl' : 'max-w-4xl'}`}>
             {pdfUrl ? (
@@ -877,7 +880,7 @@ export function ViewerPage() {
               </div>
             )}
           </div>
-        </div>
+        </main>
       </div>
 
       <MobileSidebarDrawer open={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)}>

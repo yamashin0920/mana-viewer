@@ -40,7 +40,11 @@ export function NoteDialog({
           {selectedText}
         </blockquote>
       )}
+      <label htmlFor="page-note-input" className="mb-1 block text-xs text-slate-500 dark:text-slate-400">
+        メモの内容
+      </label>
       <textarea
+        id="page-note-input"
         value={note}
         onChange={(e) => onNoteChange(e.target.value)}
         placeholder="メモを入力..."

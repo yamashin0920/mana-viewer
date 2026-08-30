@@ -33,9 +33,13 @@ export function StickyNoteDialog({
         </>
       }
     >
+      <label htmlFor="sticky-note-input" className="mb-1 block text-xs text-slate-500 dark:text-slate-400">
+        付箋の内容
+      </label>
       <textarea
         id="sticky-note-input"
         data-testid="sticky-note-input"
+        data-autofocus
         value={note}
         onChange={(e) => onNoteChange(e.target.value)}
         placeholder="付箋の内容を入力..."

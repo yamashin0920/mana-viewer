@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { BookOpen, KeyRound, LayoutDashboard, LogOut, Shield } from 'lucide-react'
-import { Button, ThemeToggle } from '@mana/ui'
+import { Button, SkipLink, ThemeToggle } from '@mana/ui'
 import type { User } from '../types'
 
 const navItems = [
@@ -17,6 +17,7 @@ interface AdminLayoutProps {
 export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
   return (
     <div className="flex min-h-screen bg-slate-100 dark:bg-slate-950" data-testid="admin-layout">
+      <SkipLink />
       <aside className="flex w-56 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-4 dark:border-slate-800">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white">
@@ -63,7 +64,7 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
           <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">管理コンソール</h1>
           <ThemeToggle />
         </header>
-        <main className="flex-1 overflow-auto p-6">
+        <main id="main-content" tabIndex={-1} className="flex-1 overflow-auto p-6 outline-none">
           <Outlet />
         </main>
       </div>

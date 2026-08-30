@@ -9,7 +9,7 @@ import {
   updateLicense,
 } from '../api/client'
 import { Alert } from '../components/Alert'
-import { Button, EmptyState } from '@mana/ui'
+import { Button, EmptyState, Field } from '@mana/ui'
 import { useAdminAction } from '../hooks/useAdminAction'
 import { useConfirm } from '../hooks/useConfirm'
 import { usePermissions } from '../hooks/usePermissions'
@@ -226,45 +226,60 @@ export function LicensesPage() {
         <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
           <h3 className="mb-3 text-sm font-medium">{editing ? 'ライセンス編集' : '新規ライセンス'}</h3>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <div>
-              <label className="mb-1 block text-xs text-slate-500">コンテンツ</label>
-              <select
-                className={inputClass}
-                value={form.contentId}
-                disabled={!!editing}
-                onChange={(e) => setForm({ ...form, contentId: e.target.value })}
-              >
-                {contents.map((c) => (
-                  <option key={c.id} value={c.id}>{c.title}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-500">席数</label>
-              <input
-                className={inputClass}
-                type="number"
-                min={1}
-                value={form.seatCount}
-                onChange={(e) => setForm({ ...form, seatCount: Number(e.target.value) })}
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-500">ステータス</label>
-              <select className={inputClass} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-                {Object.entries(STATUS_LABELS).filter(([k]) => ['active', 'expired', 'revoked'].includes(k)).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-500">開始日</label>
-              <input className={inputClass} type="date" value={form.startsAt} onChange={(e) => setForm({ ...form, startsAt: e.target.value })} />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-500">終了日</label>
-              <input className={inputClass} type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} />
-            </div>
+            <Field label="コンテンツ" required>
+              {(id) => (
+                <select
+                  id={id}
+                  className={inputClass}
+                  data-testid="license-content"
+                  value={form.contentId}
+                  disabled={!!editing}
+                  onChange={(e) => setForm({ ...form, contentId: e.target.value })}
+                >
+                  {contents.map((c) => (
+                    <option key={c.id} value={c.id}>{c.title}</option>
+                  ))}
+                </select>
+              )}
+            </Field>
+            <Field label="席数" required>
+              {(id) => (
+                <input
+                  id={id}
+                  className={inputClass}
+                  type="number"
+                  min={1}
+                  data-testid="license-seat-count"
+                  value={form.seatCount}
+                  onChange={(e) => setForm({ ...form, seatCount: Number(e.target.value) })}
+                />
+              )}
+            </Field>
+            <Field label="ステータス">
+              {(id) => (
+                <select
+                  id={id}
+                  className={inputClass}
+                  data-testid="license-status"
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                >
+                  {Object.entries(STATUS_LABELS).filter(([k]) => ['active', 'expired', 'revoked'].includes(k)).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              )}
+            </Field>
+            <Field label="開始日">
+              {(id) => (
+                <input id={id} className={inputClass} type="date" value={form.startsAt} onChange={(e) => setForm({ ...form, startsAt: e.target.value })} />
+              )}
+            </Field>
+            <Field label="終了日">
+              {(id) => (
+                <input id={id} className={inputClass} type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} />
+              )}
+            </Field>
             <div className="flex items-end">
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={form.allowOffline} onChange={(e) => setForm({ ...form, allowOffline: e.target.checked })} />
@@ -273,10 +288,10 @@ export function LicensesPage() {
             </div>
           </div>
 
-          <div className="mt-4">
-            <label className="mb-2 block text-xs text-slate-500">
+          <fieldset className="mt-4">
+            <legend className="mb-2 block text-xs text-slate-500 dark:text-slate-400">
               割当ユーザー ({form.assignedUserIds.length}/{form.seatCount})
-            </label>
+            </legend>
             <div className="flex flex-wrap gap-2">
               {users.map((u) => (
                 <label
@@ -297,7 +312,7 @@ export function LicensesPage() {
                 </label>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           <div className="mt-4 flex gap-2">
             <Button
@@ -369,8 +384,8 @@ export function LicensesPage() {
                 <td className="px-4 py-3">
                   {canWrite ? (
                     <div className="flex gap-1">
-                      <Button size="sm" variant="ghost" onClick={() => startEdit(license)}><Pencil className="h-3.5 w-3.5" /></Button>
-                      <Button size="sm" variant="ghost" disabled={submitting} onClick={() => handleDelete(license)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
+                      <Button size="sm" variant="ghost" aria-label={`${license.content?.title ?? license.contentId} のライセンスを編集`} onClick={() => startEdit(license)}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button size="sm" variant="ghost" aria-label={`${license.content?.title ?? license.contentId} のライセンスを削除`} disabled={submitting} onClick={() => handleDelete(license)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
                     </div>
                   ) : (
                     <span className="text-xs text-slate-400">—</span>
