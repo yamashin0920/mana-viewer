@@ -39,5 +39,16 @@ export async function loginAsContentAdmin(page: Page) {
   await expect(page.getByTestId('admin-layout')).toBeVisible()
 }
 
+export async function confirmDelete(page: Page) {
+  await expect(page.getByTestId('confirm-dialog')).toBeVisible()
+  await page.getByTestId('confirm-dialog-confirm').click()
+}
+
+export async function cancelDelete(page: Page) {
+  await expect(page.getByTestId('confirm-dialog')).toBeVisible()
+  await page.getByTestId('confirm-dialog-cancel').click()
+  await expect(page.getByTestId('confirm-dialog')).toBeHidden()
+}
+
 export const test = base
 export { expect }

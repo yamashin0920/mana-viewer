@@ -20,8 +20,12 @@ Playwright が mock-api (3001) と viewer (5173) を自動起動します。
 | `e2e/bookshelf.spec.ts` | 本棚（検索・フィルタ・最近読んだもの） |
 | `e2e/viewer.spec.ts` | PDF ビューア（ページ送り・ズーム・見開き） |
 | `e2e/annotations.spec.ts` | 注釈（一覧・編集・削除・ハイライト） |
+| `e2e/a11y.spec.ts` | ダイアログ・トースト・スキップリンクのアクセシビリティ |
+| `e2e/access.spec.ts` | ライセンス拒否・教材なし・透かし |
 | `e2e/dark-mode.spec.ts` | ダークモード切替 |
-| `e2e/mobile.spec.ts` | モバイル UI（FAB・サイドバー） |
+| `e2e/mobile.spec.ts` | モバイル UI（FAB・ズーム・色・ピンチ） |
+| `e2e/progress.spec.ts` | 読書進捗の保存と復元 |
+| `e2e/user-switch.spec.ts` | 開発用ユーザー切替 |
 
 ## プロジェクト
 

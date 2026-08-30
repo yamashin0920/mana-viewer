@@ -41,6 +41,21 @@ test.describe('Mock API', () => {
     expect(body.canDownloadOffline).toBe(true)
   })
 
+  test('POST /licenses/verify denies unknown content', async ({ request }) => {
+    const res = await request.post(`${API_BASE}/licenses/verify`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: { contentId: 'content-missing', action: 'view' },
+    })
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    expect(body.allowed).toBe(false)
+    expect(body.canView).toBe(false)
+    expect(body.reason).toBe('license_not_found')
+  })
+
   test('GET /bookshelves returns distributed shelf', async ({ request }) => {
     const res = await request.get(`${API_BASE}/bookshelves`, {
       headers: { Authorization: `Bearer ${LEARNER_TOKEN}` },

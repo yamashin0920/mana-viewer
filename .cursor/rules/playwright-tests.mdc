@@ -33,6 +33,7 @@ viewer または mock-api にユーザー向け機能・API 挙動を追加・�
 | 注釈 | `viewer/e2e/annotations.spec.ts` |
 | ダークモード | `viewer/e2e/dark-mode.spec.ts` |
 | モバイル UI | `viewer/e2e/mobile.spec.ts` |
+| 閲覧権限・透かし | `viewer/e2e/access.spec.ts` |
 | 管理画面 | `admin/web/e2e/*.spec.ts` |
 | 共通 setup | `viewer/e2e/fixtures.ts`, `admin/web/e2e/fixtures.ts` |
 

@@ -192,24 +192,28 @@ Express + `data/seed.json` による業務 API のモックです。UI から使
 
 ## テスト
 
-Playwright による E2E テストが **87 件** あります。
+Playwright による E2E テストが **139 件** あります（viewer 81 + admin/web 52 + auth/web 6）。
 
 | 対象 | ファイル | 件数 |
 |---|---|---|
-| 注釈 | `viewer/e2e/annotations.spec.ts` | 17 |
+| 注釈 | `viewer/e2e/annotations.spec.ts` | 19 |
 | PDF ビューア | `viewer/e2e/viewer.spec.ts` | 13 |
-| Mock API | `viewer/e2e/mock-api.spec.ts` | 12 |
+| Mock API | `viewer/e2e/mock-api.spec.ts` | 13 |
+| アクセシビリティ | `viewer/e2e/a11y.spec.ts` | 12 |
+| モバイル UI | `viewer/e2e/mobile.spec.ts` | 9 |
 | 本棚 | `viewer/e2e/bookshelf.spec.ts` | 6 |
+| 閲覧権限・透かし | `viewer/e2e/access.spec.ts` | 3 |
 | ダークモード | `viewer/e2e/dark-mode.spec.ts` | 3 |
-| モバイル UI | `viewer/e2e/mobile.spec.ts` | 3 |
 | 進捗 | `viewer/e2e/progress.spec.ts` | 2 |
 | ユーザー切替 | `viewer/e2e/user-switch.spec.ts` | 1 |
-| 管理 API | `admin/web/e2e/admin-api.spec.ts` | 9 |
-| 管理: アカウント | `admin/web/e2e/accounts.spec.ts` | 4 |
-| 管理: コンテンツ | `admin/web/e2e/contents.spec.ts` | 3 |
+| 管理 API | `admin/web/e2e/admin-api.spec.ts` | 15 |
+| 管理: アカウント | `admin/web/e2e/accounts.spec.ts` | 9 |
+| 管理: ロール・エラー | `admin/web/e2e/permissions.spec.ts` | 7 |
+| 管理: コンテンツ | `admin/web/e2e/contents.spec.ts` | 6 |
+| 管理: ライセンス | `admin/web/e2e/licenses.spec.ts` | 5 |
+| 管理: 共有 UI | `admin/web/e2e/shared-ui.spec.ts` | 4 |
 | 管理: ログイン | `admin/web/e2e/login.spec.ts` | 3 |
 | 管理: ナビゲーション | `admin/web/e2e/navigation.spec.ts` | 3 |
-| 管理: ライセンス | `admin/web/e2e/licenses.spec.ts` | 2 |
 | 認証: ログイン | `auth/web/e2e/login.spec.ts` | 6 |
 
 ```bash
