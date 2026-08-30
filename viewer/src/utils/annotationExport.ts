@@ -1,4 +1,5 @@
 import type { Annotation } from '../types'
+import { ANNOTATION_TYPE_LABELS } from '../constants/annotationLabels'
 
 export type AnnotationExportFormat = 'json' | 'markdown'
 
@@ -9,14 +10,7 @@ export interface AnnotationExportMeta {
   annotationCount: number
 }
 
-const TYPE_LABELS: Record<Annotation['type'], string> = {
-  highlight: 'マーカー',
-  bookmark: 'ブックマーク',
-  note: 'メモ',
-  underline: '下線',
-  drawing: '描画',
-  sticky: '付箋',
-}
+const TYPE_LABELS = ANNOTATION_TYPE_LABELS
 
 export function buildAnnotationExportPayload(
   annotations: Annotation[],

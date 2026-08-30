@@ -27,8 +27,10 @@ import { EditAnnotationDialog } from '../components/viewer/EditAnnotationDialog'
 import { StickyNoteDialog } from '../components/viewer/StickyNoteDialog'
 import { ShareAnnotationsDialog } from '../components/viewer/ShareAnnotationsDialog'
 import { Button } from '../components/ui/Button'
+import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { EmptyState } from '../components/ui/EmptyState'
 import { toast } from '../components/ui/Toast'
+import { annotationTypeLabel } from '../constants/annotationLabels'
 import { DEFAULT_HIGHLIGHT_COLOR } from '../constants/highlightColors'
 import {
   useKeyboardNavigation,
@@ -88,6 +90,7 @@ export function ViewerPage() {
   const [noteText, setNoteText] = useState('')
   const [noteMode, setNoteMode] = useState<'page' | 'selection'>('page')
   const [editingAnnotation, setEditingAnnotation] = useState<Annotation | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<Annotation | null>(null)
   const [editNote, setEditNote] = useState('')
   const [editColor, setEditColor] = useState<string>(DEFAULT_HIGHLIGHT_COLOR)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -270,15 +273,7 @@ export function ViewerPage() {
       setPendingSelection(null)
       setNoteDialogOpen(false)
       setNoteText('')
-      const labels = {
-        highlight: 'マーカー',
-        bookmark: 'ブックマーク',
-        note: 'メモ',
-        underline: '下線',
-        drawing: '描画',
-        sticky: '付箋',
-      }
-      toast(`${labels[variables.type]}を追加しました`)
+      toast(`${annotationTypeLabel(variables.type)}を追加しました`)
     },
     onError: () => toast('注釈の保存に失敗しました', 'error'),
   })
@@ -294,11 +289,32 @@ export function ViewerPage() {
     onError: () => toast('更新に失敗しました', 'error'),
   })
 
-  const deleteAnnotationMutation = useMutation({
-    mutationFn: deleteAnnotation,
+  const restoreAnnotationMutation = useMutation({
+    mutationFn: (payload: Parameters<typeof createAnnotation>[1]) =>
+      createAnnotation(contentId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['annotations', contentId] })
-      toast('注釈を削除しました')
+      toast('削除を取り消しました')
+    },
+    onError: () => toast('取り消しに失敗しました', 'error'),
+  })
+
+  const deleteAnnotationMutation = useMutation({
+    mutationFn: ({ annotation }: { annotation: Annotation }) => deleteAnnotation(annotation.id),
+    onSuccess: (_data, { annotation }) => {
+      queryClient.invalidateQueries({ queryKey: ['annotations', contentId] })
+      toast(`${annotationTypeLabel(annotation.type)}を削除しました`, 'success', {
+        label: '元に戻す',
+        onAction: () =>
+          restoreAnnotationMutation.mutate({
+            type: annotation.type,
+            page: annotation.page,
+            color: annotation.color,
+            rects: annotation.rects,
+            selectedText: annotation.selectedText,
+            note: annotation.note,
+          }),
+      })
     },
     onError: () => toast('削除に失敗しました', 'error'),
   })
@@ -584,17 +600,25 @@ export function ViewerPage() {
 
   const handleDeleteAnnotation = useCallback(
     (id: string) => {
-      deleteAnnotationMutation.mutate(id)
-      setHiddenAnnotationIds((prev) => {
-        if (!prev.has(id)) return prev
-        const next = new Set(prev)
-        next.delete(id)
-        saveHiddenAnnotationIds(contentId, next)
-        return next
-      })
+      const target = displayAnnotations.find((a) => a.id === id)
+      if (target) setPendingDelete(target)
     },
-    [contentId, deleteAnnotationMutation]
+    [displayAnnotations]
   )
+
+  const handleConfirmDelete = useCallback(() => {
+    const target = pendingDelete
+    if (!target) return
+    setPendingDelete(null)
+    deleteAnnotationMutation.mutate({ annotation: target })
+    setHiddenAnnotationIds((prev) => {
+      if (!prev.has(target.id)) return prev
+      const next = new Set(prev)
+      next.delete(target.id)
+      saveHiddenAnnotationIds(contentId, next)
+      return next
+    })
+  }, [contentId, deleteAnnotationMutation, pendingDelete])
 
   const pdfUrl = useMemo(() => {
     if (USE_DEMO_PDF) return getDemoPdfUrl(contentId)
@@ -898,6 +922,22 @@ export function ViewerPage() {
         }}
         onSave={handleSaveNote}
         saving={addAnnotationMutation.isPending}
+      />
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        title="注釈を削除"
+        message={
+          pendingDelete
+            ? `p.${pendingDelete.page} の${annotationTypeLabel(pendingDelete.type)}を削除します。よろしいですか？`
+            : ''
+        }
+        detail={pendingDelete?.selectedText ?? pendingDelete?.note ?? undefined}
+        confirmLabel="削除する"
+        destructive
+        busy={deleteAnnotationMutation.isPending}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setPendingDelete(null)}
       />
 
       <EditAnnotationDialog
