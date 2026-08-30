@@ -33,6 +33,19 @@ export async function openFirstContent(page: import('@playwright/test').Page) {
   return href
 }
 
+/**
+ * 開始ページを明示する。
+ * 読書進捗は seed に永続化され、最終ページまで進んだ状態が次の実行に持ち越されるため、
+ * ページ移動を検証するテストは開始位置を固定する必要がある。
+ */
+export async function setPage(page: import('@playwright/test').Page, pageNumber: number) {
+  const input = page.getByTestId('page-input')
+  await input.fill(String(pageNumber))
+  await expect(input).toHaveValue(String(pageNumber))
+  // 入力欄にフォーカスが残るとキーボードのページ移動が無効になるため外す
+  await input.blur()
+}
+
 /** PDF ページの描画完了を待つ */
 export async function waitForPdfRender(page: import('@playwright/test').Page) {
   await expect(page.locator('[data-testid="pdf-canvas"]').first()).toBeVisible({ timeout: 30_000 })

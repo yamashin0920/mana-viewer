@@ -38,9 +38,11 @@ import {
   singlePageStep,
 } from '../hooks/useKeyboardNavigation'
 import { usePdfDocument } from '../hooks/usePdfDocument'
+import { usePinchZoom } from '../hooks/usePinchZoom'
 import { usePdfTextSearch } from '../hooks/usePdfTextSearch'
 import { usePdfOutline } from '../hooks/usePdfOutline'
 import { DEFAULT_PEN_COLOR } from '../constants/penColors'
+import { ZOOM_MAX, ZOOM_MIN } from '../constants/zoom'
 import type { Annotation } from '../types'
 import type { AnnotationTool } from '../types/annotationTools'
 import {
@@ -91,6 +93,7 @@ export function ViewerPage() {
   const [noteMode, setNoteMode] = useState<'page' | 'selection'>('page')
   const [editingAnnotation, setEditingAnnotation] = useState<Annotation | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Annotation | null>(null)
+  const [pdfScrollEl, setPdfScrollEl] = useState<HTMLDivElement | null>(null)
   const [editNote, setEditNote] = useState('')
   const [editColor, setEditColor] = useState<string>(DEFAULT_HIGHLIGHT_COLOR)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -355,6 +358,13 @@ export function ViewerPage() {
   }, [viewMode, totalPages])
 
   useKeyboardNavigation({ onPrev: handlePrev, onNext: handleNext })
+
+  usePinchZoom(pdfScrollEl, {
+    zoom,
+    min: ZOOM_MIN,
+    max: ZOOM_MAX,
+    onZoomChange: setZoom,
+  })
 
   const handleViewModeChange = useCallback((mode: ViewMode) => {
     setViewMode(mode)
@@ -827,7 +837,13 @@ export function ViewerPage() {
           />
         </aside>
 
-        <div className="custom-scrollbar flex-1 overflow-auto p-4 sm:p-6">
+        <div
+          ref={setPdfScrollEl}
+          data-testid="pdf-scroll-area"
+          // touch-action で標準のピンチズームを止め、usePinchZoom 側で拡大率を制御する
+          style={{ touchAction: 'pan-x pan-y' }}
+          className="custom-scrollbar flex-1 overflow-auto p-4 sm:p-6"
+        >
           <div className={`mx-auto flex min-h-full justify-center ${viewMode === 'spread' ? 'max-w-6xl' : 'max-w-4xl'}`}>
             {pdfUrl ? (
               <PdfViewer

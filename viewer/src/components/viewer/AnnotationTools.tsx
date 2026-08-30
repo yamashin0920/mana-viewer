@@ -4,6 +4,9 @@ import { HIGHLIGHT_COLORS } from '../../constants/highlightColors'
 import { PEN_COLORS } from '../../constants/penColors'
 import type { AnnotationTool } from '../../types/annotationTools'
 
+/** タッチでも押せるよう、狭い画面では大きめに出す */
+const swatchClass = 'h-8 w-8 shrink-0 rounded-full border-2 transition sm:h-6 sm:w-6'
+
 interface AnnotationToolsProps {
   tool: AnnotationTool
   penColor: string
@@ -71,15 +74,17 @@ export function AnnotationTools({
       </div>
 
       {tool === 'marker' && (
-        <div className="hidden items-center gap-1 sm:flex" data-testid="marker-color-picker">
+        <div className="flex items-center gap-1" data-testid="marker-color-picker">
           {HIGHLIGHT_COLORS.map((c) => (
             <button
               key={c.id}
               type="button"
               title={c.label}
+              aria-label={`マーカーの色: ${c.label}`}
+              aria-pressed={markerColor === c.value}
               data-testid={`marker-color-${c.id}`}
               onClick={() => onMarkerColorChange(c.value)}
-              className={`h-6 w-6 rounded-full border-2 transition ${
+              className={`${swatchClass} ${
                 markerColor === c.value ? 'border-brand-600 scale-110' : 'border-transparent hover:scale-105'
               }`}
               style={{ backgroundColor: c.value }}
@@ -89,15 +94,17 @@ export function AnnotationTools({
       )}
 
       {tool === 'pen' && (
-        <div className="hidden items-center gap-1 sm:flex" data-testid="pen-color-picker">
+        <div className="flex items-center gap-1" data-testid="pen-color-picker">
           {PEN_COLORS.map((c) => (
             <button
               key={c.id}
               type="button"
               title={c.label}
+              aria-label={`ペンの色: ${c.label}`}
+              aria-pressed={penColor === c.value}
               data-testid={`pen-color-${c.id}`}
               onClick={() => onPenColorChange(c.value)}
-              className={`h-6 w-6 rounded-full border-2 transition ${
+              className={`${swatchClass} ${
                 penColor === c.value ? 'border-brand-600 scale-110' : 'border-transparent hover:scale-105'
               }`}
               style={{ backgroundColor: c.value }}
