@@ -47,7 +47,7 @@ export function NoteDialog({
         placeholder="メモを入力..."
         rows={4}
         className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-900"
-        autoFocus
+        data-autofocus
       />
     </Modal>
   )

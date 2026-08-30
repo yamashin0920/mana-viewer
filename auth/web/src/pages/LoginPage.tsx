@@ -147,7 +147,11 @@ export function LoginPage() {
               </div>
 
               {formError && (
-                <p className="text-sm text-red-600 dark:text-red-400" data-testid="login-error">
+                <p
+                  className="text-sm text-red-600 dark:text-red-400"
+                  data-testid="login-error"
+                  role="alert"
+                >
                   {formError}
                 </p>
               )}

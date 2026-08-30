@@ -48,15 +48,21 @@ export function ToastContainer() {
     }
   }, [])
 
-  if (items.length === 0) return null
-
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
+    // ライブリージョンは常に DOM に存在させる必要がある。
+    // 追加と同時に生成すると、支援技術が変化を検知できないことがある。
+    <div
+      className="pointer-events-none fixed bottom-4 right-4 z-[100] flex flex-col gap-2"
+      role="log"
+      aria-live="polite"
+      aria-relevant="additions"
+    >
       {items.map((item) => (
         <div
           key={item.id}
           data-testid="toast"
-          className={`animate-slide-up flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium shadow-[var(--shadow-float)] ${
+          role={item.type === 'error' ? 'alert' : 'status'}
+          className={`animate-slide-up pointer-events-auto flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium shadow-[var(--shadow-float)] ${
             item.type === 'success' ? 'bg-slate-900 text-white' : 'bg-red-600 text-white'
           }`}
         >
