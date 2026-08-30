@@ -52,7 +52,7 @@ test.describe('アカウント管理', () => {
     await expect(page.getByTestId('alert-success')).toContainText(`「${name}」を作成しました`)
     const row = page.getByTestId('users-table').locator('tr').filter({ hasText: name })
     await expect(row).toContainText(email)
-    await expect(row).toContainText('教員')
+    await expect(row).toContainText('講師')
 
     await page.getByRole('button', { name: `${name} を編集` }).click()
     await expect(page.getByRole('heading', { name: 'ユーザー編集' })).toBeVisible()
@@ -69,6 +69,7 @@ test.describe('アカウント管理', () => {
     await confirmDelete(page)
     await expect(page.getByTestId('alert-success')).toContainText(`「${renamed}」を削除しました`)
     await expect(page.getByTestId('users-table')).not.toContainText(renamed)
+    await expect(page.getByTestId('users-table')).not.toContainText(name)
   })
 
   test('ユーザー削除をキャンセルすると残る', async ({ page }) => {
