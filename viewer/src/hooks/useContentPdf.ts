@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { resolveContentPdfBytes } from '../api/chunks'
+import { fetchContentChunk, resolveContentPdfBytes } from '../api/chunks'
 import { getDemoPdfUrl } from '../api/contents'
 import type { PdfSource } from './usePdfDocument'
 
@@ -30,6 +30,8 @@ export function useContentPdf(
       setSource({ kind: 'url', url: getDemoPdfUrl(contentId) })
       setError(null)
       setLoading(false)
+      if (!sessionToken) return
+      void fetchContentChunk(contentId, 1, sessionToken).catch(() => undefined)
       return
     }
 

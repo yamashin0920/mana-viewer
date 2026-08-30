@@ -1,5 +1,5 @@
 const { authMiddleware } = require('./auth');
-const { isAdminRole, isOrgAdminRole } = require('@mana/contracts/node');
+const { isAdminRole, isOrgAdminRole, canPermissionRole } = require('@mana/contracts/node');
 
 function adminMiddleware(req, res, next) {
   authMiddleware(req, res, () => {
