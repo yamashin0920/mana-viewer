@@ -25,7 +25,10 @@ npm workspaces による単一リポジトリです。依存関係はリポジ�
 | [`viewer`](viewer/README.md) | 5173 | 学習者向け PDF ビューア |
 | [`admin/web`](admin/web) | 5190 | 管理画面 |
 | [`mock-api`](mock-api/README.md) | 3001 | 業務 API のモック |
-| [`packages/ui`](packages/ui/README.md) | — | 3 つのフロントエンドで共有する UI プリミティブとデザイントークン |
+| [`packages/ui`](packages/ui/README.md) | — | 共有 UI プリミティブとデザイントークン |
+| [`packages/contracts`](packages/contracts/README.md) | — | ドメイン型・ロール・管理権限 |
+| [`packages/auth-client`](packages/auth-client/README.md) | — | SSO・トークン・ApiError・AuthGuard |
+| [`packages/dev-data`](packages/dev-data/README.md) | — | seed / credentials の共有アクセス層 |
 
 ## 起動
 

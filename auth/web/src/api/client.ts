@@ -1,34 +1,14 @@
+import { ApiError, createApiFetch } from '@mana/auth-client'
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 
-export class ApiError extends Error {
-  status: number
-  constructor(status: number, message: string) {
-    super(message)
-    this.status = status
-  }
-}
+/** auth/web のログイン API は Bearer 不要なので素の fetch に近い形で使う */
+const rawFetch = createApiFetch(API_BASE)
+
+export { ApiError }
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const headers = new Headers(options.headers)
-  if (!headers.has('Content-Type') && options.body) {
-    headers.set('Content-Type', 'application/json')
-  }
-
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
-  if (!res.ok) {
-    let body: unknown
-    try {
-      body = await res.json()
-    } catch {
-      body = null
-    }
-    const message =
-      typeof body === 'object' && body && 'message' in body
-        ? String((body as { message: string }).message)
-        : res.statusText
-    throw new ApiError(res.status, message)
-  }
-  return res.json() as Promise<T>
+  return rawFetch<T>(path, options)
 }
 
 export async function loginWithCredentials(userId: string, password: string) {

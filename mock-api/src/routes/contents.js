@@ -1,6 +1,7 @@
 const express = require('express');
 const { authMiddleware } = require('../middleware/auth');
 const { canAccessContent, paginate, watermarkText, generateMockChunk, uuidv4 } = require('../store');
+const { persist } = require('../persistence');
 
 const router = express.Router();
 
@@ -207,6 +208,7 @@ router.put('/:contentId/progress', authMiddleware, (req, res) => {
     req.store.progress.push(prog);
   }
 
+  persist(req.store, 'learner');
   res.json(prog);
 });
 

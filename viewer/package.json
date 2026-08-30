@@ -13,6 +13,8 @@
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
+    "@mana/auth-client": "*",
+    "@mana/contracts": "*",
     "@mana/ui": "*",
     "@tanstack/react-query": "^5.101.4",
     "dexie": "^4.4.4",

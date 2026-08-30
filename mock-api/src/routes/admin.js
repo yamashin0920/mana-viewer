@@ -1,13 +1,13 @@
 const express = require('express');
-const { adminMiddleware, orgAdminMiddleware } = require('../middleware/admin');
+const { adminMiddleware, orgAdminMiddleware, contentWriteMiddleware } = require('../middleware/admin');
 const {
-  saveSeed,
   uuidv4,
-  userLicenses,
   userLicenseAssignments,
   isLicenseValid,
   generateCoverUrl,
 } = require('../store');
+const { persist } = require('../persistence');
+const { USER_ROLES, canPermissionRole } = require('@mana/contracts/node');
 
 const router = express.Router();
 
@@ -62,7 +62,7 @@ router.put('/users/:userId/licenses', orgAdminMiddleware, (req, res) => {
     }
   }
 
-  saveSeed(req.store);
+  persist(req.store, 'admin');
   res.json({
     data: userLicenseAssignments(req.store, user.id).map((l) => ({
       id: l.id,
@@ -80,8 +80,7 @@ router.post('/users', orgAdminMiddleware, (req, res) => {
   if (!name?.trim() || !email?.trim()) {
     return res.status(400).json({ error: 'validation_error', message: '名前とメールアドレスは必須です' });
   }
-  const validRoles = ['learner', 'instructor', 'org_admin', 'content_admin'];
-  if (!validRoles.includes(role)) {
+  if (!USER_ROLES.includes(role)) {
     return res.status(400).json({ error: 'validation_error', message: '無効なロールです' });
   }
 
@@ -96,7 +95,7 @@ router.post('/users', orgAdminMiddleware, (req, res) => {
     createdAt: new Date().toISOString(),
   };
   req.store.users.push(user);
-  saveSeed(req.store);
+  persist(req.store, 'admin');
   res.status(201).json(user);
 });
 
@@ -112,7 +111,7 @@ router.put('/users/:userId', orgAdminMiddleware, (req, res) => {
   if (role !== undefined) user.role = role;
   if (externalId !== undefined) user.externalId = externalId;
 
-  saveSeed(req.store);
+  persist(req.store, 'admin');
   res.json(user);
 });
 
@@ -131,7 +130,7 @@ router.delete('/users/:userId', orgAdminMiddleware, (req, res) => {
   for (const license of req.store.licenses) {
     license.assignedUserIds = license.assignedUserIds.filter((id) => id !== user.id);
   }
-  saveSeed(req.store);
+  persist(req.store, 'admin');
   res.status(204).send();
 });
 
@@ -179,7 +178,7 @@ router.post('/licenses', orgAdminMiddleware, (req, res) => {
     status,
   };
   req.store.licenses.push(license);
-  saveSeed(req.store);
+  persist(req.store, 'admin');
   res.status(201).json(license);
 });
 
@@ -202,7 +201,7 @@ router.put('/licenses/:licenseId', orgAdminMiddleware, (req, res) => {
     license.assignedUserIds = [...assignedUserIds];
   }
 
-  saveSeed(req.store);
+  persist(req.store, 'admin');
   res.json(license);
 });
 
@@ -215,7 +214,7 @@ router.delete('/licenses/:licenseId', orgAdminMiddleware, (req, res) => {
   }
 
   req.store.licenses.splice(idx, 1);
-  saveSeed(req.store);
+  persist(req.store, 'admin');
   res.status(204).send();
 });
 
@@ -240,7 +239,7 @@ router.post('/licenses/:licenseId/assign', orgAdminMiddleware, (req, res) => {
     }
   }
 
-  saveSeed(req.store);
+  persist(req.store, 'admin');
   res.json(license);
 });
 
@@ -251,13 +250,7 @@ router.get('/contents', adminMiddleware, (req, res) => {
   res.json({ data: contents });
 });
 
-router.post('/contents', adminMiddleware, (req, res) => {
-  if (req.user.role === 'content_admin' || req.user.role === 'org_admin') {
-    // allowed
-  } else {
-    return res.status(403).json({ error: 'forbidden', message: 'コンテンツ作成権限がありません' });
-  }
-
+router.post('/contents', contentWriteMiddleware, (req, res) => {
   const {
     title,
     author = '',
@@ -308,11 +301,11 @@ router.post('/contents', adminMiddleware, (req, res) => {
 
   req.store.contents.push(content);
   req.store.contentToc[content.id] = [];
-  saveSeed(req.store);
+  persist(req.store, 'admin');
   res.status(201).json(content);
 });
 
-router.put('/contents/:contentId', adminMiddleware, (req, res) => {
+router.put('/contents/:contentId', contentWriteMiddleware, (req, res) => {
   const content = req.store.contents.find((c) => c.id === req.params.contentId);
   if (!content || !sameOrg(req, content.orgId)) {
     return res.status(404).json({ error: 'not_found', message: 'コンテンツが見つかりません' });
@@ -338,7 +331,7 @@ router.put('/contents/:contentId', adminMiddleware, (req, res) => {
   }
   content.updatedAt = new Date().toISOString();
 
-  saveSeed(req.store);
+  persist(req.store, 'admin');
   res.json(content);
 });
 
@@ -353,7 +346,7 @@ router.delete('/contents/:contentId', orgAdminMiddleware, (req, res) => {
   req.store.contents.splice(idx, 1);
   delete req.store.contentToc[content.id];
   req.store.licenses = req.store.licenses.filter((l) => l.contentId !== content.id);
-  saveSeed(req.store);
+  persist(req.store, 'admin');
   res.status(204).send();
 });
 

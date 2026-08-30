@@ -1,8 +1,12 @@
 import { create } from 'zustand'
-import { setAccessToken } from '../api/client'
+import {
+  clearAccessToken,
+  consumeAccessTokenFromUrl,
+  redirectToLogout,
+  setAccessToken,
+} from '@mana/auth-client'
 import { fetchMe } from '../api/auth'
 import { resetUserQueries } from '../lib/queryClient'
-import { consumeAccessTokenFromUrl, redirectToLogout } from '../utils/authRedirect'
 import type { User } from '../types'
 
 interface AuthState {
@@ -38,7 +42,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const user = await fetchMe()
       set({ user, token, loading: false, error: null })
     } catch {
-      localStorage.removeItem('accessToken')
+      clearAccessToken()
       set({ user: null, token: null, loading: false, error: null })
     }
   },
@@ -51,7 +55,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const user = await fetchMe()
       set({ user, token, loading: false, error: null })
     } catch (err) {
-      localStorage.removeItem('accessToken')
+      clearAccessToken()
       set({
         user: null,
         token: null,
@@ -63,7 +67,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   signOut: () => {
-    localStorage.removeItem('accessToken')
+    clearAccessToken()
     redirectToLogout(`${window.location.origin}/`)
   },
 }))

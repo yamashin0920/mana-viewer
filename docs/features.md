@@ -26,11 +26,20 @@
 | `viewer` | 5173 | 学習者向け PDF ビューア |
 | `admin/web` | 5190 | 管理画面 |
 | `mock-api` | 3001 | 業務 API のモック（Express + seed.json） |
-| `packages/ui` | — | 3 つのフロントエンドで共有する UI プリミティブとデザイントークン |
+| `packages/ui` | — | 共有 UI プリミティブとデザイントークン |
+| `packages/contracts` | — | ドメイン型・ロール・管理権限の単一ソース |
+| `packages/auth-client` | — | SSO リダイレクト・トークン・ApiError・AuthGuard |
+| `packages/dev-data` | — | auth-api / mock-api が共有する開発用データアクセス層 |
 
 npm workspaces による単一リポジトリです。依存関係はルートで一度インストールし、`./start-dev.sh` で一括起動します。
 
 **技術スタック**: React 18 + Vite + TypeScript / PDF.js / TanStack Query / Zustand / Dexie / Tailwind CSS v4 / Express（モック） / Playwright
+
+### 共有パッケージの役割
+
+- **`@mana/contracts`** — `User` / `Content` / `License` などの型と、`can('contents:write')` などの権限表。admin UI と mock-api / auth-api のミドルウェアが同じ定義を参照する
+- **`@mana/auth-client`** — `redirectToLogin` / `AuthGuard` / `createApiFetch` / トークン保管。viewer と admin の重複を除去
+- **`@mana/dev-data`** — seed / credentials の読み書きを 1 モジュールに集約。パスは `MANA_SEED_PATH` / `MANA_CREDENTIALS_PATH` で上書き可能
 
 ---
 

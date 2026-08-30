@@ -1,43 +1,17 @@
-const fs = require('fs');
-const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-
-const SEED_PATH = path.join(__dirname, '../data/seed.json');
-const CREDENTIALS_PATH = path.join(__dirname, '../../auth/api/data/credentials.json');
-
-function loadSeed() {
-  const raw = fs.readFileSync(SEED_PATH, 'utf-8');
-  return JSON.parse(raw);
-}
-
-function saveSeed(store) {
-  fs.writeFileSync(SEED_PATH, `${JSON.stringify(store, null, 2)}\n`, 'utf-8');
-}
+const { loadSeed, saveSeed, loadTokenMap: loadSharedTokenMap } = require('@mana/dev-data');
 
 function createStore() {
   return loadSeed();
 }
 
 function loadTokenMap() {
-  try {
-    const raw = fs.readFileSync(CREDENTIALS_PATH, 'utf-8');
-    const credentials = JSON.parse(raw);
-    const map = {};
-    for (const entry of credentials) {
-      if (entry.token && entry.linkedUserId) {
-        map[entry.token] = entry.linkedUserId;
-      }
-    }
-    if (Object.keys(map).length > 0) return map;
-  } catch {
-    // fall through to defaults
-  }
-  return {
+  return loadSharedTokenMap({
     'mock-token-learner': 'user-001',
     'mock-token-instructor': 'user-002',
     'mock-token-admin': 'user-admin',
     'mock-token-content-admin': 'user-content-admin',
-  };
+  });
 }
 
 function paginate(items, page = 1, limit = 20) {

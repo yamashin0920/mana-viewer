@@ -1,3 +1,4 @@
+import { ApiError, createApiFetch, setAccessToken as setToken } from '@mana/auth-client'
 import type {
   AdminUser,
   Content,
@@ -9,48 +10,18 @@ import type {
 const AUTH_BASE = import.meta.env.VITE_AUTH_API_BASE || '/api/auth'
 const MOCK_BASE = import.meta.env.VITE_MOCK_API_BASE || '/api/mock'
 
-export class ApiError extends Error {
-  status: number
-  constructor(status: number, message: string) {
-    super(message)
-    this.status = status
-  }
-}
+const authFetch = createApiFetch(AUTH_BASE)
+const mockFetch = createApiFetch(MOCK_BASE)
 
-function getToken(): string | null {
-  return localStorage.getItem('accessToken')
-}
+export { ApiError }
 
 export function setAccessToken(token: string | null) {
-  if (token) localStorage.setItem('accessToken', token)
-  else localStorage.removeItem('accessToken')
+  setToken(token)
 }
 
-export async function apiFetch<T>(base: string, path: string, options: RequestInit = {}): Promise<T> {
-  const headers = new Headers(options.headers)
-  if (!headers.has('Content-Type') && options.body) {
-    headers.set('Content-Type', 'application/json')
-  }
-
-  const token = getToken()
-  if (token) headers.set('Authorization', `Bearer ${token}`)
-
-  const res = await fetch(`${base}${path}`, { ...options, headers })
-  if (!res.ok) {
-    let body: unknown
-    try {
-      body = await res.json()
-    } catch {
-      body = null
-    }
-    const message =
-      typeof body === 'object' && body && 'message' in body
-        ? String((body as { message: string }).message)
-        : res.statusText
-    throw new ApiError(res.status, message)
-  }
-  if (res.status === 204) return undefined as T
-  return res.json() as Promise<T>
+async function apiFetch<T>(base: string, path: string, options: RequestInit = {}): Promise<T> {
+  const fetchForBase = base === AUTH_BASE ? authFetch : mockFetch
+  return fetchForBase<T>(path, options)
 }
 
 export async function fetchCredentials() {

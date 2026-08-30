@@ -1,6 +1,12 @@
 import { create } from 'zustand'
-import { clearAccessToken, fetchMe, persistAccessToken } from '../api/auth'
-import { consumeAccessTokenFromUrl, redirectToLogout } from '../utils/authRedirect'
+import {
+  clearAccessToken,
+  consumeAccessTokenFromUrl,
+  redirectToLogout,
+  setAccessToken,
+} from '@mana/auth-client'
+import { isAdminRole } from '@mana/contracts'
+import { fetchMe } from '../api/auth'
 import type { User } from '../types'
 
 interface AuthState {
@@ -19,7 +25,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   init: async () => {
     const urlToken = consumeAccessTokenFromUrl()
     if (urlToken) {
-      persistAccessToken(urlToken)
+      setAccessToken(urlToken)
     }
 
     const token = localStorage.getItem('accessToken')
@@ -28,7 +34,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       return
     }
 
-    persistAccessToken(token)
+    setAccessToken(token)
     try {
       const user = await fetchMe()
       set({ user, token, loading: false })
@@ -54,6 +60,6 @@ export function useAuth() {
   return {
     auth: user && token ? { user, token } : null,
     logout: signOut,
-    isAdmin: user?.role === 'org_admin' || user?.role === 'content_admin',
+    isAdmin: isAdminRole(user?.role),
   }
 }

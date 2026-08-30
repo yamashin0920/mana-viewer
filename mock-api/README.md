@@ -20,11 +20,15 @@ npm run dev
 
 ## 認証
 
+ログインは **auth-api (3002)** が担当します。mock-api の `POST /auth/login` は 410 を返します。
 すべての保護された API には `Authorization` ヘッダーが必要です。
 
 ```
 Authorization: Bearer mock-token-learner
 ```
+
+トークン → ユーザー対応は `@mana/dev-data` 経由で `auth/api/data/credentials.json` を読みます。
+権限ロールは `@mana/contracts/node` を参照します。
 
 ### 開発用トークン
 
@@ -33,8 +37,9 @@ Authorization: Bearer mock-token-learner
 | `mock-token-learner` | learner | 田中 太郎 |
 | `mock-token-instructor` | instructor | 鈴木 花子 |
 | `mock-token-admin` | org_admin | 管理者 |
+| `mock-token-content-admin` | content_admin | コンテンツ管理者 |
 
-トークン一覧: `GET /auth/tokens`
+トークン一覧: auth-api の `GET /auth/tokens`
 
 ## ビューア開発の典型フロー
 
@@ -103,9 +108,7 @@ curl -X POST -H "Authorization: Bearer mock-token-learner" \
 | メソッド | パス | 説明 |
 |----------|------|------|
 | GET | `/health` | ヘルスチェック |
-| POST | `/auth/login` | ログイン（メールでモックトークン返却） |
-| POST | `/auth/lti/launch` | LTI 起動 |
-| GET | `/auth/tokens` | 開発用トークン一覧 |
+| POST | `/auth/login` | 410（auth-api へ移行済み） |
 | GET | `/users/me` | 自分のプロフィール |
 | GET | `/licenses/me` | 自分のライセンス |
 | POST | `/licenses/verify` | ライセンス検証 |
@@ -134,8 +137,18 @@ curl -X POST -H "Authorization: Bearer mock-token-learner" \
 - コンテンツ: 数学I / 英語I / 物理実験（3 冊）
 - 学習者 `user-001` は数学I・英語I・物理にライセンスあり
 
+## 永続化ポリシー
+
+| 区分 | 対象 | 既定 | 環境変数 |
+|---|---|---|---|
+| **admin** | ユーザー / ライセンス / コンテンツの CRUD | `seed.json` に書き戻す | `MOCK_API_PERSIST_ADMIN=false` で無効化 |
+| **learner** | 進捗 / 注釈 / 端末 / セッション | メモリのみ（再起動で消える） | `MOCK_API_PERSIST_LEARNER=true` で seed に書く |
+
+実装は `src/persistence.js` に集約しています。
+
 ## 注意
 
-- データはインメモリ。サーバー再起動で変更はリセットされます（seed から再読込）
+- 管理 CRUD は既定で seed に残ります。学習者データは既定で揮発です
+- パスは `@mana/dev-data` 経由（`MANA_SEED_PATH` / `MANA_CREDENTIALS_PATH` で上書き可）
 - PDF チャンク・オフラインパッケージはダミーバイナリです
 - 本番 API 実装時はレスポンス形式を合わせて移行できます

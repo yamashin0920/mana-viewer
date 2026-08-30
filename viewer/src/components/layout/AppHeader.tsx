@@ -1,26 +1,22 @@
 import { BookOpen, GraduationCap, LogOut } from 'lucide-react'
+import { getAuthAppUrl } from '@mana/auth-client'
+import { ROLE_LABELS, type UserRole } from '@mana/contracts'
 import { useAuthStore } from '../../store/authStore'
 import { Badge } from '../ui/Badge'
 import { Button, ThemeToggle } from '@mana/ui'
 
-const AUTH_APP_URL = import.meta.env.VITE_AUTH_APP_URL || 'http://localhost:5180'
-
-const DEV_TOKENS = [
-  { token: 'mock-token-learner', label: '学習者', role: 'learner' as const },
-  { token: 'mock-token-instructor', label: '教員', role: 'instructor' as const },
-  { token: 'mock-token-admin', label: '管理者', role: 'org_admin' as const },
+const DEV_TOKENS: { token: string; role: UserRole }[] = [
+  { token: 'mock-token-learner', role: 'learner' },
+  { token: 'mock-token-instructor', role: 'instructor' },
+  { token: 'mock-token-admin', role: 'org_admin' },
+  { token: 'mock-token-content-admin', role: 'content_admin' },
 ]
 
-const roleBadge: Record<string, 'indigo' | 'green' | 'amber'> = {
+const roleBadge: Record<string, 'indigo' | 'green' | 'amber' | 'slate'> = {
   learner: 'indigo',
   instructor: 'green',
   org_admin: 'amber',
-}
-
-const roleLabel: Record<string, string> = {
-  learner: '学習者',
-  instructor: '教員',
-  org_admin: '管理者',
+  content_admin: 'slate',
 }
 
 export function AppHeader() {
@@ -30,7 +26,7 @@ export function AppHeader() {
   const handleDevUserSwitch = (newToken: string) => {
     if (newToken === currentToken) return
     const redirect = encodeURIComponent(window.location.href)
-    window.location.href = `${AUTH_APP_URL}/dev-sync?token=${encodeURIComponent(newToken)}&redirect=${redirect}`
+    window.location.href = `${getAuthAppUrl()}/dev-sync?token=${encodeURIComponent(newToken)}&redirect=${redirect}`
   }
 
   return (
@@ -58,7 +54,7 @@ export function AppHeader() {
             <div className="text-right">
               <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{user?.name}</p>
               {user?.role && (
-                <Badge color={roleBadge[user.role] ?? 'slate'}>{roleLabel[user.role] ?? user.role}</Badge>
+                <Badge color={roleBadge[user.role] ?? 'slate'}>{ROLE_LABELS[user.role] ?? user.role}</Badge>
               )}
             </div>
           </div>
@@ -74,7 +70,7 @@ export function AppHeader() {
             >
               {DEV_TOKENS.map((t) => (
                 <option key={t.token} value={t.token}>
-                  {t.label}
+                  {ROLE_LABELS[t.role]}
                 </option>
               ))}
             </select>

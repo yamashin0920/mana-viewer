@@ -1,5 +1,6 @@
 const express = require('express');
 const { authMiddleware } = require('../middleware/auth');
+const { persist } = require('../persistence');
 
 const router = express.Router();
 
@@ -19,6 +20,7 @@ router.put('/:annotationId', authMiddleware, (req, res) => {
     page: page ?? ann.page,
     updatedAt: new Date().toISOString(),
   });
+  persist(req.store, 'learner');
   res.json(ann);
 });
 
@@ -29,6 +31,7 @@ router.delete('/:annotationId', authMiddleware, (req, res) => {
     return res.status(403).json({ error: 'forbidden', message: '削除権限がありません' });
   }
   req.store.annotations.splice(idx, 1);
+  persist(req.store, 'learner');
   res.status(204).send();
 });
 

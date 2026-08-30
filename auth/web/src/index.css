@@ -2,5 +2,6 @@
 
 /* 共有パッケージはこのプロジェクトの外にあるため、明示しないとクラス名が走査されない */
 @source "../../../packages/ui/src";
+@source "../../../packages/auth-client/src";
 
 @import "@mana/ui/tokens.css";
