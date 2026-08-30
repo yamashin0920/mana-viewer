@@ -11,7 +11,7 @@ import {
   updateUserLicenses,
 } from '../api/client'
 import { Alert } from '../components/Alert'
-import { Button, Field } from '@mana/ui'
+import { Button, Field, PageHeader } from '@mana/ui'
 import { useAdminAction } from '../hooks/useAdminAction'
 import { useConfirm } from '../hooks/useConfirm'
 import { usePermissions } from '../hooks/usePermissions'
@@ -241,23 +241,24 @@ export function AccountsPage() {
 
       {/* Login accounts */}
       <section>
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">ログインアカウント</h2>
-            <p className="text-sm text-slate-500">ログインIDとパスワード、紐付けユーザーを管理します</p>
-          </div>
-          {canWriteCredentials && (
-            <Button
-              variant="primary"
-              size="sm"
-              data-testid="credential-add-button"
-              onClick={() => { setShowCredForm(true); setEditingCred(null); setCredForm({ loginId: '', password: '', linkedUserId: '' }) }}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              追加
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          className="mb-4"
+          title="ログインアカウント"
+          description="ログインIDとパスワード、紐付けユーザーを管理します"
+          actions={
+            canWriteCredentials ? (
+              <Button
+                variant="primary"
+                size="sm"
+                data-testid="credential-add-button"
+                onClick={() => { setShowCredForm(true); setEditingCred(null); setCredForm({ loginId: '', password: '', linkedUserId: '' }) }}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                追加
+              </Button>
+            ) : undefined
+          }
+        />
 
         {(showCredForm || editingCred) && (
           <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
@@ -363,23 +364,24 @@ export function AccountsPage() {
 
       {/* Users */}
       <section>
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">ユーザー</h2>
-            <p className="text-sm text-slate-500">組織内のユーザーとライセンス割当状況（ビューアの閲覧可否に反映されます）</p>
-          </div>
-          {canWriteUsers && (
-            <Button
-              variant="primary"
-              size="sm"
-              data-testid="user-add-button"
-              onClick={() => { setShowUserForm(true); setEditingUser(null); setUserForm({ name: '', email: '', role: 'learner' }) }}
-            >
-              <UserPlus className="h-3.5 w-3.5" />
-              ユーザー追加
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          className="mb-4"
+          title="ユーザー"
+          description="組織内のユーザーとライセンス割当状況（ビューアの閲覧可否に反映されます）"
+          actions={
+            canWriteUsers ? (
+              <Button
+                variant="primary"
+                size="sm"
+                data-testid="user-add-button"
+                onClick={() => { setShowUserForm(true); setEditingUser(null); setUserForm({ name: '', email: '', role: 'learner' }) }}
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                ユーザー追加
+              </Button>
+            ) : undefined
+          }
+        />
 
         {(showUserForm || editingUser) && (
           <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">

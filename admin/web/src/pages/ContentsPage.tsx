@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { BookOpen, Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { createContent, deleteContent, updateContent } from '../api/client'
 import { Alert } from '../components/Alert'
-import { Button, EmptyState, Field } from '@mana/ui'
+import { Button, EmptyState, Field, PageHeader } from '@mana/ui'
 import { useAdminAction } from '../hooks/useAdminAction'
 import { useConfirm } from '../hooks/useConfirm'
 import { usePermissions } from '../hooks/usePermissions'
@@ -154,23 +154,23 @@ export function ContentsPage() {
         <Alert tone={feedback.tone} message={feedback.message} onDismiss={() => setFeedback(null)} />
       )}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">コンテンツ管理</h2>
-          <p className="text-sm text-slate-500">教材のメタデータと公開設定を管理します</p>
-        </div>
-        {canWrite && (
-          <Button
-            variant="primary"
-            size="sm"
-            data-testid="content-add-button"
-            onClick={() => { setShowForm(true); setEditing(null); setForm(defaultForm) }}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            コンテンツ追加
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        title="コンテンツ管理"
+        description="教材のメタデータと公開設定を管理します"
+        actions={
+          canWrite ? (
+            <Button
+              variant="primary"
+              size="sm"
+              data-testid="content-add-button"
+              onClick={() => { setShowForm(true); setEditing(null); setForm(defaultForm) }}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              コンテンツ追加
+            </Button>
+          ) : undefined
+        }
+      />
 
       {(showForm || editing) && (
         <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">

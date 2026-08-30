@@ -46,6 +46,17 @@ export async function setPage(page: import('@playwright/test').Page, pageNumber:
   await input.blur()
 }
 
+/** 狭い画面では二次ツールがトレイに隠れているので、必要なときだけ開く */
+export async function expandViewerTools(page: import('@playwright/test').Page) {
+  const toggle = page.getByTestId('viewer-secondary-controls-toggle')
+  if (await toggle.isVisible()) {
+    if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
+      await toggle.click()
+    }
+    await expect(page.getByTestId('viewer-secondary-controls')).toBeVisible()
+  }
+}
+
 /** PDF ページの描画完了を待つ */
 export async function waitForPdfRender(page: import('@playwright/test').Page) {
   await expect(page.locator('[data-testid="pdf-canvas"]').first()).toBeVisible({ timeout: 30_000 })
