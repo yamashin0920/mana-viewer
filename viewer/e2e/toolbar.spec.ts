@@ -1,6 +1,15 @@
 import { test, expect, openFirstContent, expandViewerTools } from './fixtures'
 
 test.describe('ツールバーの部品配置と展開', () => {
+  test('戻るは左、ページ送りは右に寄る', async ({ page }) => {
+    await openFirstContent(page)
+    const back = await page.getByLabel('本棚に戻る').boundingBox()
+    const pager = await page.getByTestId('page-input').boundingBox()
+    expect(back).toBeTruthy()
+    expect(pager).toBeTruthy()
+    expect(back!.x).toBeLessThan(pager!.x)
+  })
+
   test('広い画面では二次ツールが最初から並ぶ', async ({ page }) => {
     await openFirstContent(page)
     await expect(page.getByTestId('viewer-secondary-controls-toggle')).toBeHidden()

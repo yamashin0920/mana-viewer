@@ -28,6 +28,8 @@ test.describe('モバイル表示', () => {
     await page.getByTestId('viewer-secondary-controls-toggle').click()
     await expect(page.getByTestId('annotation-tools')).toBeVisible()
   })
+
+  test('本棚がモバイルで表示される', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByTestId('bookshelf-page')).toBeVisible()
     await expect(page.getByTestId('content-grid').getByTestId('content-card').first()).toBeVisible()

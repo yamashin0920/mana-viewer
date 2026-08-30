@@ -209,7 +209,7 @@ Express + `data/seed.json` による業務 API のモックです。UI から使
 
 ## テスト
 
-Playwright による E2E テストが **148 件** あります（viewer 87 + admin/web 55 + auth/web 6）。
+Playwright による E2E テストが **153 件** あります（viewer 92 + admin/web 55 + auth/web 6）。
 
 | 対象 | ファイル | 件数 |
 |---|---|---|
@@ -217,7 +217,8 @@ Playwright による E2E テストが **148 件** あります（viewer 87 + adm
 | PDF ビューア | `viewer/e2e/viewer.spec.ts` | 13 |
 | Mock API | `viewer/e2e/mock-api.spec.ts` | 16 |
 | アクセシビリティ | `viewer/e2e/a11y.spec.ts` | 12 |
-| モバイル UI | `viewer/e2e/mobile.spec.ts` | 9 |
+| モバイル UI | `viewer/e2e/mobile.spec.ts` | 10 |
+| ツールバー配置 | `viewer/e2e/toolbar.spec.ts` | 4 |
 | 本棚 | `viewer/e2e/bookshelf.spec.ts` | 6 |
 | 閲覧権限・透かし | `viewer/e2e/access.spec.ts` | 3 |
 | チャンク配信・DRM | `viewer/e2e/drm.spec.ts` | 3 |
