@@ -75,7 +75,8 @@ export function PdfViewer({
   onSelection,
   onClearSelection,
 }: PdfViewerProps) {
-  void policy
+  const allowCopy = policy?.drm?.allowCopy ?? true
+  const allowPrint = policy?.allowPrint ?? true
   const usesSharedDoc = externalLoading !== undefined
   const internal = usePdfDocument(usesSharedDoc ? null : pdfUrl)
   const pdfDoc = usesSharedDoc ? (externalPdfDoc ?? null) : internal.pdfDoc
@@ -135,9 +136,17 @@ export function PdfViewer({
     )
   }
 
+  const drmClass = [
+    'animate-fade-in',
+    allowCopy ? '' : 'drm-copy-blocked',
+    allowPrint ? '' : 'drm-print-blocked',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   if (viewMode === 'spread') {
     return (
-      <div className="animate-fade-in">
+      <div className={drmClass}>
         <div
           className={`flex overflow-hidden rounded-2xl shadow-[var(--shadow-card)] ring-1 ring-slate-200/80 dark:ring-slate-700/80 ${
             rightPage ? 'gap-px bg-slate-300 dark:bg-slate-700' : ''
@@ -194,7 +203,7 @@ export function PdfViewer({
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className={drmClass}>
       <div className="overflow-hidden rounded-2xl shadow-[var(--shadow-card)] ring-1 ring-slate-200/80 dark:ring-slate-700/80">
         <PdfPage
           pdfDoc={pdfDoc}

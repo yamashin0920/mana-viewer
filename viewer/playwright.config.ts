@@ -32,15 +32,7 @@ export default defineConfig({
     },
   ],
   webServer: [
-    {
-      command: 'npm start',
-      cwd: '../mock-api',
-      url: `http://localhost:${MOCK_API_PORT}/health`,
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-      env: { PORT: String(MOCK_API_PORT) },
-    },
-    // ログイン・開発用ユーザー切替のテストが auth を経由するため一緒に起動する
+    // mock-api はトークン検証で auth-api を呼ぶため、auth-api を先に並べる
     {
       command: 'npm start',
       cwd: '../auth/api',
@@ -48,6 +40,17 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
       env: { PORT: String(AUTH_API_PORT) },
+    },
+    {
+      command: 'npm start',
+      cwd: '../mock-api',
+      url: `http://localhost:${MOCK_API_PORT}/health`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+      env: {
+        PORT: String(MOCK_API_PORT),
+        AUTH_API_URL: `http://127.0.0.1:${AUTH_API_PORT}`,
+      },
     },
     {
       command: 'npm run dev',
@@ -68,6 +71,7 @@ export default defineConfig({
       env: {
         MOCK_API_PORT: String(MOCK_API_PORT),
         VITE_AUTH_APP_URL: `http://localhost:${AUTH_WEB_PORT}`,
+        VITE_USE_DEMO_PDF: 'false',
       },
     },
   ],

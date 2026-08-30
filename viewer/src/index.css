@@ -5,3 +5,12 @@
 @source "../../packages/auth-client/src";
 
 @import "@mana/ui/tokens.css";
+
+/* DRM: 印刷禁止。コピー禁止はクリップボードイベントで処理し、アプリ内ハイライト用の選択は残す */
+@media print {
+  html.drm-print-blocked,
+  html.drm-print-blocked body,
+  html.drm-print-blocked #root {
+    display: none !important;
+  }
+}

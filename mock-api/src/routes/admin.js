@@ -7,7 +7,17 @@ const {
   generateCoverUrl,
 } = require('../store');
 const { persist } = require('../persistence');
-const { USER_ROLES, canPermissionRole } = require('@mana/contracts/node');
+const {
+  createUserSchema,
+  updateUserSchema,
+  createLicenseSchema,
+  updateLicenseSchema,
+  updateUserLicensesSchema,
+  assignLicenseSchema,
+  createContentSchema,
+  updateContentSchema,
+} = require('@mana/contracts/node/schemas');
+const { validateBody } = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -34,7 +44,7 @@ router.get('/users', adminMiddleware, (req, res) => {
   res.json({ data: users });
 });
 
-router.put('/users/:userId/licenses', orgAdminMiddleware, (req, res) => {
+router.put('/users/:userId/licenses', orgAdminMiddleware, validateBody(updateUserLicensesSchema), (req, res) => {
   const user = req.store.users.find((u) => u.id === req.params.userId);
   if (!user || !sameOrg(req, user.orgId)) {
     return res.status(404).json({ error: 'not_found', message: 'ユーザーが見つかりません' });
@@ -75,20 +85,14 @@ router.put('/users/:userId/licenses', orgAdminMiddleware, (req, res) => {
   });
 });
 
-router.post('/users', orgAdminMiddleware, (req, res) => {
-  const { name, email, role = 'learner', externalId = null } = req.body || {};
-  if (!name?.trim() || !email?.trim()) {
-    return res.status(400).json({ error: 'validation_error', message: '名前とメールアドレスは必須です' });
-  }
-  if (!USER_ROLES.includes(role)) {
-    return res.status(400).json({ error: 'validation_error', message: '無効なロールです' });
-  }
+router.post('/users', orgAdminMiddleware, validateBody(createUserSchema), (req, res) => {
+  const { name, email, role = 'learner', externalId = null } = req.body;
 
   const user = {
     id: `user-${uuidv4().slice(0, 8)}`,
     orgId: req.user.orgId,
-    email: email.trim(),
-    name: name.trim(),
+    email,
+    name,
     role,
     externalId,
     avatarUrl: null,
@@ -99,7 +103,7 @@ router.post('/users', orgAdminMiddleware, (req, res) => {
   res.status(201).json(user);
 });
 
-router.put('/users/:userId', orgAdminMiddleware, (req, res) => {
+router.put('/users/:userId', orgAdminMiddleware, validateBody(updateUserSchema), (req, res) => {
   const user = req.store.users.find((u) => u.id === req.params.userId);
   if (!user || !sameOrg(req, user.orgId)) {
     return res.status(404).json({ error: 'not_found', message: 'ユーザーが見つかりません' });
@@ -151,7 +155,7 @@ router.get('/licenses', adminMiddleware, (req, res) => {
   res.json({ data: licenses });
 });
 
-router.post('/licenses', orgAdminMiddleware, (req, res) => {
+router.post('/licenses', orgAdminMiddleware, validateBody(createLicenseSchema), (req, res) => {
   const { contentId, seatCount = 1, startsAt, expiresAt, allowOffline = true, status = 'active', assignedUserIds = [] } =
     req.body || {};
 
@@ -182,7 +186,7 @@ router.post('/licenses', orgAdminMiddleware, (req, res) => {
   res.status(201).json(license);
 });
 
-router.put('/licenses/:licenseId', orgAdminMiddleware, (req, res) => {
+router.put('/licenses/:licenseId', orgAdminMiddleware, validateBody(updateLicenseSchema), (req, res) => {
   const license = req.store.licenses.find((l) => l.id === req.params.licenseId);
   if (!license || !sameOrg(req, license.orgId)) {
     return res.status(404).json({ error: 'not_found', message: 'ライセンスが見つかりません' });
@@ -218,7 +222,7 @@ router.delete('/licenses/:licenseId', orgAdminMiddleware, (req, res) => {
   res.status(204).send();
 });
 
-router.post('/licenses/:licenseId/assign', orgAdminMiddleware, (req, res) => {
+router.post('/licenses/:licenseId/assign', orgAdminMiddleware, validateBody(assignLicenseSchema), (req, res) => {
   const license = req.store.licenses.find((l) => l.id === req.params.licenseId);
   if (!license || !sameOrg(req, license.orgId)) {
     return res.status(404).json({ error: 'not_found', message: 'ライセンスが見つかりません' });
@@ -250,7 +254,7 @@ router.get('/contents', adminMiddleware, (req, res) => {
   res.json({ data: contents });
 });
 
-router.post('/contents', contentWriteMiddleware, (req, res) => {
+router.post('/contents', contentWriteMiddleware, validateBody(createContentSchema), (req, res) => {
   const {
     title,
     author = '',
@@ -305,7 +309,7 @@ router.post('/contents', contentWriteMiddleware, (req, res) => {
   res.status(201).json(content);
 });
 
-router.put('/contents/:contentId', contentWriteMiddleware, (req, res) => {
+router.put('/contents/:contentId', contentWriteMiddleware, validateBody(updateContentSchema), (req, res) => {
   const content = req.store.contents.find((c) => c.id === req.params.contentId);
   if (!content || !sameOrg(req, content.orgId)) {
     return res.status(404).json({ error: 'not_found', message: 'コンテンツが見つかりません' });

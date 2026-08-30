@@ -8,6 +8,10 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./node": "./node/index.cjs"
+    "./node": "./node/index.cjs",
+    "./node/schemas": "./node/schemas.cjs"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
   }
 }

@@ -157,6 +157,48 @@ test.describe('Mock API', () => {
     expect(body.expiresAt).toBeTruthy()
   })
 
+  test('GET /contents/:id/chunks/:page requires a view session', async ({ request }) => {
+    const res = await request.get(`${API_BASE}/contents/content-001/chunks/1`, {
+      headers: { Authorization: `Bearer ${LEARNER_TOKEN}` },
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.error).toBe('session_required')
+  })
+
+  test('GET /contents/:id/chunks/:page rejects an invalid session', async ({ request }) => {
+    const res = await request.get(`${API_BASE}/contents/content-001/chunks/1`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'X-Session-Token': 'not-a-session',
+      },
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.error).toBe('invalid_session')
+  })
+
+  test('GET /contents/:id/chunks/:page returns a mock chunk with a valid session', async ({ request }) => {
+    const sessionRes = await request.post(`${API_BASE}/contents/content-001/view-sessions`, {
+      headers: { Authorization: `Bearer ${LEARNER_TOKEN}` },
+    })
+    expect(sessionRes.status()).toBe(201)
+    const session = await sessionRes.json()
+
+    const res = await request.get(`${API_BASE}/contents/content-001/chunks/1`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'X-Session-Token': session.sessionToken,
+      },
+    })
+    expect(res.ok()).toBeTruthy()
+    expect(res.headers()['x-mock']).toBe('true')
+    expect(res.headers()['x-encrypted']).toBe('true')
+    const body = await res.body()
+    expect(body.length).toBeGreaterThan(0)
+    expect(body.toString('utf8')).toContain('--encrypted-chunk-content-001-page-1--')
+  })
+
   test('GET /annotations/shared/:shareId returns shared bundle', async ({ request }) => {
     const createRes = await request.post(`${API_BASE}/contents/content-001/annotations/share`, {
       headers: {

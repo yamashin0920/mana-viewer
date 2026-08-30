@@ -37,9 +37,11 @@ npm workspaces による単一リポジトリです。依存関係はルート�
 
 ### 共有パッケージの役割
 
-- **`@mana/contracts`** — `User` / `Content` / `License` などの型と、`can('contents:write')` などの権限表。admin UI と mock-api / auth-api のミドルウェアが同じ定義を参照する
+- **`@mana/contracts`** — `User` / `Content` / `License` などの型と、`can('contents:write')` などの権限表。admin UI と mock-api / auth-api のミドルウェアが同じ定義を参照する。Zod スキーマ（`@mana/contracts/node/schemas`）で書き込み API を実行時検証する
 - **`@mana/auth-client`** — `redirectToLogin` / `AuthGuard` / `createApiFetch` / トークン保管。viewer と admin の重複を除去
 - **`@mana/dev-data`** — seed / credentials の読み書きを 1 モジュールに集約。パスは `MANA_SEED_PATH` / `MANA_CREDENTIALS_PATH` で上書き可能
+
+mock-api の Bearer トークン検証はファイルを直接読まず、`AUTH_API_URL/auth/me` へ HTTP で問い合わせます。admin 画面のデータ取得は TanStack Query です。
 
 ---
 
@@ -114,17 +116,21 @@ npm workspaces による単一リポジトリです。依存関係はルート�
 
 ### 進捗・セッション
 
-- 閲覧開始時に `createViewSession` で閲覧セッションを作成
+- 閲覧開始時に `createViewSession` で閲覧セッションを作成し、`X-Session-Token` をチャンク取得に付与
+- `VITE_USE_DEMO_PDF=false` のとき `GET /contents/:id/chunks/:page` を呼び、モックチャンクなら `sample.pdf` にフォールバックして PDF.js へ渡す
 - 起動時にライセンス検証（`verifyLicense`）を実行し、`canView` が false なら閲覧不可画面を表示
 - 現在ページ・ズーム・表示モードを API へ自動保存
 - 再訪時に保存済みのページ・ズーム・表示モードを復元
-- 保存失敗時は Dexie の進捗キューへ退避
+- 保存失敗時は Dexie の進捗キューへ退避し、オンライン復帰時にフラッシュ
+- 注釈の保存失敗時も Dexie キューへ退避
 - 教材メタデータを Dexie にキャッシュ
 
 ### DRM
 
 - **ウォーターマーク表示** — セッション / ポリシーの情報を PDF 上にオーバーレイ
 - DRM ポリシーの取得（`GET /contents/:id/policy`）
+- **印刷制御** — `allowPrint: false` のとき Ctrl/Cmd+P と `@media print` をブロック
+- **コピー制御** — `allowCopy: false` のとき copy / cut を防止（アプリ内ハイライト用のテキスト選択は残す）
 
 ### UI 全般
 
@@ -173,6 +179,7 @@ npm workspaces による単一リポジトリです。依存関係はルート�
 ### 共通
 
 - 管理者ロールによるアクセス制御
+- 一覧データは TanStack Query で取得し、書き込み後にキャッシュを無効化
 - ダークモード切替（※ 永続化されない。[improvements.md](improvements.md) 参照）
 - ログアウト
 
@@ -187,7 +194,7 @@ Express + `data/seed.json` による業務 API のモックです。UI から使
 | 認証 | `POST /auth/login`、`POST /auth/lti/launch` |
 | ユーザー | `GET /users/me`、組織 / グループ参照 |
 | 本棚 | `GET /bookshelves`、本棚・アイテムの CRUD |
-| コンテンツ | 一覧・詳細・目次・ポリシー・閲覧セッション・**暗号化チャンク**・**オフラインパッケージ** |
+| コンテンツ | 一覧・詳細・目次・ポリシー・閲覧セッション・暗号化チャンク・**オフラインパッケージ** |
 | 進捗 | 取得・保存・**一括同期** |
 | 注釈 | CRUD、**一括同期**、共有リンク |
 | ライセンス | `GET /licenses/me`、**オフライントークン**、組織ライセンス管理 |
@@ -201,21 +208,22 @@ Express + `data/seed.json` による業務 API のモックです。UI から使
 
 ## テスト
 
-Playwright による E2E テストが **139 件** あります（viewer 81 + admin/web 52 + auth/web 6）。
+Playwright による E2E テストが **148 件** あります（viewer 87 + admin/web 55 + auth/web 6）。
 
 | 対象 | ファイル | 件数 |
 |---|---|---|
 | 注釈 | `viewer/e2e/annotations.spec.ts` | 19 |
 | PDF ビューア | `viewer/e2e/viewer.spec.ts` | 13 |
-| Mock API | `viewer/e2e/mock-api.spec.ts` | 13 |
+| Mock API | `viewer/e2e/mock-api.spec.ts` | 16 |
 | アクセシビリティ | `viewer/e2e/a11y.spec.ts` | 12 |
 | モバイル UI | `viewer/e2e/mobile.spec.ts` | 9 |
 | 本棚 | `viewer/e2e/bookshelf.spec.ts` | 6 |
 | 閲覧権限・透かし | `viewer/e2e/access.spec.ts` | 3 |
+| チャンク配信・DRM | `viewer/e2e/drm.spec.ts` | 3 |
 | ダークモード | `viewer/e2e/dark-mode.spec.ts` | 3 |
 | 進捗 | `viewer/e2e/progress.spec.ts` | 2 |
 | ユーザー切替 | `viewer/e2e/user-switch.spec.ts` | 1 |
-| 管理 API | `admin/web/e2e/admin-api.spec.ts` | 15 |
+| 管理 API | `admin/web/e2e/admin-api.spec.ts` | 18 |
 | 管理: アカウント | `admin/web/e2e/accounts.spec.ts` | 9 |
 | 管理: ロール・エラー | `admin/web/e2e/permissions.spec.ts` | 7 |
 | 管理: コンテンツ | `admin/web/e2e/contents.spec.ts` | 6 |

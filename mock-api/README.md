@@ -21,14 +21,13 @@ npm run dev
 ## 認証
 
 ログインは **auth-api (3002)** が担当します。mock-api の `POST /auth/login` は 410 を返します。
-すべての保護された API には `Authorization` ヘッダーが必要です。
+すべての保護された API には `Authorization` ヘッダーが必要です。トークンの検証は `AUTH_API_URL`（既定 `http://localhost:3002`）の `GET /auth/me` へ HTTP で行います。auth-api が起動していないと保護ルートは 503 を返します。
 
 ```
 Authorization: Bearer mock-token-learner
 ```
 
-トークン → ユーザー対応は `@mana/dev-data` 経由で `auth/api/data/credentials.json` を読みます。
-権限ロールは `@mana/contracts/node` を参照します。
+ユーザー実体は `@mana/dev-data` 経由の seed を参照します。権限ロールは `@mana/contracts/node` を参照します。書き込み API のボディは `@mana/contracts/node/schemas` の Zod スキーマで検証します。
 
 ### 開発用トークン
 

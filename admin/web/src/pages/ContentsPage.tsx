@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { BookOpen, Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
-import { createContent, deleteContent, fetchContents, updateContent } from '../api/client'
+import { createContent, deleteContent, updateContent } from '../api/client'
 import { Alert } from '../components/Alert'
 import { Button, EmptyState, Field } from '@mana/ui'
 import { useAdminAction } from '../hooks/useAdminAction'
 import { useConfirm } from '../hooks/useConfirm'
 import { usePermissions } from '../hooks/usePermissions'
+import { adminQueryKeys, useAdminContentsQuery } from '../hooks/useAdminQueries'
 import type { Content } from '../types'
 import { STATUS_LABELS } from '../types'
 import { permissionHint } from '../utils/authorization'
@@ -28,8 +30,11 @@ const defaultForm = {
 }
 
 export function ContentsPage() {
-  const [contents, setContents] = useState<Content[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
+  const contentsQuery = useAdminContentsQuery()
+  const contents = contentsQuery.data?.data ?? []
+  const loading = contentsQuery.isLoading
+  const loadError = contentsQuery.error
 
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Content | null>(null)
@@ -42,23 +47,16 @@ export function ContentsPage() {
   const { confirm, dialog: confirmDialog } = useConfirm()
 
   const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const res = await fetchContents()
-      setContents(res.data)
-    } catch (err) {
-      setFeedback({
-        tone: 'error',
-        message: err instanceof Error ? err.message : '読み込みに失敗しました',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [setFeedback])
+    await queryClient.invalidateQueries({ queryKey: adminQueryKeys.contents })
+  }, [queryClient])
 
   useEffect(() => {
-    load()
-  }, [load])
+    if (!loadError) return
+    setFeedback({
+      tone: 'error',
+      message: loadError instanceof Error ? loadError.message : '読み込みに失敗しました',
+    })
+  }, [loadError, setFeedback])
 
   const formPayload = () => ({
     title: form.title.trim(),

@@ -350,4 +350,43 @@ test.describe('Admin API', () => {
       data: { licenseIds: ['license-001', 'license-002', 'license-003'] },
     })
   })
+
+  test('POST /admin/users rejects invalid payload', async ({ request }) => {
+    const res = await request.post(`${MOCK_API}/admin/users`, {
+      headers: {
+        Authorization: `Bearer ${ADMIN_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: { name: '', email: 'not-an-email', role: 'learner' },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.error).toBe('validation_error')
+  })
+
+  test('POST /admin/contents rejects missing title', async ({ request }) => {
+    const res = await request.post(`${MOCK_API}/admin/contents`, {
+      headers: {
+        Authorization: `Bearer ${ADMIN_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: { author: 'E2E', pageCount: 1 },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.error).toBe('validation_error')
+  })
+
+  test('POST /admin/credentials rejects missing password', async ({ request }) => {
+    const res = await request.post(`${AUTH_API}/admin/credentials`, {
+      headers: {
+        Authorization: `Bearer ${ADMIN_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: { loginId: 'nobody', linkedUserId: 'user-001' },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.error).toBe('validation_error')
+  })
 })

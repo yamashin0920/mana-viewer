@@ -11,13 +11,13 @@ import {
   fetchContentPolicy,
   fetchProgress,
   fetchSharedAnnotations,
-  getDemoPdfUrl,
   saveProgress,
   shareAnnotations,
   updateAnnotation,
 } from '../api/contents'
 import { verifyLicense } from '../api/licenses'
 import { cacheContent, queueProgress } from '../db/offline'
+import { queueFailedAnnotation } from '../db/syncFlush'
 import { PdfViewer, type TextSelection, type ViewMode } from '../components/viewer/PdfViewer'
 import { ViewerToolbar, ViewerSidebarToggle } from '../components/viewer/ViewerToolbar'
 import { ViewerSidebar, MobileSidebarDrawer } from '../components/viewer/ViewerSidebar'
@@ -35,6 +35,8 @@ import {
   spreadPageStep,
   singlePageStep,
 } from '../hooks/useKeyboardNavigation'
+import { useContentPdf } from '../hooks/useContentPdf'
+import { useDrmPolicy } from '../hooks/useDrmPolicy'
 import { usePdfDocument } from '../hooks/usePdfDocument'
 import { usePinchZoom } from '../hooks/usePinchZoom'
 import { usePdfTextSearch } from '../hooks/usePdfTextSearch'
@@ -84,6 +86,8 @@ export function ViewerPage() {
   const [sidebarTab, setSidebarTab] = useState<'thumbnails' | 'toc' | 'annotations'>('thumbnails')
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [sessionToken, setSessionToken] = useState<string | null>(null)
+  const [sessionReady, setSessionReady] = useState(USE_DEMO_PDF)
+  const [drmRoot, setDrmRoot] = useState<HTMLElement | null>(null)
   const [pendingSelection, setPendingSelection] = useState<TextSelection | null>(null)
   const [highlightColor, setHighlightColor] = useState<string>(DEFAULT_HIGHLIGHT_COLOR)
   const [noteDialogOpen, setNoteDialogOpen] = useState(false)
@@ -167,9 +171,28 @@ export function ViewerPage() {
 
   useEffect(() => {
     if (!contentId || !license?.allowed) return
+    if (USE_DEMO_PDF) {
+      createViewSession(contentId)
+        .then((session) => setSessionToken(session.sessionToken))
+        .catch(() => undefined)
+      return
+    }
+
+    let cancelled = false
+    setSessionReady(false)
     createViewSession(contentId)
-      .then((session) => setSessionToken(session.sessionToken))
-      .catch(() => setSessionToken('dev-session'))
+      .then((session) => {
+        if (!cancelled) setSessionToken(session.sessionToken)
+      })
+      .catch(() => {
+        if (!cancelled) setSessionToken(null)
+      })
+      .finally(() => {
+        if (!cancelled) setSessionReady(true)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [contentId, license?.allowed])
 
   useEffect(() => {
@@ -276,7 +299,10 @@ export function ViewerPage() {
       setNoteText('')
       toast(`${annotationTypeLabel(variables.type)}を追加しました`)
     },
-    onError: () => toast('注釈の保存に失敗しました', 'error'),
+    onError: (_err, variables) => {
+      toast('注釈の保存に失敗しました', 'error')
+      void queueFailedAnnotation(contentId, 'create', crypto.randomUUID(), variables)
+    },
   })
 
   const updateAnnotationMutation = useMutation({
@@ -287,7 +313,10 @@ export function ViewerPage() {
       setEditingAnnotation(null)
       toast('注釈を更新しました')
     },
-    onError: () => toast('更新に失敗しました', 'error'),
+    onError: (_err, { id, payload }) => {
+      toast('更新に失敗しました', 'error')
+      void queueFailedAnnotation(contentId, 'update', id, payload)
+    },
   })
 
   const restoreAnnotationMutation = useMutation({
@@ -317,7 +346,10 @@ export function ViewerPage() {
           }),
       })
     },
-    onError: () => toast('削除に失敗しました', 'error'),
+    onError: (_err, { annotation }) => {
+      toast('削除に失敗しました', 'error')
+      void queueFailedAnnotation(contentId, 'delete', annotation.id)
+    },
   })
 
   const shareAnnotationsMutation = useMutation({
@@ -628,15 +660,17 @@ export function ViewerPage() {
     })
   }, [contentId, deleteAnnotationMutation, pendingDelete])
 
-  const pdfUrl = useMemo(() => {
-    if (USE_DEMO_PDF) return getDemoPdfUrl(contentId)
-    if (!sessionToken) return ''
-    return getDemoPdfUrl(contentId)
-  }, [contentId, sessionToken])
+  const { source: pdfSource, loading: pdfSourceLoading } = useContentPdf(
+    content?.id ?? null,
+    sessionToken,
+    sessionReady,
+  )
 
   const { pdfDoc, loading: pdfLoading, error: pdfError, numPages: pdfNumPages } = usePdfDocument(
-    pdfUrl || null
+    pdfSource
   )
+
+  useDrmPolicy(drmRoot, policy)
 
   const { matches: searchMatches, searching: searchSearching } = usePdfTextSearch(
     pdfDoc,
@@ -770,7 +804,11 @@ export function ViewerPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-slate-200/70 dark:bg-slate-950" data-testid="viewer-page">
+    <div
+      ref={setDrmRoot}
+      className="flex h-screen flex-col overflow-hidden bg-slate-200/70 dark:bg-slate-950"
+      data-testid="viewer-page"
+    >
       <SkipLink />
       {sharedBundle && sharedBundle.annotations.length > 0 && (
         <div
@@ -852,11 +890,11 @@ export function ViewerPage() {
           className="custom-scrollbar flex-1 overflow-auto p-4 outline-none sm:p-6"
         >
           <div className={`mx-auto flex min-h-full justify-center ${viewMode === 'spread' ? 'max-w-6xl' : 'max-w-4xl'}`}>
-            {pdfUrl ? (
+            {pdfSource || pdfSourceLoading ? (
               <PdfViewer
-                pdfUrl={pdfUrl}
+                pdfUrl=""
                 pdfDoc={pdfDoc}
-                pdfLoading={pdfLoading}
+                pdfLoading={pdfLoading || pdfSourceLoading}
                 pdfError={pdfError}
                 page={page}
                 zoom={zoom}

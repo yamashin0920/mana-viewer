@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Loader2, Pencil, Plus, Trash2, UserPlus, KeyRound } from 'lucide-react'
 import {
   createCredential,
   createUser,
   deleteCredential,
   deleteUser,
-  fetchAdminUsers,
-  fetchCredentials,
-  fetchLicenses,
   updateCredential,
   updateUser,
   updateUserLicenses,
@@ -17,7 +15,13 @@ import { Button, Field } from '@mana/ui'
 import { useAdminAction } from '../hooks/useAdminAction'
 import { useConfirm } from '../hooks/useConfirm'
 import { usePermissions } from '../hooks/usePermissions'
-import type { AdminUser, CredentialAccount, License, UserRole } from '../types'
+import {
+  adminQueryKeys,
+  useAdminCredentialsQuery,
+  useAdminLicensesQuery,
+  useAdminUsersQuery,
+} from '../hooks/useAdminQueries'
+import type { AdminUser, CredentialAccount, UserRole } from '../types'
 import { ROLE_LABELS } from '../types'
 import { permissionHint } from '../utils/authorization'
 
@@ -25,10 +29,16 @@ const inputClass =
   'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100'
 
 export function AccountsPage() {
-  const [credentials, setCredentials] = useState<CredentialAccount[]>([])
-  const [users, setUsers] = useState<AdminUser[]>([])
-  const [allLicenses, setAllLicenses] = useState<License[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
+  const usersQuery = useAdminUsersQuery()
+  const credentialsQuery = useAdminCredentialsQuery()
+  const licensesQuery = useAdminLicensesQuery()
+
+  const credentials = credentialsQuery.data?.data ?? []
+  const users = usersQuery.data?.data ?? []
+  const allLicenses = licensesQuery.data?.data ?? []
+  const loading = usersQuery.isLoading || credentialsQuery.isLoading || licensesQuery.isLoading
+  const loadError = usersQuery.error ?? credentialsQuery.error ?? licensesQuery.error
 
   const allows = usePermissions()
   const canWriteCredentials = allows('credentials:write')
@@ -47,29 +57,20 @@ export function AccountsPage() {
   const [credForm, setCredForm] = useState({ loginId: '', password: '', linkedUserId: '' })
 
   const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const [credRes, userRes, licenseRes] = await Promise.all([
-        fetchCredentials(),
-        fetchAdminUsers(),
-        fetchLicenses(),
-      ])
-      setCredentials(credRes.data)
-      setUsers(userRes.data)
-      setAllLicenses(licenseRes.data)
-    } catch (err) {
-      setFeedback({
-        tone: 'error',
-        message: err instanceof Error ? err.message : '読み込みに失敗しました',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [setFeedback])
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.users }),
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.credentials }),
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.licenses }),
+    ])
+  }, [queryClient])
 
   useEffect(() => {
-    load()
-  }, [load])
+    if (!loadError) return
+    setFeedback({
+      tone: 'error',
+      message: loadError instanceof Error ? loadError.message : '読み込みに失敗しました',
+    })
+  }, [loadError, setFeedback])
 
   const usersWithoutCredential = users.filter(
     (u) => !credentials.some((c) => c.linkedUserId === u.id),

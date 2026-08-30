@@ -152,7 +152,7 @@ wait_for_auth_api "http://127.0.0.1:${AUTH_API_PORT}/health" "$LOG_DIR/auth-api.
 echo "Mock API を起動中... (http://localhost:${MOCK_PORT})"
 (
   cd "$ROOT/mock-api"
-  PORT="$MOCK_PORT" npm start
+  PORT="$MOCK_PORT" AUTH_API_URL="http://127.0.0.1:${AUTH_API_PORT}" npm start
 ) >>"$LOG_DIR/mock-api.log" 2>&1 &
 echo $! >"$mock_pid_file"
 wait_for_url "http://127.0.0.1:${MOCK_PORT}/health" "Mock API" "$LOG_DIR/mock-api.log"

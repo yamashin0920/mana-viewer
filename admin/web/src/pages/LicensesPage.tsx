@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Loader2, Pencil, Plus, Shield, Trash2 } from 'lucide-react'
 import {
   createLicense,
   deleteLicense,
-  fetchAdminUsers,
-  fetchContents,
-  fetchLicenses,
   updateLicense,
 } from '../api/client'
 import { Alert } from '../components/Alert'
@@ -13,7 +11,13 @@ import { Button, EmptyState, Field } from '@mana/ui'
 import { useAdminAction } from '../hooks/useAdminAction'
 import { useConfirm } from '../hooks/useConfirm'
 import { usePermissions } from '../hooks/usePermissions'
-import type { AdminUser, Content, License } from '../types'
+import {
+  adminQueryKeys,
+  useAdminContentsQuery,
+  useAdminLicensesQuery,
+  useAdminUsersQuery,
+} from '../hooks/useAdminQueries'
+import type { License } from '../types'
 import { STATUS_LABELS } from '../types'
 import { permissionHint } from '../utils/authorization'
 
@@ -25,10 +29,16 @@ function formatDate(iso: string) {
 }
 
 export function LicensesPage() {
-  const [licenses, setLicenses] = useState<License[]>([])
-  const [contents, setContents] = useState<Content[]>([])
-  const [users, setUsers] = useState<AdminUser[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
+  const licensesQuery = useAdminLicensesQuery()
+  const contentsQuery = useAdminContentsQuery()
+  const usersQuery = useAdminUsersQuery()
+
+  const licenses = licensesQuery.data?.data ?? []
+  const contents = contentsQuery.data?.data ?? []
+  const users = usersQuery.data?.data ?? []
+  const loading = licensesQuery.isLoading || contentsQuery.isLoading || usersQuery.isLoading
+  const loadError = licensesQuery.error ?? contentsQuery.error ?? usersQuery.error
 
   const allows = usePermissions()
   const canWrite = allows('licenses:write')
@@ -48,29 +58,20 @@ export function LicensesPage() {
   })
 
   const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const [licRes, contRes, userRes] = await Promise.all([
-        fetchLicenses(),
-        fetchContents(),
-        fetchAdminUsers(),
-      ])
-      setLicenses(licRes.data)
-      setContents(contRes.data)
-      setUsers(userRes.data)
-    } catch (err) {
-      setFeedback({
-        tone: 'error',
-        message: err instanceof Error ? err.message : '読み込みに失敗しました',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [setFeedback])
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.licenses }),
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.contents }),
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.users }),
+    ])
+  }, [queryClient])
 
   useEffect(() => {
-    load()
-  }, [load])
+    if (!loadError) return
+    setFeedback({
+      tone: 'error',
+      message: loadError instanceof Error ? loadError.message : '読み込みに失敗しました',
+    })
+  }, [loadError, setFeedback])
 
   const resetForm = () => {
     setForm({
