@@ -8,13 +8,14 @@
 
 ## 全体像
 
-開発環境は 5 プロセスです。一括起動はリポジトリルートの `./start-dev.sh` です。
+開発環境は 6 プロセスです。一括起動はリポジトリルートの `./start-dev.sh` です。
 
 ```
 ブラウザ
   ├─ auth/web     :5180  唯一のログイン UI + SSO セッション
   ├─ viewer       :5173  本棚・PDF ビューア（認可のみ）
-  └─ admin/web    :5190  管理画面（認可のみ）
+  ├─ admin/web    :5190  管理画面（認可のみ）
+  └─ lms/web      :5200  LMS（コースからビューア起動）
         │
         ├─ /api/auth  → auth/api   :3002
         └─ /api または /api/mock → mock-api :3001
@@ -26,9 +27,10 @@
 | `auth/api` | 3002 | Express | ID/PW 検証、トークン発行、資格情報 CRUD |
 | `viewer` | 5173 | React + Vite + PDF.js | 本棚、PDF 表示、注釈 |
 | `admin/web` | 5190 | React + Vite | アカウント・教材・ライセンス管理 |
-| `mock-api` | 3001 | Express | 学習・管理の業務 API。seed はメモリ + JSON |
+| `lms/web` | 5200 | React + Vite | コース、LTI 起動、学習記録 |
+| `mock-api` | 3001 | Express | 学習・管理・LMS の業務 API |
 
-ビューアと管理画面にログインフォームはありません。未ログインは `auth/web` へリダイレクトします。
+ビューアと管理画面と LMS にログインフォームはありません。未ログインは `auth/web` へリダイレクトします。
 
 ## 認証と認可
 
@@ -44,6 +46,7 @@ SSO の流れは [機能仕様: 認証](features/auth.md) を参照してくだ�
 
 - **viewer**: Vite proxy で `/api` → mock-api。認証アプリ URL は `VITE_AUTH_APP_URL`
 - **admin/web**: `/api/auth` → auth-api、`/api/mock` → mock-api
+- **lms/web**: `/api/mock` → mock-api、`VITE_AUTH_APP_URL` でログインへ
 - **auth/web**: 認証 API へログインし、`accessToken` をリダイレクト先へ渡す
 
 トークンは各 SPA の `localStorage`（`accessToken`）に保存します。auth/web 側にもセッションがあります。
@@ -80,4 +83,4 @@ components/viewer PDF.js ラッパ、注釈レイヤ
 - 暗号化チャンクの復号パイプライン
 - Service Worker による完全オフライン閲覧
 - マルチテナントの物理分離
-- LTI 起動パラメータ（`/viewer/:id?page=`）の正式対応
+- LTI 起動パラメータ（`/viewer/:id?page=`）の正式対応 — **実装済み**

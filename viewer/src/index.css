@@ -89,3 +89,20 @@ body {
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #64748b;
 }
+
+@media print {
+  body.print-disabled * {
+    visibility: hidden !important;
+  }
+  body.print-disabled::after {
+    content: "この教材は印刷が許可されていません";
+    visibility: visible !important;
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #0f172a;
+  }
+}

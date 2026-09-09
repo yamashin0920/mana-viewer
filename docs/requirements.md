@@ -127,7 +127,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 |------|------|----------|--------|
 | ウォーターマーク表示 | ✅ | セッション / policy から PDF 上にオーバーレイ | — |
 | DRM ポリシー取得 | ✅ | `/contents/:id/policy` | — |
-| 印刷制御 (`allowPrint`) | ❌ | 型・seed のみ。UI 未反映 | — |
+| 印刷制御 (`allowPrint`) | ✅ | 管理画面で印刷OK/NG。ビューアは印刷ボタンと Ctrl+P 抑止 | `print.spec.ts`, `contents.spec.ts` |
 | コピー制御 (`allowCopy`) | ❌ | 型・seed のみ。選択禁止未 | — |
 | スクリーンショット防止 | ❌ | policy フィールドのみ | — |
 
@@ -137,10 +137,10 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 
 | 要件 | 状態 | 実装内容 | テスト |
 |------|------|----------|--------|
-| Deep Link 起動 | 🔶 | Mock API `POST /lms/deep-link`。ビューア URL パラメータ未 | — |
-| LTI 起動 → 教材表示 | ❌ | `/viewer/:id?page=` 等未対応 | — |
-| 名簿同期 (`/lms/roster/sync`) | 🔶 | Mock API のみ | — |
-| xAPI 学習記録 | 🔶 | Mock API のみ | — |
+| Deep Link 起動 | ✅ | LMS Web + `POST /lms/launch` / `deep-link`。ビューア `?page=` | `lms/web/e2e/courses.spec.ts` |
+| LTI 起動 → 教材表示 | ✅ | コースからビューア起動、バナー、xAPI | `courses.spec.ts`, `print.spec.ts` |
+| 名簿同期 (`/lms/roster/sync`) | ✅ | LMS コース画面（講師以上） | `lms/web/e2e/courses.spec.ts` |
+| xAPI 学習記録 | ✅ | ビューア送信 + LMS `/activity` | `lms/web/e2e/courses.spec.ts`（間接） |
 
 ---
 
@@ -171,8 +171,8 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 1. 暗号化チャンク → PDF 復号パイプライン
 2. オフラインパッケージの Dexie 保存と完全オフライン閲覧
 3. 注釈・進捗同期キューのフラッシュ（オンライン復帰時）
-4. LTI / Deep Link 起動（`/viewer/:id?page=`）
-5. 印刷・コピー制御（`policy.drm` 反映）
+4. LTI / Deep Link 起動（`/viewer/:id?page=`）— **実装済み**（`lms/web`）
+5. コピー制御（`policy.drm` の `allowCopy`）
 6. 各項目に Playwright テスト追加（[ルール](../.cursor/rules/playwright-tests.mdc) 参照）
 
 ---

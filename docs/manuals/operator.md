@@ -4,7 +4,7 @@
 > 最終更新: 2026-09-09
 > 関連: [運用](../operations.md) / [トラブルシュート](../troubleshooting.md)
 
-本番インフラの手順ではありません。このリポジトリの開発用 5 プロセスを扱います。
+本番インフラの手順ではありません。このリポジトリの開発用 6 プロセスを扱います。
 
 ## このマニュアルでできること
 
@@ -29,6 +29,7 @@
 |------|-----|
 | ログイン | http://localhost:5180/login |
 | 管理画面 | http://localhost:5190 |
+| LMS | http://localhost:5200 |
 | ビューア | http://localhost:5173 |
 | Auth API | http://localhost:3002/health |
 | Mock API | http://localhost:3001/health |
@@ -42,7 +43,7 @@ curl -s http://localhost:3001/health
 
 Auth API の JSON に `"authMode":"credentials-json"` があることを確認します。これが無いときは 3002 で別プロセスが動いている可能性が高いので `--restart` します。
 
-ログイン画面・管理・ビューアはブラウザで HTTP 200 相当のページが返るか見ます。
+ログイン画面・管理・LMS・ビューアはブラウザでページが返るか見ます。
 
 ## ログ
 
@@ -52,6 +53,7 @@ Auth API の JSON に `"authMode":"credentials-json"` があることを確認�
 - `mock-api.log`
 - `auth-web.log`
 - `admin-web.log`
+- `lms-web.log`
 - `viewer.log`
 
 起動失敗時はスクリプトが末尾 20 行を出します。PID は `.dev/*.pid` です。

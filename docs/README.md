@@ -54,7 +54,8 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | [注釈](features/annotations.md) | マーカー、描画、共有、エクスポート |
 | [ライセンス](features/licenses.md) | 席数、割当、閲覧前検証 |
 | [管理画面](features/admin.md) | アカウント、教材、ライセンス UI |
-| [DRM・オフライン・LMS](features/drm-offline-lms.md) | ポリシー、端末、Deep Link |
+| [LMS 連携](features/lms.md) | コース、LTI 起動、xAPI |
+| [DRM・オフライン](features/drm-offline-lms.md) | 印刷、端末、オフライン |
 
 ### 横断
 
@@ -77,4 +78,5 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 - [mock-api/README.md](../mock-api/README.md)
 - [auth/README.md](../auth/README.md)
 - [admin/README.md](../admin/README.md)
+- [lms/README.md](../lms/README.md)
 - [viewer/e2e/README.md](../viewer/e2e/README.md)

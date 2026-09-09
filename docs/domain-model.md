@@ -47,7 +47,7 @@ User 1 ── * Progress（content ごと）
 
 | ポリシー | 意味 | UI 反映 |
 |----------|------|---------|
-| `allowPrint` | 印刷許可 | ❌ 未反映 |
+| `allowPrint` | 印刷許可 | ✅ 管理 OK/NG、ビューア反映 |
 | `allowOffline` | オフライン許可 | API のみ 🔶 |
 | `offlineDays` | オフライン有効日数 | API のみ 🔶 |
 | `maxDevices` | 端末上限 | API のみ 🔶 |

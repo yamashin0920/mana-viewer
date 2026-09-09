@@ -84,14 +84,15 @@ description: マナビューアのドキュメントを統一ルールで作成�
 
 ## 機能・API を足したときの更新セット
 
-コードを変えたら、該当するものを同じ変更で直す。
+コードを変えたら、該当するものを**必ず同じ変更で直す**（`.cursor/rules/feature-complete.mdc`）。
 
-1. `docs/requirements.md` の該当行
-2. 対応する `docs/features/*.md`
-3. API なら `docs/api/*.md`
-4. 画面操作が変わるなら `docs/manuals/*.md`
-5. 起動・ポート・環境変数なら `docs/development/getting-started.md` とルート README
-6. 新しい概念なら `docs/glossary.md` と `docs/domain-model.md`
+1. Playwright（対象 `e2e/`。API なら `viewer/e2e/mock-api.spec.ts`）
+2. `docs/requirements.md` の該当行
+3. 対応する `docs/features/*.md`
+4. API なら `docs/api/*.md`
+5. 画面操作が変わるなら `docs/manuals/*.md`
+6. 起動・ポート・環境変数なら `docs/development/getting-started.md` とルート README
+7. 新しい概念なら `docs/glossary.md` と `docs/domain-model.md`
 
 ## 書いてはいけないこと
 

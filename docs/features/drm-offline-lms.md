@@ -2,9 +2,9 @@
 
 > 読者: 開発者
 > 最終更新: 2026-09-09
-> 関連: [セキュリティ](../security.md) / [プラットフォーム API](../api/platform.md) / [要件](../requirements.md)
+> 関連: [セキュリティ](../security.md) / [LMS 連携](lms.md) / [プラットフォーム API](../api/platform.md)
 
-ビューアの本線から外れた、またはモック止まりの領域です。実装時はここと要件表を同時に更新します。
+DRM とオフラインの状態です。LMS の画面・起動は [LMS 連携](lms.md) が正本です。
 
 ## DRM
 
@@ -12,10 +12,12 @@
 |------|------|------|
 | ポリシー取得 | ✅ | `GET /contents/:id/policy` |
 | ウォーターマーク | ✅ | セッション / policy を PDF オーバーレイ |
+| 印刷 OK/NG | ✅ | 管理画面で設定。ビューアはボタン表示と Ctrl+P 抑止 |
 | 暗号化フラグ | 🔶 | `drm.encrypted` 等。実復号なし |
-| 印刷 | ❌ | seed の `allowPrint` のみ |
 | コピー | ❌ | `allowCopy` 未反映 |
 | スクリーンショット | ❌ | `allowScreenshot` 未反映 |
+
+印刷の詳細は [ビューア](viewer.md) と [管理画面](admin.md)。テスト: `viewer/e2e/print.spec.ts`、`admin/web/e2e/contents.spec.ts`。
 
 ## オフライン
 
@@ -30,20 +32,4 @@
 
 ## LMS
 
-| 項目 | 状態 | 実装 |
-|------|------|------|
-| Deep Link 生成 | 🔶 | `POST /lms/deep-link`。返す URL は mock-api ホスト |
-| LTI launch | 🔶 | mock-api `/auth/lti/launch`。ビューア未接続 |
-| 名簿同期 | 🔶 | 固定メッセージ |
-| xAPI | 🔶 | 受信して ID を返すだけ |
-| ビューア `?page=` 起動 | ❌ | |
-
-## テスト
-
-API の一部は `viewer/e2e/mock-api.spec.ts`。オフライン再生と LTI 画面の E2E はありません。
-
-## 次の実装時の注意
-
-1. チャンク復号を入れるときは `VITE_USE_DEMO_PDF` の切替とセッションヘッダを必須にする
-2. キューフラッシュはオンライン検知（`navigator.onLine`）とリトライ方針を決めてから UI を出す
-3. LTI は auth サービスとのセッション結合が必要。mock の launch をビューアに直結しない
+[LMS 連携](lms.md) を参照。Web アプリ `lms/web`（:5200）と `POST /lms/launch` でビューア起動まで実装済みです。

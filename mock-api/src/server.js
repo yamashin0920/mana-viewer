@@ -62,7 +62,14 @@ app.get('/', (_req, res) => {
         'GET /annotations/shared/:shareId',
       ],
       devices: ['GET /devices/me', 'POST /devices/register'],
-      lms: ['POST /lms/deep-link', 'POST /lms/roster/sync', 'POST /lms/xapi/statements'],
+      lms: [
+        'GET /lms/courses',
+        'GET /lms/courses/:id',
+        'POST /lms/launch',
+        'POST /lms/deep-link',
+        'POST /lms/roster/sync',
+        'GET/POST /lms/xapi/statements',
+      ],
     },
   });
 });

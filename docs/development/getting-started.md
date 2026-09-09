@@ -25,6 +25,7 @@
 | ログイン | http://localhost:5180/login |
 | ビューア | http://localhost:5173 |
 | 管理画面 | http://localhost:5190 |
+| LMS | http://localhost:5200 |
 | Auth API ヘルス | http://localhost:3002/health |
 | Mock API ヘルス | http://localhost:3001/health |
 
@@ -68,9 +69,12 @@ cd viewer && npm run dev          # :5173
 | `AUTH_API_PORT` | 3002 | Auth API |
 | `AUTH_WEB_PORT` | 5180 | ログイン UI |
 | `ADMIN_WEB_PORT` | 5190 | 管理画面 |
+| `LMS_WEB_PORT` | 5200 | LMS |
 | `MOCK_API_PORT` | 3001 | Mock API |
 | `VIEWER_PORT` | 5173 | ビューア |
-| `VITE_AUTH_APP_URL` | auth/web の URL | ビューア・管理のリダイレクト先 |
+| `VITE_AUTH_APP_URL` | auth/web の URL | ビューア・管理・LMS のリダイレクト先 |
+| `VITE_LMS_APP_URL` | LMS の URL | ビューアの「LMS に戻る」 |
+| `VIEWER_URL` | ビューアの URL | Mock API が発行する LTI 起動 URL |
 | `VITE_API_BASE_URL` | `/api` | ビューアの API |
 | `VITE_USE_DEMO_PDF` | `true` | サンプル PDF を使う |
 

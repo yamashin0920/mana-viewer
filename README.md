@@ -17,8 +17,7 @@ B2B 向け PDF 学習プラットフォーム。仕様・マニュアルの正�
 
 ## 開発ルール
 
-- **機能を実装したら Playwright テストを追加する** — [.cursor/rules/playwright-tests.mdc](.cursor/rules/playwright-tests.mdc)
-- **仕様・画面が変わったら docs を更新する** — [.cursor/rules/documentation.mdc](.cursor/rules/documentation.mdc)
+- **機能を実装したら Playwright・docs・マニュアルを同じ変更で更新する** — [.cursor/rules/feature-complete.mdc](.cursor/rules/feature-complete.mdc)
 
 ## 起動
 
@@ -30,6 +29,7 @@ B2B 向け PDF 学習プラットフォーム。仕様・マニュアルの正�
 |------|-----|----------------|
 | ログイン | http://localhost:5180/login | `demo` / `demo`（学習者） |
 | ビューア | http://localhost:5173 | 同上 |
+| LMS | http://localhost:5200 | `demo` / `demo` または `instructor` / `instructor` |
 | 管理画面 | http://localhost:5190 | `admin` / `admin` |
 
 停止: `./start-dev.sh --stop`
@@ -42,6 +42,7 @@ B2B 向け PDF 学習プラットフォーム。仕様・マニュアルの正�
 | [`mock-api/`](mock-api/README.md) | 業務 Mock API |
 | [`auth/`](auth/README.md) | 認証 API + ログイン画面 |
 | [`admin/`](admin/README.md) | 管理画面 |
+| [`lms/`](lms/README.md) | LMS（コースからビューア起動） |
 
 ## テスト
 
@@ -49,4 +50,5 @@ B2B 向け PDF 学習プラットフォーム。仕様・マニュアルの正�
 cd viewer && npm run test:e2e
 cd admin/web && npm run test:e2e
 cd auth/web && npm run test:e2e
+cd lms/web && npm run test:e2e
 ```

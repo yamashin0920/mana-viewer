@@ -56,6 +56,8 @@ import {
   type PageCoordContext,
 } from '../utils/annotationCoords'
 import { exportAnnotations } from '../utils/annotationExport'
+import { printIfAllowed, usePrintControl } from '../hooks/usePrintControl'
+import { postXapiStatement } from '../api/lms'
 
 const USE_DEMO_PDF = import.meta.env.VITE_USE_DEMO_PDF !== 'false'
 const SHOW_ANNOTATIONS_KEY = 'viewer-show-annotations'
@@ -72,6 +74,10 @@ export function ViewerPage() {
   const { contentId = '' } = useParams()
   const [searchParams] = useSearchParams()
   const shareId = searchParams.get('share')
+  const launchPageParam = Number(searchParams.get('page') || '')
+  const launchPage = Number.isInteger(launchPageParam) && launchPageParam >= 1 ? launchPageParam : null
+  const courseId = searchParams.get('courseId')
+  const isLmsLaunch = searchParams.get('lmsLaunch') === '1' || !!courseId
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -177,7 +183,9 @@ export function ViewerPage() {
     if (!contentId || !progressLoaded || !progressData) return
     if (restoredContentIdRef.current === contentId) return
 
-    if (progressData.currentPage > 0) {
+    if (launchPage) {
+      setPage(launchPage)
+    } else if (progressData.currentPage > 0) {
       setPage(progressData.currentPage)
     }
     if (progressData.viewMode === 'spread' || progressData.viewMode === 'single') {
@@ -188,13 +196,33 @@ export function ViewerPage() {
     }
     restoredContentIdRef.current = contentId
     setProgressHydrated(true)
-  }, [contentId, progressLoaded, progressData])
+  }, [contentId, progressLoaded, progressData, launchPage])
 
   useEffect(() => {
     if (content) {
       cacheContent(content).catch(() => undefined)
     }
   }, [content])
+
+  const allowPrint = policy?.allowPrint ?? content?.policy.allowPrint
+  usePrintControl(allowPrint)
+
+  const lmsUrl = import.meta.env.VITE_LMS_APP_URL || 'http://localhost:5200'
+
+  useEffect(() => {
+    if (!isLmsLaunch || !content || !license?.allowed) return
+    postXapiStatement({
+      verb: 'http://adlnet.gov/expapi/verbs/experienced',
+      object: {
+        id: content.id,
+        definition: { name: { 'ja-JP': content.title } },
+      },
+      context: courseId
+        ? { contextActivities: { grouping: [{ id: courseId }] } }
+        : undefined,
+      result: launchPage ? { extensions: { 'https://mana-viewer.example/page': launchPage } } : undefined,
+    }).catch(() => undefined)
+  }, [isLmsLaunch, content, license?.allowed, courseId, launchPage])
 
   const progressMutation = useMutation({
     mutationFn: (payload: {
@@ -742,6 +770,21 @@ export function ViewerPage() {
           {sharedBundle.annotations.length} 件）
         </div>
       )}
+      {isLmsLaunch && (
+        <div
+          className="flex items-center justify-center gap-3 border-b border-violet-200 bg-violet-50 px-4 py-2 text-sm text-violet-900 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-100"
+          data-testid="lms-launch-banner"
+        >
+          <span>LMS から起動しました{courseId ? `（コース ${courseId}）` : ''}</span>
+          <a
+            href={courseId ? `${lmsUrl}/courses/${courseId}` : `${lmsUrl}/courses`}
+            className="font-medium underline"
+            data-testid="lms-back-link"
+          >
+            LMS に戻る
+          </a>
+        </div>
+      )}
       <ViewerToolbar
         title={content.title}
         page={page}
@@ -777,6 +820,8 @@ export function ViewerPage() {
         onBack={() => navigate('/')}
         onPrev={handlePrev}
         onNext={handleNext}
+        allowPrint={allowPrint === true}
+        onPrint={() => printIfAllowed(allowPrint)}
       />
 
       <div className="flex flex-1 overflow-hidden">

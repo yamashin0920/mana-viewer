@@ -21,20 +21,21 @@
 | SSO（auth/web セッション） | ✅ |
 | ログアウトで共通セッション破棄 | ✅ |
 | 管理画面のロールゲート | ✅ |
-| LTI 起動 | 🔶 Mock API のみ |
+| LTI 起動 | ✅ | LMS `POST /lms/launch` とビューア `?page=` |
 
 ## 画面とルート
 
 | アプリ | パス | 説明 |
 |--------|------|------|
-| auth/web | `/login?redirect=` | ログイン。有効セッションなら即リダイレクト |
+| ログイン画面 | `/login` | ログイン。有効セッションなら即リダイレクト |
 | auth/web | `/logout` | セッション破棄 → ログインへ |
 | viewer | すべて | `AuthGuard`。トークンなしなら auth へ |
 | admin | すべて | `AuthGuard` + `canAccessAdmin` |
+| lms/web | すべて | `AuthGuard`。全ロール可 |
 
 ## 主な操作
 
-1. ビューア (5173) または管理 (5190) を開く
+1. ビューア (5173)・管理 (5190)・LMS (5200) を開く
 2. 未ログインなら `http://localhost:5180/login?redirect=...`
 3. auth/web にセッションがあれば ID/PW を出さず `?accessToken=` 付きで戻る
 4. なければログイン → セッション保存 → 元アプリへ
@@ -53,6 +54,7 @@
 ログイン成功後:
 
 - viewer: 全ロール
+- lms: 全ロール（学習者は所属コースのみ）
 - admin: `org_admin` `content_admin` 以外はアクセス拒否ページ
 
 ## テスト

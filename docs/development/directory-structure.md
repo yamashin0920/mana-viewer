@@ -21,6 +21,7 @@
 │   ├── e2e/                  Playwright
 │   └── public/sample.pdf     開発用 PDF
 ├── admin/web/                管理 SPA（:5190）
+├── lms/web/                  LMS SPA（:5200）
 ├── auth/
 │   ├── api/                  認証 API（:3002）
 │   │   └── data/credentials.json

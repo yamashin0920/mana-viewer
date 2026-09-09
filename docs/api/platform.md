@@ -94,10 +94,13 @@
 | メソッド | パス | 権限 | 説明 |
 |----------|------|------|------|
 | GET / POST | `/lms/platforms` | 参照は instructor 以上、作成は org_admin | プラットフォーム |
-| POST | `/lms/deep-link` | ログイン済み | 起動 URL 生成（ビューア未対応） |
-| POST | `/lms/roster/sync` | instructor / org_admin | 名簿同期モック |
-| GET | `/lms/courses/:externalCourseId/materials` | ログイン済み | コース教材 |
-| POST | `/lms/xapi/statements` | ログイン済み | 学習記録受信モック |
+| GET | `/lms/courses` | ログイン済み | コース一覧。学習者は所属コースのみ |
+| GET | `/lms/courses/:id` | ログイン済み | コース詳細・教材・メンバー |
+| POST | `/lms/launch` | ログイン済み + ライセンス | ビューア起動 URL（`page` `lmsLaunch`） |
+| POST | `/lms/deep-link` | ログイン済み + ライセンス | launch と同じ URL 形 |
+| POST | `/lms/roster/sync` | instructor 以上 | 名簿同期モック |
+| GET | `/lms/courses/:id/materials` | ログイン済み | コース教材 |
+| GET / POST | `/lms/xapi/statements` | ログイン済み | 学習記録の一覧 / 受信 |
 
 ## curl 例
 

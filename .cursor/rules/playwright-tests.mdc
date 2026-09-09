@@ -1,7 +1,7 @@
 ---
 description: 機能実装時に Playwright E2E テストを追加するルール
-globs: viewer/src/**,viewer/e2e/**,mock-api/src/**,admin/web/src/**,admin/web/e2e/**,auth/api/src/**
-alwaysApply: false
+globs: viewer/src/**,viewer/e2e/**,mock-api/src/**,admin/web/src/**,admin/web/e2e/**,auth/api/src/**,lms/web/src/**,lms/web/e2e/**
+alwaysApply: true
 ---
 
 # 機能実装時は Playwright テストを追加する
@@ -34,7 +34,9 @@ viewer または mock-api にユーザー向け機能・API 挙動を追加・�
 | ダークモード | `viewer/e2e/dark-mode.spec.ts` |
 | モバイル UI | `viewer/e2e/mobile.spec.ts` |
 | 管理画面 | `admin/web/e2e/*.spec.ts` |
-| 共通 setup | `viewer/e2e/fixtures.ts`, `admin/web/e2e/fixtures.ts` |
+| LMS | `lms/web/e2e/*.spec.ts` |
+| 印刷制御 | `viewer/e2e/print.spec.ts`、`admin/web/e2e/contents.spec.ts` |
+| 共通 setup | `viewer/e2e/fixtures.ts`, `admin/web/e2e/fixtures.ts`, `lms/web/e2e/fixtures.ts` |
 
 新カテゴリの機能は `viewer/e2e/<feature>.spec.ts` を新規作成してよい。
 
@@ -50,6 +52,7 @@ viewer または mock-api にユーザー向け機能・API 挙動を追加・�
 ```bash
 cd viewer && npm run test:e2e
 cd admin/web && npm run test:e2e
+cd lms/web && npm run test:e2e
 ```
 
 詳細: `viewer/e2e/README.md`
