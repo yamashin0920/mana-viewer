@@ -39,6 +39,8 @@ export function ToastContainer() {
           className={`animate-slide-up flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium shadow-[var(--shadow-float)] ${
             item.type === 'success' ? 'bg-slate-900 text-white' : 'bg-red-600 text-white'
           }`}
+          data-testid="toast"
+          data-toast-type={item.type}
         >
           {item.type === 'success' ? (
             <CheckCircle2 className="h-4 w-4 shrink-0" />

@@ -160,4 +160,40 @@ test.describe('Mock API', () => {
     expect(bundle.contentId).toBe('content-001')
     expect(bundle.annotations.length).toBe(created.annotationCount)
   })
+
+  test('GET /contents/:id/policy の allowPrint が教材ごとに違う', async ({ request }) => {
+    const denied = await request.get(`${API_BASE}/contents/content-001/policy`, {
+      headers: { Authorization: `Bearer ${LEARNER_TOKEN}` },
+    })
+    expect(denied.ok()).toBeTruthy()
+    expect((await denied.json()).allowPrint).toBe(false)
+
+    const allowed = await request.get(`${API_BASE}/contents/content-003/policy`, {
+      headers: { Authorization: `Bearer ${LEARNER_TOKEN}` },
+    })
+    expect(allowed.ok()).toBeTruthy()
+    expect((await allowed.json()).allowPrint).toBe(true)
+  })
+
+  test('GET /lms/courses と POST /lms/launch', async ({ request }) => {
+    const coursesRes = await request.get(`${API_BASE}/lms/courses`, {
+      headers: { Authorization: `Bearer ${LEARNER_TOKEN}` },
+    })
+    expect(coursesRes.ok()).toBeTruthy()
+    const courses = await coursesRes.json()
+    expect(courses.data[0].externalCourseId).toBe('lms-course-501')
+
+    const launchRes = await request.post(`${API_BASE}/lms/launch`, {
+      headers: {
+        Authorization: `Bearer ${LEARNER_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      data: { contentId: 'content-001', page: 8, courseId: 'lms-course-501' },
+    })
+    expect(launchRes.ok()).toBeTruthy()
+    const launch = await launchRes.json()
+    expect(launch.launchUrl).toContain('/viewer/content-001')
+    expect(launch.launchUrl).toContain('page=8')
+    expect(launch.launchUrl).toContain('lmsLaunch=1')
+  })
 })

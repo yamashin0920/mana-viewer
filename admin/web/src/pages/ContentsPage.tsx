@@ -191,13 +191,41 @@ export function ContentsPage() {
               <label className="mb-1 block text-xs text-slate-500">説明</label>
               <textarea className={inputClass} rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </div>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <p className="mb-2 text-xs text-slate-500">印刷</p>
+              <div className="inline-flex rounded-lg border border-slate-200 p-0.5 dark:border-slate-600" data-testid="print-policy">
+                <button
+                  type="button"
+                  data-testid="print-policy-ok"
+                  aria-pressed={form.allowPrint}
+                  className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                    form.allowPrint
+                      ? 'bg-green-600 text-white'
+                      : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                  }`}
+                  onClick={() => setForm({ ...form, allowPrint: true })}
+                >
+                  印刷OK
+                </button>
+                <button
+                  type="button"
+                  data-testid="print-policy-ng"
+                  aria-pressed={!form.allowPrint}
+                  className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                    !form.allowPrint
+                      ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900'
+                      : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                  }`}
+                  onClick={() => setForm({ ...form, allowPrint: false })}
+                >
+                  印刷NG
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-slate-400">OK の教材だけビューアに印刷ボタンが出ます。NG ではショートカット印刷も止めます。</p>
+            </div>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-4">
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.allowPrint} onChange={(e) => setForm({ ...form, allowPrint: e.target.checked })} />
-              印刷許可
-            </label>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={form.allowOffline} onChange={(e) => setForm({ ...form, allowOffline: e.target.checked })} />
               オフライン許可
@@ -225,6 +253,7 @@ export function ContentsPage() {
         {contents.map((content) => (
           <div
             key={content.id}
+            data-testid={`content-card-${content.id}`}
             className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"
             style={{ boxShadow: 'var(--shadow-card)' }}
           >
@@ -245,6 +274,16 @@ export function ContentsPage() {
                       : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                   }`}>
                     {STATUS_LABELS[content.status ?? 'draft'] ?? content.status}
+                  </span>
+                  <span
+                    data-testid="print-badge"
+                    className={`rounded px-1.5 py-0.5 text-xs ${
+                      content.policy.allowPrint
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                    }`}
+                  >
+                    {content.policy.allowPrint ? '印刷OK' : '印刷NG'}
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-slate-400">{content.pageCount} ページ</p>

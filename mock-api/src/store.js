@@ -15,7 +15,11 @@ function saveSeed(store) {
 }
 
 function createStore() {
-  return loadSeed();
+  const store = loadSeed();
+  if (!Array.isArray(store.xapiStatements)) {
+    store.xapiStatements = [];
+  }
+  return store;
 }
 
 function loadTokenMap() {

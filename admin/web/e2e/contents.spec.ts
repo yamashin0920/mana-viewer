@@ -27,7 +27,26 @@ test.describe('コンテンツ管理', () => {
     await page.locator('#content-status').selectOption('published')
     await page.getByRole('button', { name: '作成' }).click()
 
-    await expect(page.getByTestId('contents-grid')).toContainText(title)
-    await expect(page.getByTestId('contents-grid').locator(`img[src*="CoverTest"]`)).toBeVisible()
+    const card = page.locator('[data-testid^="content-card-"]', { hasText: title })
+    await expect(card).toBeVisible()
+    await expect(card.locator('img[src*="CoverTest"]')).toBeVisible()
+  })
+
+  test('コンテンツカードに印刷OK/NGが表示される', async ({ page }) => {
+    await expect(page.getByTestId('content-card-content-001').getByTestId('print-badge')).toHaveText('印刷NG')
+    await expect(page.getByTestId('content-card-content-003').getByTestId('print-badge')).toHaveText('印刷OK')
+  })
+
+  test('印刷OK/NGを切り替えて保存できる', async ({ page }) => {
+    await page.getByTestId('content-card-content-001').getByRole('button', { name: '編集' }).click()
+    await expect(page.getByTestId('print-policy')).toBeVisible()
+    await page.getByTestId('print-policy-ok').click()
+    await page.getByRole('button', { name: '更新' }).click()
+    await expect(page.getByTestId('content-card-content-001').getByTestId('print-badge')).toHaveText('印刷OK')
+
+    await page.getByTestId('content-card-content-001').getByRole('button', { name: '編集' }).click()
+    await page.getByTestId('print-policy-ng').click()
+    await page.getByRole('button', { name: '更新' }).click()
+    await expect(page.getByTestId('content-card-content-001').getByTestId('print-badge')).toHaveText('印刷NG')
   })
 })

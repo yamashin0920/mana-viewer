@@ -7,6 +7,7 @@ import {
   Minus,
   PanelLeft,
   Plus,
+  Printer,
   Square,
   StickyNote,
 } from 'lucide-react'
@@ -54,6 +55,8 @@ interface ViewerToolbarProps {
   onBack: () => void
   onPrev: () => void
   onNext: () => void
+  allowPrint?: boolean
+  onPrint?: () => void
 }
 
 export function ViewerToolbar({
@@ -91,6 +94,8 @@ export function ViewerToolbar({
   onBack,
   onPrev,
   onNext,
+  allowPrint = false,
+  onPrint,
 }: ViewerToolbarProps) {
   const displayPageEnd = viewMode === 'spread' && page + 1 <= pageCount ? page + 1 : page
 
@@ -215,6 +220,18 @@ export function ViewerToolbar({
         {/* Actions */}
         <div className="flex items-center gap-1">
           <ThemeToggle />
+          {allowPrint && onPrint && (
+            <Button
+              variant="ghost"
+              size="icon"
+              data-testid="print-button"
+              onClick={onPrint}
+              aria-label="印刷"
+              title="印刷"
+            >
+              <Printer className="h-4 w-4" />
+            </Button>
+          )}
           <Button variant="ghost" size="icon" onClick={onAddNote} aria-label="メモ追加" title="メモ追加">
             <StickyNote className="h-4 w-4" />
           </Button>

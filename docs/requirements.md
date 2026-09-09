@@ -1,6 +1,10 @@
 # 学習用ビューア — 要件一覧と実装状況
 
-B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)** の要件と、現時点（2026-08）の実装状況です。
+> 読者: 開発者・PdM
+> 最終更新: 2026-09-09
+> 関連: [ドキュメント目次](README.md) / [機能仕様](features/auth.md)
+
+B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)** の要件と、現時点の実装状況です。記号の意味はこのファイルの凡例が正です。機能の手順は [マニュアル](manuals/README.md)、API は [docs/api/](api/overview.md) を参照してください。
 
 ## 凡例
 
@@ -123,7 +127,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 |------|------|----------|--------|
 | ウォーターマーク表示 | ✅ | セッション / policy から PDF 上にオーバーレイ | — |
 | DRM ポリシー取得 | ✅ | `/contents/:id/policy` | — |
-| 印刷制御 (`allowPrint`) | ❌ | 型・seed のみ。UI 未反映 | — |
+| 印刷制御 (`allowPrint`) | ✅ | 管理画面で印刷OK/NG。ビューアは印刷ボタンと Ctrl+P 抑止 | `print.spec.ts`, `contents.spec.ts` |
 | コピー制御 (`allowCopy`) | ❌ | 型・seed のみ。選択禁止未 | — |
 | スクリーンショット防止 | ❌ | policy フィールドのみ | — |
 
@@ -133,10 +137,10 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 
 | 要件 | 状態 | 実装内容 | テスト |
 |------|------|----------|--------|
-| Deep Link 起動 | 🔶 | Mock API `POST /lms/deep-link`。ビューア URL パラメータ未 | — |
-| LTI 起動 → 教材表示 | ❌ | `/viewer/:id?page=` 等未対応 | — |
-| 名簿同期 (`/lms/roster/sync`) | 🔶 | Mock API のみ | — |
-| xAPI 学習記録 | 🔶 | Mock API のみ | — |
+| Deep Link 起動 | ✅ | LMS Web + `POST /lms/launch` / `deep-link`。ビューア `?page=` | `lms/web/e2e/courses.spec.ts` |
+| LTI 起動 → 教材表示 | ✅ | コースからビューア起動、バナー、xAPI | `courses.spec.ts`, `print.spec.ts` |
+| 名簿同期 (`/lms/roster/sync`) | ✅ | LMS コース画面（講師以上） | `lms/web/e2e/courses.spec.ts` |
+| xAPI 学習記録 | ✅ | ビューア送信 + LMS `/activity` | `lms/web/e2e/courses.spec.ts`（間接） |
 
 ---
 
@@ -167,14 +171,18 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 1. 暗号化チャンク → PDF 復号パイプライン
 2. オフラインパッケージの Dexie 保存と完全オフライン閲覧
 3. 注釈・進捗同期キューのフラッシュ（オンライン復帰時）
-4. LTI / Deep Link 起動（`/viewer/:id?page=`）
-5. 印刷・コピー制御（`policy.drm` 反映）
+4. LTI / Deep Link 起動（`/viewer/:id?page=`）— **実装済み**（`lms/web`）
+5. コピー制御（`policy.drm` の `allowCopy`）
 6. 各項目に Playwright テスト追加（[ルール](../.cursor/rules/playwright-tests.mdc) 参照）
 
 ---
 
 ## 関連ドキュメント
 
-- [viewer/README.md](../viewer/README.md) — 起動・機能サマリ
+- [ドキュメント目次](README.md)
+- [アーキテクチャ](architecture.md)
+- [機能仕様](features/viewer.md)
+- [操作マニュアル](manuals/README.md)
+- [viewer/README.md](../viewer/README.md) — 起動の要約
 - [viewer/e2e/README.md](../viewer/e2e/README.md) — E2E テスト
-- [mock-api/README.md](../mock-api/README.md) — API 仕様
+- [mock-api/README.md](../mock-api/README.md) — API 起動の要約

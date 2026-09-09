@@ -1,0 +1,31 @@
+---
+description: 機能変更時はドキュメント・Playwright・マニュアルを同じ変更で更新する（常時適用）
+alwaysApply: true
+---
+
+# 機能完了の必須セット
+
+ユーザー向け機能・API・画面・権限・起動手順を追加・変更したら、**同じ PR / コミットで次をすべて実施する**。実装だけの完了は認めない。
+
+1. **Playwright**
+   - 対象アプリの `e2e/` に spec を追加または更新する
+   - 操作対象に `data-testid` を付ける
+   - 正常系を最低 1 ケース。分岐（許可/拒否など）があれば両方
+   - Mock API 変更は `viewer/e2e/mock-api.spec.ts` にも HTTP テストを足す
+   - `.cursor/rules/playwright-tests.mdc` の配置と書き方に従う
+
+2. **ドキュメント**
+   - `docs/requirements.md` の該当行（状態・実装内容・テスト列）
+   - 対応する `docs/features/*.md` および API なら `docs/api/*.md`
+   - 起動・ポート・環境変数なら `docs/development/getting-started.md` とルート README
+   - 新しい概念なら `docs/glossary.md`
+   - `.cursor/skills/documentation/SKILL.md` に従う
+
+3. **マニュアル**
+   - 画面操作が変わるロールの `docs/manuals/*.md` を直す
+   - 学習者向け UI → `learner.md`（講師差分があれば `instructor.md`）
+   - 管理画面 → `admin.md`
+   - 起動・サービス追加 → `developer.md` と `operator.md`
+   - `.cursor/skills/manuals/SKILL.md` に従う
+
+未実装を要件表で ✅ にしない。詳細は `.cursor/rules/playwright-tests.mdc` と `.cursor/rules/documentation.mdc`。
