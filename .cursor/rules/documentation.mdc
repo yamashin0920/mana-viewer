@@ -1,0 +1,20 @@
+---
+description: ドキュメント・マニュアルは統一スキルに従って更新する
+globs: docs/**/*.md,README.md,**/README.md,.cursor/skills/**/*.md
+alwaysApply: false
+---
+
+# ドキュメント更新ルール
+
+`docs/` または README を追加・変更するときは、次のスキルに従う。
+
+- `.cursor/skills/documentation/SKILL.md` — 配置・ヘッダ・実装状況記号・更新セット
+- `.cursor/skills/manuals/SKILL.md` — ロール別マニュアルの手順の書き方
+
+## 必須
+
+1. 日本語。コード上の値（ポート、ロール、パス）と矛盾させない
+2. 未実装を ✅ にしない。記号は `docs/requirements.md` に合わせる
+3. 機能・API・画面を変えた変更では、対応する `docs/` も同じ PR で直す
+4. ルート README とパッケージ README は短く保ち、詳細は `docs/` へリンクする
+5. 各 `docs/**/*.md` は読者・最終更新日・関連リンクを冒頭に置く

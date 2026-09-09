@@ -1,6 +1,10 @@
 # 学習用ビューア — 要件一覧と実装状況
 
-B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)** の要件と、現時点（2026-08）の実装状況です。
+> 読者: 開発者・PdM
+> 最終更新: 2026-09-09
+> 関連: [ドキュメント目次](README.md) / [機能仕様](features/auth.md)
+
+B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)** の要件と、現時点の実装状況です。記号の意味はこのファイルの凡例が正です。機能の手順は [マニュアル](manuals/README.md)、API は [docs/api/](api/overview.md) を参照してください。
 
 ## 凡例
 
@@ -175,6 +179,10 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 
 ## 関連ドキュメント
 
-- [viewer/README.md](../viewer/README.md) — 起動・機能サマリ
+- [ドキュメント目次](README.md)
+- [アーキテクチャ](architecture.md)
+- [機能仕様](features/viewer.md)
+- [操作マニュアル](manuals/README.md)
+- [viewer/README.md](../viewer/README.md) — 起動の要約
 - [viewer/e2e/README.md](../viewer/e2e/README.md) — E2E テスト
-- [mock-api/README.md](../mock-api/README.md) — API 仕様
+- [mock-api/README.md](../mock-api/README.md) — API 起動の要約

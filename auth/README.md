@@ -76,3 +76,9 @@ curl http://localhost:3002/health
 ```
 
 `authMode: "credentials-json"` と `credentialsCount: 3` が返れば正しい API が動いています。
+
+## 詳細
+
+- [認証機能仕様](../docs/features/auth.md)
+- [認証 API](../docs/api/auth.md)
+- [開発スタート](../docs/development/getting-started.md)
