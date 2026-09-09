@@ -136,6 +136,8 @@ curl -X POST -H "Authorization: Bearer mock-token-learner" \
 
 ## 注意
 
-- データはインメモリ。サーバー再起動で変更はリセットされます（seed から再読込）
+- データはインメモリ。サーバー再起動で変更はリセットされます（seed から再読込）。管理 CRUD は `data/seed.json` へ保存します
 - PDF チャンク・オフラインパッケージはダミーバイナリです
 - 本番 API 実装時はレスポンス形式を合わせて移行できます
+
+エンドポイントの正本: [docs/api/platform.md](../docs/api/platform.md) / [docs/api/admin.md](../docs/api/admin.md) / [docs/api/errors.md](../docs/api/errors.md)
