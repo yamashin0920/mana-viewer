@@ -27,8 +27,9 @@ test.describe('コンテンツ管理', () => {
     await page.locator('#content-status').selectOption('published')
     await page.getByRole('button', { name: '作成' }).click()
 
-    await expect(page.getByTestId('contents-grid')).toContainText(title)
-    await expect(page.getByTestId('contents-grid').locator(`img[src*="CoverTest"]`)).toBeVisible()
+    const card = page.locator('[data-testid^="content-card-"]', { hasText: title })
+    await expect(card).toBeVisible()
+    await expect(card.locator('img[src*="CoverTest"]')).toBeVisible()
   })
 
   test('コンテンツカードに印刷OK/NGが表示される', async ({ page }) => {
