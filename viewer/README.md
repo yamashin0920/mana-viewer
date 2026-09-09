@@ -88,4 +88,4 @@ mock-api と viewer を自動起動して E2E テスト（36件）を実行し�
 
 機能仕様: [本棚](../docs/features/bookshelf.md) / [ビューア](../docs/features/viewer.md) / [注釈](../docs/features/annotations.md)
 
-操作: [学習者マニュアル](../docs/manuals/learner.md)
+操作: [学習者マニュアル](../docs/manuals/learner.md)（アプリ: http://localhost:5210/learner）

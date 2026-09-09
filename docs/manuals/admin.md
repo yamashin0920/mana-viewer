@@ -23,6 +23,7 @@
 | ログイン | http://localhost:5180/login |
 | 管理画面 | http://localhost:5190 |
 | ビューア（確認用） | http://localhost:5173 |
+| マニュアル | http://localhost:5210 |
 
 開発用の組織管理者:
 

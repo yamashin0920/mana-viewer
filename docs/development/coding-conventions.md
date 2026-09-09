@@ -14,11 +14,12 @@
 | admin の CRUD UI | admin 内のログインフォーム |
 | auth の認証だけ | auth に本棚や教材 CRUD |
 | lms のコースと起動 | lms 内のログインフォーム |
+| manuals の Markdown 表示 | manuals に API やログイン、本文の複製 |
 | mock-api の業務 API | 本番向けの実 PDF 暗号化実装を「完成」としてコミット |
 
 共通型はパッケージ間で npm workspace 化していません。`viewer/src/types` と `admin/web/src/types` は意図的に近い定義です。契約を変えるときは両方と `docs/api/` を更新します。
 
-## フロント（viewer / admin / auth web）
+## フロント（viewer / admin / auth web / lms / manuals）
 
 - TypeScript + React 関数コンポーネント
 - ルーティングは React Router

@@ -15,7 +15,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | ❌ | 未実装 |
 | ➖ | 対象外（今回スコープに含めない） |
 
-**テスト**: Playwright E2E の有無（`viewer/e2e/`、現状 **36 テスト**）
+**テスト**: Playwright E2E の有無（viewer / admin / auth / lms / manuals。各パッケージの `e2e/`）
 
 ---
 
@@ -144,7 +144,17 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 
 ---
 
-## 10. UI / UX
+## 10. マニュアル閲覧
+
+| 要件 | 状態 | 実装内容 | テスト |
+|------|------|----------|--------|
+| マニュアル SPA | ✅ | `manuals/web` :5210。`docs/manuals/` を表示。ログイン不要 | `manuals/web/e2e/manuals.spec.ts` |
+| 単体起動 | ✅ | `cd manuals/web && npm run dev`。API 非依存 | 同上 |
+| 一括起動 | ✅ | `./start-dev.sh` が manuals-web を起動 | — |
+
+---
+
+## 11. UI / UX
 
 | 要件 | 状態 | 実装内容 | テスト |
 |------|------|----------|--------|
@@ -156,12 +166,12 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 
 ---
 
-## 11. テスト・開発基盤
+## 12. テスト・開発基盤
 
 | 要件 | 状態 | 実装内容 |
 |------|------|----------|
 | Mock API | ✅ | Express、seed データ、全主要エンドポイント |
-| Playwright E2E | ✅ | viewer 50 + auth/web 3 テスト |
+| Playwright E2E | ✅ | viewer / admin / auth / lms / manuals |
 | 機能追加時のテスト必須 | ✅ | `.cursor/rules/playwright-tests.mdc` |
 
 ---
@@ -182,6 +192,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 - [ドキュメント目次](README.md)
 - [アーキテクチャ](architecture.md)
 - [機能仕様](features/viewer.md)
+- [マニュアル閲覧](features/manuals.md)
 - [操作マニュアル](manuals/README.md)
 - [viewer/README.md](../viewer/README.md) — 起動の要約
 - [viewer/e2e/README.md](../viewer/e2e/README.md) — E2E テスト

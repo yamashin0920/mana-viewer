@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# マナビューア (mana-viewer) 開発サーバー一括起動（Auth + Mock API + Viewer + Admin + LMS）
+# マナビューア (mana-viewer) 開発サーバー一括起動（Auth + Mock API + Viewer + Admin + LMS + Manuals）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -9,6 +9,7 @@ AUTH_API_PORT="${AUTH_API_PORT:-3002}"
 AUTH_WEB_PORT="${AUTH_WEB_PORT:-5180}"
 ADMIN_WEB_PORT="${ADMIN_WEB_PORT:-5190}"
 LMS_WEB_PORT="${LMS_WEB_PORT:-5200}"
+MANUALS_WEB_PORT="${MANUALS_WEB_PORT:-5210}"
 MOCK_PORT="${MOCK_API_PORT:-3001}"
 VIEWER_PORT="${VIEWER_PORT:-5173}"
 
@@ -18,6 +19,7 @@ auth_api_pid_file="$PID_DIR/auth-api.pid"
 auth_web_pid_file="$PID_DIR/auth-web.pid"
 admin_web_pid_file="$PID_DIR/admin-web.pid"
 lms_web_pid_file="$PID_DIR/lms-web.pid"
+manuals_web_pid_file="$PID_DIR/manuals-web.pid"
 mock_pid_file="$PID_DIR/mock-api.pid"
 viewer_pid_file="$PID_DIR/viewer.pid"
 
@@ -65,12 +67,14 @@ stop_all_services() {
   stop_pid_file "$auth_web_pid_file" "Auth Web"
   stop_pid_file "$admin_web_pid_file" "Admin Web"
   stop_pid_file "$lms_web_pid_file" "LMS Web"
+  stop_pid_file "$manuals_web_pid_file" "Manuals Web"
   stop_pid_file "$auth_api_pid_file" "Auth API"
   stop_pid_file "$viewer_pid_file" "Viewer"
   stop_pid_file "$mock_pid_file" "Mock API"
   kill_port "$AUTH_WEB_PORT" "Auth Web"
   kill_port "$ADMIN_WEB_PORT" "Admin Web"
   kill_port "$LMS_WEB_PORT" "LMS Web"
+  kill_port "$MANUALS_WEB_PORT" "Manuals Web"
   kill_port "$AUTH_API_PORT" "Auth API"
   kill_port "$VIEWER_PORT" "Viewer"
   kill_port "$MOCK_PORT" "Mock API"
@@ -129,7 +133,7 @@ if [[ "${1:-}" == "--restart" ]]; then
   stop_all_services
 fi
 
-for f in "$auth_api_pid_file" "$auth_web_pid_file" "$admin_web_pid_file" "$lms_web_pid_file" "$mock_pid_file" "$viewer_pid_file"; do
+for f in "$auth_api_pid_file" "$auth_web_pid_file" "$admin_web_pid_file" "$lms_web_pid_file" "$manuals_web_pid_file" "$mock_pid_file" "$viewer_pid_file"; do
   if is_running "$f"; then
     echo "既存の開発サーバーを再起動します..."
     stop_all_services
@@ -143,12 +147,14 @@ kill_port "$MOCK_PORT" "Mock API"
 kill_port "$AUTH_WEB_PORT" "Auth Web"
 kill_port "$ADMIN_WEB_PORT" "Admin Web"
 kill_port "$LMS_WEB_PORT" "LMS Web"
+kill_port "$MANUALS_WEB_PORT" "Manuals Web"
 kill_port "$VIEWER_PORT" "Viewer"
 
 ensure_deps "$ROOT/auth/api" "auth-api"
 ensure_deps "$ROOT/auth/web" "auth-web"
 ensure_deps "$ROOT/admin/web" "admin-web"
 ensure_deps "$ROOT/lms/web" "lms-web"
+ensure_deps "$ROOT/manuals/web" "manuals-web"
 ensure_deps "$ROOT/mock-api" "mock-api"
 ensure_deps "$ROOT/viewer" "viewer"
 
@@ -203,6 +209,14 @@ echo "LMS Web を起動中... (http://localhost:${LMS_WEB_PORT})"
 echo $! >"$lms_web_pid_file"
 wait_for_url "http://127.0.0.1:${LMS_WEB_PORT}/courses" "LMS Web" "$LOG_DIR/lms-web.log"
 
+echo "Manuals Web を起動中... (http://localhost:${MANUALS_WEB_PORT})"
+(
+  cd "$ROOT/manuals/web"
+  npm run dev -- --host 127.0.0.1 --port "$MANUALS_WEB_PORT"
+) >>"$LOG_DIR/manuals-web.log" 2>&1 &
+echo $! >"$manuals_web_pid_file"
+wait_for_url "http://127.0.0.1:${MANUALS_WEB_PORT}/" "Manuals Web" "$LOG_DIR/manuals-web.log"
+
 echo "Viewer を起動中... (http://localhost:${VIEWER_PORT})"
 (
   cd "$ROOT/viewer"
@@ -221,6 +235,7 @@ echo "=========================================="
 echo "  認証 (ログイン): http://localhost:${AUTH_WEB_PORT}/login"
 echo "  管理画面:        http://localhost:${ADMIN_WEB_PORT}"
 echo "  LMS:             http://localhost:${LMS_WEB_PORT}"
+echo "  マニュアル:      http://localhost:${MANUALS_WEB_PORT}"
 echo "  ビューア:        http://localhost:${VIEWER_PORT}"
 echo "  Auth API:        http://localhost:${AUTH_API_PORT}/health"
 echo "  Mock API:        http://localhost:${MOCK_PORT}/health"

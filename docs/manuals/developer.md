@@ -27,6 +27,7 @@ cd mana-viewer   # リポジトリルート
 - ビューア http://localhost:5173 （`demo` / `demo`）
 - 管理 http://localhost:5190 （`admin` / `admin`）
 - LMS http://localhost:5200 （`demo` / `demo` または `instructor` / `instructor`）
+- マニュアル http://localhost:5210 （ログイン不要。`cd manuals/web && npm run dev` でも単体起動）
 
 ## 日常
 
@@ -36,7 +37,7 @@ cd mana-viewer   # リポジトリルート
 ./start-dev.sh --stop
 ```
 
-ログ: `.dev/logs/`（auth-api, mock-api, auth-web, admin-web, lms-web, viewer）。
+ログ: `.dev/logs/`（auth-api, mock-api, auth-web, admin-web, lms-web, manuals-web, viewer）。
 
 コードを触る場所:
 
@@ -45,6 +46,7 @@ cd mana-viewer   # リポジトリルート
 | 本棚・PDF・注釈 | `viewer/` |
 | 管理 UI | `admin/web/` |
 | LMS | `lms/web/` |
+| マニュアルアプリ | `manuals/web/` |
 | ログイン画面 | `auth/web/` |
 | ログイン API・資格情報 | `auth/api/` |
 | 業務 API・seed | `mock-api/` |
@@ -61,6 +63,7 @@ cd viewer && npm run test:e2e
 cd admin/web && npm run test:e2e
 cd auth/web && npm run test:e2e
 cd lms/web && npm run test:e2e
+cd manuals/web && npm run test:e2e
 ```
 
 ルール: `.cursor/rules/playwright-tests.mdc`

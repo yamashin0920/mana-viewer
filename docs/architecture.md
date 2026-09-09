@@ -8,17 +8,53 @@
 
 ## 全体像
 
-開発環境は 6 プロセスです。一括起動はリポジトリルートの `./start-dev.sh` です。
+開発環境は 7 プロセスです。一括起動はリポジトリルートの `./start-dev.sh` です。マニュアルアプリは API に接続しません。
+
+```mermaid
+flowchart LR
+  learner[学習者ブラウザ]
+  instructor[講師ブラウザ]
+  adminUser[管理者ブラウザ]
+  viewer[ビューア :5173]
+  lms[LMS :5200]
+  manuals[マニュアル :5210]
+  authWeb[認証Web :5180]
+  adminWeb[管理者サイト :5190]
+  mockApi[mock-api :3001]
+  authApi[auth-api :3002]
+  sso["SSO /authorize"]
+
+  learner --> viewer
+  learner --> lms
+  learner --> manuals
+  instructor --> viewer
+  instructor --> lms
+  instructor --> manuals
+  adminUser --> adminWeb
+  adminUser --> manuals
+  viewer -->|"未ログイン時"| sso
+  lms -->|"未ログイン時"| sso
+  adminWeb -->|"未ログイン時"| sso
+  sso --> authWeb
+  authWeb --> authApi
+  authApi --> mockApi
+  viewer -->|"Bearer JWT"| mockApi
+  lms -->|"Bearer JWT"| mockApi
+  adminWeb -->|"Bearer JWT"| mockApi
+```
+
 
 ```
 ブラウザ
-  ├─ auth/web     :5180  唯一のログイン UI + SSO セッション
-  ├─ viewer       :5173  本棚・PDF ビューア（認可のみ）
-  ├─ admin/web    :5190  管理画面（認可のみ）
-  └─ lms/web      :5200  LMS（コースからビューア起動）
-        │
-        ├─ /api/auth  → auth/api   :3002
-        └─ /api または /api/mock → mock-api :3001
+  ├─ auth/web      :5180  唯一のログイン UI + SSO セッション
+  ├─ viewer        :5173  本棚・PDF ビューア（認可のみ）
+  ├─ admin/web     :5190  管理画面（認可のみ）
+  ├─ lms/web       :5200  LMS（コースからビューア起動）
+  └─ manuals/web   :5210  操作マニュアル（ログイン不要・API なし）
+
+viewer / admin / lms（未ログインは auth/web）:
+  ├─ /api/auth  → auth/api   :3002
+  └─ /api または /api/mock → mock-api :3001
 ```
 
 | パッケージ | ポート | 技術 | 責務 |
@@ -28,9 +64,10 @@
 | `viewer` | 5173 | React + Vite + PDF.js | 本棚、PDF 表示、注釈 |
 | `admin/web` | 5190 | React + Vite | アカウント・教材・ライセンス管理 |
 | `lms/web` | 5200 | React + Vite | コース、LTI 起動、学習記録 |
+| `manuals/web` | 5210 | React + Vite | `docs/manuals/` を表示。認証なし |
 | `mock-api` | 3001 | Express | 学習・管理・LMS の業務 API |
 
-ビューアと管理画面と LMS にログインフォームはありません。未ログインは `auth/web` へリダイレクトします。
+ビューアと管理画面と LMS にログインフォームはありません。未ログインは `auth/web` へリダイレクトします。マニュアルアプリは認証しません。
 
 ## 認証と認可
 
