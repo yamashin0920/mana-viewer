@@ -18,7 +18,7 @@ description: マナビューアのドキュメントを統一ルールで作成�
 
 ## 情報源の優先順位
 
-1. **コード**（`viewer/` `admin/` `auth/` `mock-api/`）
+1. コード（`viewer/` `admin/` `auth/` `lms/` `manuals/` `mock-api/`）
 2. **既存の要件マトリクス**（`docs/requirements.md`）
 3. **パッケージ README**（起動手順の要約）
 4. それ以外は「想定」「未実装」と書く。想像で完成扱いにしない

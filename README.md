@@ -30,6 +30,7 @@ B2B 向け PDF 学習プラットフォーム。仕様・マニュアルの正�
 | ログイン | http://localhost:5180/login | `demo` / `demo`（学習者） |
 | ビューア | http://localhost:5173 | 同上 |
 | LMS | http://localhost:5200 | `demo` / `demo` または `instructor` / `instructor` |
+| マニュアル | http://localhost:5210 | 不要 |
 | 管理画面 | http://localhost:5190 | `admin` / `admin` |
 
 停止: `./start-dev.sh --stop`
@@ -43,6 +44,7 @@ B2B 向け PDF 学習プラットフォーム。仕様・マニュアルの正�
 | [`auth/`](auth/README.md) | 認証 API + ログイン画面 |
 | [`admin/`](admin/README.md) | 管理画面 |
 | [`lms/`](lms/README.md) | LMS（コースからビューア起動） |
+| [`manuals/`](manuals/README.md) | 操作マニュアル（ログイン不要） |
 
 ## テスト
 
@@ -51,4 +53,5 @@ cd viewer && npm run test:e2e
 cd admin/web && npm run test:e2e
 cd auth/web && npm run test:e2e
 cd lms/web && npm run test:e2e
+cd manuals/web && npm run test:e2e
 ```

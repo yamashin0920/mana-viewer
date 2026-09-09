@@ -8,7 +8,7 @@
 
 ```
 .
-├── start-dev.sh              5 プロセス一括起動
+├── start-dev.sh              開発サーバー一括起動
 ├── README.md                 入口
 ├── docs/                     仕様・マニュアル（正本）
 ├── .cursor/
@@ -22,6 +22,7 @@
 │   └── public/sample.pdf     開発用 PDF
 ├── admin/web/                管理 SPA（:5190）
 ├── lms/web/                  LMS SPA（:5200）
+├── manuals/web/              マニュアル SPA（:5210）
 ├── auth/
 │   ├── api/                  認証 API（:3002）
 │   │   └── data/credentials.json

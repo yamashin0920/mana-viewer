@@ -26,6 +26,7 @@
 | ログイン | http://localhost:5180/login |
 | 本棚・ビューア | http://localhost:5173 |
 | LMS | http://localhost:5200 |
+| マニュアル | http://localhost:5210 |
 
 ## ログイン
 

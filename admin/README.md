@@ -30,5 +30,5 @@ cd admin/web && npm run test:e2e
 ## 詳細
 
 - [管理画面機能仕様](../docs/features/admin.md)
-- [管理者マニュアル](../docs/manuals/admin.md)
+- [管理者マニュアル](../docs/manuals/admin.md)（アプリ: http://localhost:5210/admin）
 - [管理 API](../docs/api/admin.md)

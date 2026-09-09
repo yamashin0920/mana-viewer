@@ -26,6 +26,7 @@
 | ビューア | http://localhost:5173 |
 | 管理画面 | http://localhost:5190 |
 | LMS | http://localhost:5200 |
+| マニュアル | http://localhost:5210 |
 | Auth API ヘルス | http://localhost:3002/health |
 | Mock API ヘルス | http://localhost:3001/health |
 
@@ -57,7 +58,16 @@ cd auth/api && npm start          # :3002
 cd mock-api && npm start          # :3001
 cd auth/web && npm run dev        # :5180
 cd admin/web && npm run dev       # :5190
+cd lms/web && npm run dev         # :5200
+cd manuals/web && npm run dev     # :5210（他サービス不要）
 cd viewer && npm run dev          # :5173
+```
+
+マニュアルアプリだけ読む場合:
+
+```bash
+cd manuals/web && npm install && npm run dev
+# → http://localhost:5210
 ```
 
 ビューアだけ試す場合でも、未ログインは auth/web へ飛ぶため認証側が必要です。
@@ -70,6 +80,7 @@ cd viewer && npm run dev          # :5173
 | `AUTH_WEB_PORT` | 5180 | ログイン UI |
 | `ADMIN_WEB_PORT` | 5190 | 管理画面 |
 | `LMS_WEB_PORT` | 5200 | LMS |
+| `MANUALS_WEB_PORT` | 5210 | マニュアルアプリ |
 | `MOCK_API_PORT` | 3001 | Mock API |
 | `VIEWER_PORT` | 5173 | ビューア |
 | `VITE_AUTH_APP_URL` | auth/web の URL | ビューア・管理・LMS のリダイレクト先 |

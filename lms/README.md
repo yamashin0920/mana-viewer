@@ -29,6 +29,6 @@ cd lms/web && npm run test:e2e
 
 ## 詳細
 
-- [LMS 機能仕様](../docs/features/drm-offline-lms.md)
-- [講師マニュアル](../docs/manuals/instructor.md)
+- [LMS 機能仕様](../docs/features/lms.md)
+- [講師マニュアル](../docs/manuals/instructor.md)（アプリ: http://localhost:5210/instructor）
 - [プラットフォーム API](../docs/api/platform.md)

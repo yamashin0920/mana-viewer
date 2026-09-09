@@ -13,6 +13,7 @@ cd viewer && npm run test:e2e
 cd admin/web && npm run test:e2e
 cd auth/web && npm run test:e2e
 cd lms/web && npm run test:e2e
+cd manuals/web && npm run test:e2e
 ```
 
 viewer の Playwright は mock-api (:3001) と viewer (:5173) を自動起動します。既に起動中なら再利用します（`CI=true` のときは新規起動）。
@@ -37,6 +38,7 @@ npm run test:e2e:report
 | ユーザー切替 | `viewer/e2e/user-switch.spec.ts` |
 | 管理画面 | `admin/web/e2e/*.spec.ts` |
 | LMS | `lms/web/e2e/*.spec.ts` |
+| マニュアルアプリ | `manuals/web/e2e/*.spec.ts` |
 | 印刷制御 | `viewer/e2e/print.spec.ts` |
 | ログイン | `auth/web/e2e/login.spec.ts` |
 | 共通 setup | 各パッケージの `e2e/fixtures.ts` |

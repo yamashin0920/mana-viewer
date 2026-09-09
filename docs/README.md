@@ -11,7 +11,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | 目的 | 文書 |
 |------|------|
 | リポジトリを動かす | [開発スタート](development/getting-started.md) |
-| 画面の使い方 | [マニュアル目次](manuals/README.md) |
+| 画面の使い方 | [操作マニュアル](manuals/README.md)（アプリ: http://localhost:5210） |
 | 何が実装済みか | [要件と実装状況](requirements.md) |
 | システム全体像 | [アーキテクチャ](architecture.md) |
 
@@ -55,6 +55,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 | [ライセンス](features/licenses.md) | 席数、割当、閲覧前検証 |
 | [管理画面](features/admin.md) | アカウント、教材、ライセンス UI |
 | [LMS 連携](features/lms.md) | コース、LTI 起動、xAPI |
+| [マニュアル閲覧](features/manuals.md) | 操作マニュアル SPA（認証なし） |
 | [DRM・オフライン](features/drm-offline-lms.md) | 印刷、端末、オフライン |
 
 ### 横断
@@ -67,7 +68,7 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 
 ## マニュアル
 
-操作手順はロール別に [docs/manuals/](manuals/README.md) にあります。
+操作手順はロール別に [docs/manuals/](manuals/README.md) にあります。ブラウザではマニュアルアプリ（http://localhost:5210）でも読めます。
 
 ## パッケージ README（起動の要約）
 
@@ -79,4 +80,5 @@ B2B 向け PDF 学習プラットフォーム **マナビューア (mana-viewer)
 - [auth/README.md](../auth/README.md)
 - [admin/README.md](../admin/README.md)
 - [lms/README.md](../lms/README.md)
+- [manuals/README.md](../manuals/README.md)
 - [viewer/e2e/README.md](../viewer/e2e/README.md)

@@ -22,6 +22,8 @@ description: マナビューアの操作マニュアルをロール別に作成�
 
 開発者マニュアルは「ローカルで動かす・テストする」まで。設計の詳細は `docs/architecture.md` などへリンクする。
 
+ブラウザで読むときは **マニュアルアプリ**（`manuals/web`、開発時 http://localhost:5210）を使う。本文の正本は上表の Markdown であり、アプリに手順を複製しない。`cd manuals/web && npm run dev` で他サービスなしに起動できる。
+
 ## 構成（必須セクション）
 
 各ロール別マニュアルは次の順にする。
@@ -64,5 +66,6 @@ description: マナビューアの操作マニュアルをロール別に作成�
 | 本棚・ビューア・注釈の UI | `learner.md`（講師向けに差分があれば `instructor.md`） |
 | アカウント・ライセンス・教材管理 | `admin.md` |
 | 起動スクリプト・ポート・テストコマンド | `developer.md` `operator.md` |
+| マニュアルアプリの画面・ルート | `docs/manuals/README.md` と各ロールの URL 表 |
 | LMS のコース・起動 | `instructor.md` |
 | ログイン URL・SSO の流れ | 全マニュアルの「ログイン」節 |
